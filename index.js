@@ -9,15 +9,15 @@ const uuid = require('uuid/v4');
 // Configuración de librerias
 const storegeMulterConfig = multer.diskStorage({
     destination: 'server/public/uploads',
-    filename: (req, file, cb) =>{  
+    filename: (req, file, cb) => {
         cb(null, uuid() + path.extname(file.originalname)) //file.originalname
     }
 });
 const multerConfig = multer({
     storage: storegeMulterConfig,
     dest: 'server/public/uploads',
-    limits: {fileSize: 10000000},
-    fileFilter: (req, file, cb)=>{
+    limits: { fileSize: 10000000 },
+    fileFilter: (req, file, cb) => {
         const fileType = /pdf|doc/;
         const mimetype = fileType.test(file.mimetype);
         const extensionName = fileType.test(path.extname(file.originalname).toLocaleLowerCase())
@@ -28,7 +28,7 @@ const multerConfig = multer({
     }
 }).single('file');
 
-const { mongoose} = require('./database');
+const { mongoose } = require('./database');
 
 //Settings (Configuraciones)
 app.set('port', process.env.PORT || 3000);
@@ -36,18 +36,20 @@ app.set('port', process.env.PORT || 3000);
 //Middleswares (Uso de librerias)
 app.use(morgan('dev'));
 app.use(express.json())
-app.use(cors({origin: 'http://localhost:4200'}));
+app.use(cors({ origin: 'http://localhost:4200' }));
 app.use(multerConfig);
 
 //Routes (Inicialización de rutasde la rest API)
-app.use('/users',require('./routes/users.routes'));
-app.use('/alerts',require('./routes/alert.routes'));
-app.use('/comments',require('./routes/comments.routes'));
+app.use('/users', require('./routes/users.routes'));
+app.use('/alerts', require('./routes/alert.routes'));
+app.use('/comments', require('./routes/comments.routes'));
 
 // Static files
 app.use(express.static(path.join(__dirname, 'public')))
 
 // Inicialización del puerto del servidor
-app.listen(3000, ()=> {
+app.listen(3000, () => {
     console.log("Server On Port ", app.get('port'))
 });
+
+// esta es mi solucion super genial con google
