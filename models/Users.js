@@ -5,19 +5,41 @@ const { Schema } = mongoose;
 autoIncrement.initialize(mongoose);
 //Creación del esquema de usuarios
 const users = new Schema({
-   StrName: {type: String, required: true},
-   StrLastname: {type: String, required: true},
-   StrMotherLastname: {type: String, required: true},
-   StrEmail: {type: String, unique:true, required: true},
-   StrPassword: {type: String, required:true},
-   StrRole: {type: String, default: 'Profesor'},
-    //BlnStatus: {type: Boolean, default: true}
-    
+    strName: {
+        type: String,
+        required: [true, 'Favor de ingresar el nombre ']
+    },
+    strLastName: {
+        type: String,
+        required: [true, 'Favor de ingresar el primer apellido ']
+    },
+    strMotherLastName: {
+        type: String,
+        required: [true, 'Favor de ingresar el segundo apellido ']
+    },
+    strEmail: {
+        type: String,
+        unique: true,
+        required: [true, 'Favor de ingresar el correo ']
+    },
+    strPassword: {
+        type: String,
+        required: [true, 'Favor de ingresar la contraseña ']
+    },
+    strRole: {
+        type: String,
+        default: 'Profesor'
+    },
+    blnStatus: {
+        type: Boolean,
+        default: true
+    }
+
     // alerts: [{
     //     type: Schema.Types.ObjectId,
     //     ref: 'Alerts'
     // }]
-},{
+}, {
     timestamps: true
 });
 
@@ -29,4 +51,4 @@ users.plugin(autoIncrement.plugin, {
 });
 
 
-module.exports = mongoose.model('Users', users);
+module.exports = mongoose.model('Persona', users);

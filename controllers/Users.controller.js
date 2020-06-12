@@ -30,96 +30,99 @@ const emailMessage = `
 
 // Obtener todos los usuarios
 
-userController.getUsers = async (req, res) =>{
-    
-   const users =  await user.find();
-   res.json({
-       ok: true, 
-       status: 200, 
-       msg: 'Lista de usuarios generada exitosamente',
-       count: users.length,
-       users
-   }); 
+userController.getUsers = async(req, res) => {
 
-   
-} 
+    const users = await user.find();
+    res.json({
+        ok: true,
+        status: 200,
+        msg: 'Lista de usuarios generada exitosamente',
+        count: users.length,
+        users
+    });
+
+
+}
 
 // Relación de usuarios con alertas
-userController.completeData = async (req, res) =>{
-    const collName = alert.collection.collectionName;
-    console.log(collName);
-    // const getUs = await user.findById(req.params.id)
-    // res.json(getUs._id); 
-    // const el_id_chido = getUs._id;
-    const data = await user.aggregate([
-    // { $match: { _id: id } },
-    {
-        $lookup: {
-          from: collName,
-          localField: '_id',
-          foreignField: 'id_user',
-          as: 'Alerts'
-        }
-    }], (err, userData) =>{
-        // console.log('el id del user');
-        // console.log(el_id_chido);
-        console.log(Object.keys(userData));
-        
-        const data = userData[0].Alerts[0]; //pasar el id
-        console.log(userData[0].Alerts[0]);
-        console.log('esto tiene data');
-        console.log(data);
-        // const userDa = new dat(userData[0])
-        //  userDa.save();
-        res.json(userData);
-    })
-}
-// Obtener un solo usuario
-userController.getUser = async (req , res) =>{
+userController.completeData = async(req, res) => {
+        const collName = alert.collection.collectionName;
+        console.log(collName);
+        // const getUs = await user.findById(req.params.id)
+        // res.json(getUs._id); 
+        // const el_id_chido = getUs._id;
+        const data = await user.aggregate([
+            // { $match: { _id: id } },
+            {
+                $lookup: {
+                    from: collName,
+                    localField: '_id',
+                    foreignField: 'id_user',
+                    as: 'Alerts'
+                }
+            }
+        ], (err, userData) => {
+            // console.log('el id del user');
+            // console.log(el_id_chido);
+            console.log(Object.keys(userData));
+
+            const data = userData[0].Alerts[0]; //pasar el id
+            console.log(userData[0].Alerts[0]);
+            console.log('esto tiene data');
+            console.log(data);
+            // const userDa = new dat(userData[0])
+            //  userDa.save();
+            res.json(userData);
+        })
+    }
+    // Obtener un solo usuario
+userController.getUser = async(req, res) => {
     // verifyToken(req, res);
     const getUs = await user.findById(req.params.id)
     res.json({
-        ok: true, 
-        status: 200, 
-        msg: 'Usuario encontrado exitosamente', 
-        count: getUs.length, 
+        ok: true,
+        status: 200,
+        msg: 'Usuario encontrado exitosamente',
+        count: getUs.length,
         getUs
-    }); 
-  
+    });
+
 
 }
 
 // Obtener el perfil del usuario
-userController.profile = async (req, res) =>{
+userController.profile = async(req, res) => {
     verifyToken(req, res);
     // res.send(req.userId)
-    res.json({UserId: req.userId})
+    res.json({ UserId: req.userId })
 }
+
 // Crear un nuevo usuarios
-userController.createUser = async (req, res) => {
+userController.createUser = async(req, res) => {
     // create hash password
-    let pass = req.body.StrPassword;
+    let pass = req.body.strPassword;
     const hash = bcrypt.hashSync(pass, saltRounds);
     // end hash password
 
     const OneUser = {
-        StrName: req.body.StrName,
-        StrLastname: req.body.StrLastname,
-        StrMotherLastname: req.body.StrMotherLastname,
-        StrEmail: req.body.StrEmail,
-        StrPassword: hash,
-        StrRole: req.body.StrRole,
+        strName: req.body.strName,
+        strLastName: req.body.strLastName,
+        strMotherLastName: req.body.strMotherLastName,
+        strEmail: req.body.strEmail,
+        strPassword: hash,
+        strRole: req.body.strRole,
+        blnStatus: req.body.blnStatus,
         // alerts: req.body.alerts,
     }
     const newUser = new user(OneUser)
     await newUser.save();
 
     //Create access token
-    const accessToken = jwt.sign({_id: newUser._id}, Secret_Key);
+    const accessToken = jwt.sign({ _id: newUser._id }, Secret_Key);
     // Function with email settings
     emailSettings(req, res);
     res.json({
-        ok: true, 
+        ok: true,
         status: 200,
         msg: "User saved",
         token: accessToken
@@ -129,105 +132,115 @@ userController.createUser = async (req, res) => {
 
 
 //POST USER NEW (login system)
-userController.login = async (req, res) =>{
-    
-    console.log(req.headers.authorization);
-    const userData = {
-        StrEmail: req.body.StrEmail,
-        StrPassword: req.body.StrPassword
-    }
+userController.login = async(req, res) => {
 
-     await user.findOne({StrEmail: userData.StrEmail}, (err, user)=>{
-        // console.log(user.password);
-        console.log(user);
-        
-        if (err) return res.status(400)
-        if (!user) {
-            res.json({
-                ok: true, 
-                status: 200,
-                msg: 'Something is wrong'
-            })
-        }else{
-            const resultPassword = bcrypt.compareSync(userData.StrPassword, user.StrPassword);
-            if (resultPassword) {
-                const accessToken = jwt.sign({_id: user._id}, Secret_Key)
-                res.json({
-                    ok: true, 
-                    status: 200,
-                    msg: 'OK User was found',
-                    UserEmail: user.StrEmail,
-                    UserName: user.StrName,
-                    UserLastname: user.StrLastname,
-                    UserRole: user.StrRole,
-                    token: accessToken
-                })
-            }else{
-                res.json({
-                    ok: true, 
-                    status: 200,
-                    msg: 'User not found'
-                })
-            }
+        console.log(req.headers.authorization);
+        const userData = {
+            strEmail: req.body.strEmail,
+            strPassword: req.body.strPassword
         }
-        
-    });
-    // console.log(UserFound);
-    
-       
-    // if (UserFound) {
-    //     res.json({
-    //         status: 'User Found',
-    //         User: userData
-    //     })
-    // }else{
-    //     res.json({
-    //         status:'User not found'}
-    //         )
-    // }
-}
-// Actualizar a un usuario
-userController.editUser = async (req, res) =>{
-    const {id} = req.params;
-    let pass = req.body.StrPassword;
+
+        await user.findOne({ strEmail: userData.strEmail }, (err, user) => {
+            // console.log(user.password);
+            console.log(user);
+
+            if (err) return res.status(400)
+            if (!user) {
+                res.json({
+                    ok: true,
+                    status: 200,
+                    msg: 'Something is wrong'
+                })
+            } else {
+                const resultPassword = bcrypt.compareSync(userData.strPassword, user.strPassword);
+                if (resultPassword) {
+                    const accessToken = jwt.sign({ _id: user._id }, Secret_Key)
+                    res.json({
+                        ok: true,
+                        status: 200,
+                        msg: 'OK User was found',
+                        UserEmail: user.strEmail,
+                        UserName: user.strName,
+                        UserLastname: user.strLastname,
+                        UserRole: user.strRole,
+                        // UserStatus: user.blnStatus,
+                        token: accessToken
+                    })
+                } else {
+                    res.json({
+                        ok: true,
+                        status: 200,
+                        msg: 'User not found'
+                    })
+                }
+            }
+
+        });
+        // console.log(UserFound);
+
+
+        // if (UserFound) {
+        //     res.json({
+        //         status: 'User Found',
+        //         User: userData
+        //     })
+        // }else{
+        //     res.json({
+        //         status:'User not found'}
+        //         )
+        // }
+    }
+    // Actualizar a un usuario
+userController.editUser = async(req, res) => {
+    const { id } = req.params;
+    let pass = req.body.strPassword;
     const hash = bcrypt.hashSync(pass, saltRounds);
     const oneUser = {
-        StrName: req.body.StrName,
-        StrLastname: req.body.StrLastname,
-        StrMotherLastname: req.body.StrMotherLastname,
-        StrEmail: req.body.StrEmail,
-        StrPassword: hash,
-        StrConfirm_Password: req.body.StrConfirm_Password,
-        StrRole: req.body.StrRole,
-        
+        strName: req.body.strName,
+        strLastname: req.body.strLastName,
+        strMotherLastname: req.body.strMotherLastName,
+        strEmail: req.body.strEmail,
+        strPassword: hash,
+        strConfirm_Password: req.body.strConfirm_Password,
+        strRole: req.body.strRole,
+        blnStatus: req.body.blnStatus,
+
     };
-    await user.findByIdAndUpdate(id, {$set: oneUser}, {new:true} );
+    await user.findByIdAndUpdate(id, { $set: oneUser }, { new: true });
     res.json({
-        ok: true, 
+        ok: true,
         status: 200,
-        msg: 'User Updated', 
+        msg: 'User Updated',
         oneUser
     })
 }
 
 // Borrar Usuario
-userController.deleteUser = async (req, res) =>{
-    await user.findByIdAndRemove(req.params.id);
+userController.deleteUser = async(req, res) => {
+
+    let desactivar = {
+        blnStatus: false
+    }
+
+    const usuario = await user.findOneAndUpdate(req.params.id, { $set: desactivar });
     res.json({
-        ok: true, 
+        ok: true,
         status: 200,
-        msg: "User Deleted"
+        msg: "El usuario ha sido desactivado",
+        cont: {
+            usuario
+        }
     })
 }
 
 // Verificación del token (jwt)
-function verifyToken  (req, res , next){
+function verifyToken(req, res, next) {
 
-    if(!req.headers.authorization){
+    if (!req.headers.authorization) {
         return res.status(401).send('Authorization: falied')
     }
     const token = req.headers.authorization.split(' ')[1]
-    if (token === 'null'){
+    if (token === 'null') {
         return res.status(401).send('Authorization: falied')
     }
     const payload = jwt.verify(token, Secret_Key)
@@ -236,10 +249,10 @@ function verifyToken  (req, res , next){
     req.userId = payload._id;
 
     console.log(req.userId);
-  
+
 }
 // Configuraciones de email
-function emailSettings(req, res){
+function emailSettings(req, res) {
     //EMAIL BLOCK CODE START
 
     let transporter = nodemailer.createTransport({
@@ -254,14 +267,14 @@ function emailSettings(req, res){
     // setup e-mail data with unicode symbols
     let mailOptions = {
         from: 'Test <leticiagpemoreno03@gmail.com>', // sender address
-        to: req.body.StrEmail, // list of receivers //mizraimeliab168@gmail.com
+        to: req.body.strEmail, // list of receivers //mizraimeliab168@gmail.com
         subject: 'Hello ✔', // Subject line
         html: emailMessage // html body
-        
+
     };
     // send mail with defined transport object
-    transporter.sendMail(mailOptions, function(error, info){
-        if(error){
+    transporter.sendMail(mailOptions, function(error, info) {
+        if (error) {
             return console.log(error);
         }
         console.log('Message sent: ' + info.response);
@@ -270,7 +283,5 @@ function emailSettings(req, res){
 }
 
 
- 
+
 module.exports = userController;
-
-
