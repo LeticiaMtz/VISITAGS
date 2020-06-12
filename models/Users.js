@@ -5,13 +5,14 @@ const { Schema } = mongoose;
 autoIncrement.initialize(mongoose);
 //Creación del esquema de usuarios
 const users = new Schema({
-    name: {type: String, required: true},
-    lastname: {type: String, required: true},
-    motherlastname: {type: String, required: true},
-    email: {type: String, unique:true, required: true},
-    password: {type: String, required:true},
-    role: {type: String, required: true},
-    direction: {type: String}
+   StrName: {type: String, required: true},
+   StrLastname: {type: String, required: true},
+   StrMotherLastname: {type: String, required: true},
+   StrEmail: {type: String, unique:true, required: true},
+   StrPassword: {type: String, required:true},
+   StrRole: {type: String, default: 'Profesor'},
+    //BlnStatus: {type: Boolean, default: true}
+    
     // alerts: [{
     //     type: Schema.Types.ObjectId,
     //     ref: 'Alerts'
@@ -29,4 +30,3 @@ users.plugin(autoIncrement.plugin, {
 
 
 module.exports = mongoose.model('Users', users);
-
