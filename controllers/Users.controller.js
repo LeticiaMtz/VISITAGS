@@ -5,7 +5,7 @@ const nodemailer = require("nodemailer");
 const jwt = require('jsonwebtoken');
 let bcrypt = require('bcrypt');
 const Secret_Key = 'secret_key_utags';
-const saltRounds = 12; //for production mode set 12 saltRounds
+const saltRounds = 10; //for production mode set 12 saltRounds
 
 const userController = {};
 // Vista del correo electrónico
@@ -33,7 +33,13 @@ const emailMessage = `
 userController.getUsers = async (req, res) =>{
     
    const users =  await user.find();
-   res.json(users); 
+   res.json({
+       ok: true, 
+       status: 200, 
+       msg: 'Lista de usuarios generada exitosamente',
+       count: users.length,
+       users
+   }); 
 
    
 } 
@@ -72,7 +78,13 @@ userController.completeData = async (req, res) =>{
 userController.getUser = async (req , res) =>{
     // verifyToken(req, res);
     const getUs = await user.findById(req.params.id)
-    res.json(getUs); 
+    res.json({
+        ok: true, 
+        status: 200, 
+        msg: 'Usuario encontrado exitosamente', 
+        count: getUs.length, 
+        getUs
+    }); 
   
 
 }
@@ -86,19 +98,18 @@ userController.profile = async (req, res) =>{
 // Crear un nuevo usuarios
 userController.createUser = async (req, res) => {
     // create hash password
-    let pass = req.body.password;
+    let pass = req.body.StrPassword;
     const hash = bcrypt.hashSync(pass, saltRounds);
     // end hash password
 
     const OneUser = {
-        name: req.body.name,
-        lastname: req.body.lastname,
-        motherlastname: req.body.motherlastname,
-        email: req.body.email,
-        password: hash,
-        role: req.body.role,
-        alerts: req.body.alerts,
-        direction: req.body.direction
+        StrName: req.body.StrName,
+        StrLastname: req.body.StrLastname,
+        StrMotherLastname: req.body.StrMotherLastname,
+        StrEmail: req.body.StrEmail,
+        StrPassword: hash,
+        StrRole: req.body.StrRole,
+        // alerts: req.body.alerts,
     }
     const newUser = new user(OneUser)
     await newUser.save();
@@ -108,7 +119,9 @@ userController.createUser = async (req, res) => {
     // Function with email settings
     emailSettings(req, res);
     res.json({
-        status: "User saved",
+        ok: true, 
+        status: 200,
+        msg: "User saved",
         token: accessToken
     });
 
@@ -120,34 +133,40 @@ userController.login = async (req, res) =>{
     
     console.log(req.headers.authorization);
     const userData = {
-        email: req.body.email,
-        password: req.body.password
+        StrEmail: req.body.StrEmail,
+        StrPassword: req.body.StrPassword
     }
 
-     await user.findOne({email: userData.email}, (err, user)=>{
+     await user.findOne({StrEmail: userData.StrEmail}, (err, user)=>{
         // console.log(user.password);
         console.log(user);
         
         if (err) return res.status(400)
         if (!user) {
             res.json({
-                status: 'Something is wrong'
+                ok: true, 
+                status: 200,
+                msg: 'Something is wrong'
             })
         }else{
-            const resultPassword = bcrypt.compareSync(userData.password, user.password);
+            const resultPassword = bcrypt.compareSync(userData.StrPassword, user.StrPassword);
             if (resultPassword) {
                 const accessToken = jwt.sign({_id: user._id}, Secret_Key)
                 res.json({
-                    status: 'OK User was found',
-                    UserEmail: user.email,
-                    UserName: user.name,
-                    UserLastname: user.lastname,
-                    UserRole: user.role,
+                    ok: true, 
+                    status: 200,
+                    msg: 'OK User was found',
+                    UserEmail: user.StrEmail,
+                    UserName: user.StrName,
+                    UserLastname: user.StrLastname,
+                    UserRole: user.StrRole,
                     token: accessToken
                 })
             }else{
                 res.json({
-                    status: 'User not found'
+                    ok: true, 
+                    status: 200,
+                    msg: 'User not found'
                 })
             }
         }
@@ -170,21 +189,24 @@ userController.login = async (req, res) =>{
 // Actualizar a un usuario
 userController.editUser = async (req, res) =>{
     const {id} = req.params;
-    let pass = req.body.password;
+    let pass = req.body.StrPassword;
     const hash = bcrypt.hashSync(pass, saltRounds);
     const oneUser = {
-        name: req.body.name,
-        lastname: req.body.lastname,
-        motherlastname: req.body.motherlastname,
-        email: req.body.email,
-        password: hash,
-        confirm_password: req.body.confirm_password,
-        role: req.body.role,
-        direction: req.body.direction
+        StrName: req.body.StrName,
+        StrLastname: req.body.StrLastname,
+        StrMotherLastname: req.body.StrMotherLastname,
+        StrEmail: req.body.StrEmail,
+        StrPassword: hash,
+        StrConfirm_Password: req.body.StrConfirm_Password,
+        StrRole: req.body.StrRole,
+        
     };
     await user.findByIdAndUpdate(id, {$set: oneUser}, {new:true} );
     res.json({
-        status: "User Updated"
+        ok: true, 
+        status: 200,
+        msg: 'User Updated', 
+        oneUser
     })
 }
 
@@ -192,7 +214,9 @@ userController.editUser = async (req, res) =>{
 userController.deleteUser = async (req, res) =>{
     await user.findByIdAndRemove(req.params.id);
     res.json({
-        status: "User Deleted"
+        ok: true, 
+        status: 200,
+        msg: "User Deleted"
     })
 }
 
@@ -223,14 +247,14 @@ function emailSettings(req, res){
         port: 465,
         secure: true, // use SSL
         auth: {
-            user: 'testarv63@gmail.com',
-            pass: 'linkinpark4'
+            user: 'leticiagpemoreno03@gmail.com',
+            pass: 'Martinez1214#'
         }
     });
     // setup e-mail data with unicode symbols
     let mailOptions = {
-        from: 'Test <testarv63@gmail.com>', // sender address
-        to: req.body.email, // list of receivers //mizraimeliab168@gmail.com
+        from: 'Test <leticiagpemoreno03@gmail.com>', // sender address
+        to: req.body.StrEmail, // list of receivers //mizraimeliab168@gmail.com
         subject: 'Hello ✔', // Subject line
         html: emailMessage // html body
         
@@ -244,6 +268,7 @@ function emailSettings(req, res){
     });
     // EMAIL BLOCK CODE END
 }
+
 
  
 module.exports = userController;
