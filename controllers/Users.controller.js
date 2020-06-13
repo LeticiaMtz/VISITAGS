@@ -138,7 +138,7 @@ userController.createUser = async(req, res) => {
         const accessToken = jwt.sign({ _id: OneUser._id }, Secret_Key);
 
         let mailOptions = {
-            from: 'leticiagpemoreno03@gmail.com',
+            from: 'orientacion.vocacional@utags.edu.mx',
             to: OneUser.strEmail,
             subject: 'Esta es tu contraseña en caso de no recordarla...',
 

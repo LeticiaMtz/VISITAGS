@@ -9,22 +9,14 @@ class Mailer {
     constructor() {
         this.transport = nodemailer.createTransport({
 
-            service: 'gmail',
-            port: 8000,
-            secure: false,
-            auth: {
-                user: 'leticiagpemoreno03@gmail.com',
-                pass: 'Martinez1214#'
-            },
-            tls: {
-                rejectUnauthorized: false
-            }
-
+            host: 'smtp.office365.com',
+            port: 587,
+            auth: { user: 'orientacion.vocacional@utags.edu.mx', pass: 'Noc099998' }
         });
         this.mailOptions = {
-            from: 'Alertas Académicas <leticiagpemoreno03@gmail.com>'
-
+            from: '"Orientanción Vocacional" <orientacion.vocacional@utags.edu.mx>'
         };
+
     }
 
     sendMail(options) {
