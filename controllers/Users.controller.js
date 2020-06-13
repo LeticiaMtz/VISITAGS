@@ -4,29 +4,32 @@ const alert = require('../models/Alerts');
 const nodemailer = require("nodemailer");
 const jwt = require('jsonwebtoken');
 let bcrypt = require('bcrypt');
+const Users = require('../models/Users');
 const Secret_Key = 'secret_key_utags';
+const mailer = require('../libraries/mails');
 const saltRounds = 10; //for production mode set 12 saltRounds
 
 const userController = {};
-// Vista del correo electrónico
-const emailMessage = `
-<!DOCTYPE html>
-<html lang="en" dir="ltr">
-  <head>
-    <meta charset="utf-8">
-    <title></title>
-    
-  </head>
-  <body>
 
-    <h1>¡Gracias por formar parte de Alertas académicas!<h1>
-    <p>El último paso es verificar tu cuenta dando click en el siguiente botón</p>
-    <a class="waves-effect waves-light btn"  href="http://localhost:4200/main/home">Verificar cuenta</a>
+// let emailMessage = `
+//         <!DOCTYPE html>
+//         <html lang="en" dir="ltr">
+//           <head>
+//             <meta charset="utf-8">
+//             <title></title>
 
-  </body>
-</html>
+//           </head>
+//           <body>
 
-`
+//             <h1>¡Gracias por formar parte de Alertas académicas!<h1>
+//             <p>Su contraseña es:</p>
+
+//             <a class="waves-effect waves-light btn"  href="http://localhost:4200/main/home">Verificar cuenta</a>
+
+//           </body>
+//         </html>
+
+//         `
 
 // Obtener todos los usuarios
 
@@ -104,7 +107,8 @@ userController.createUser = async(req, res) => {
     const hash = bcrypt.hashSync(pass, saltRounds);
     // end hash password
 
-    const OneUser = {
+    const passw = req.body.strPassword;
+    const OneUser = new Users({
         strName: req.body.strName,
         strLastName: req.body.strLastName,
         strMotherLastName: req.body.strMotherLastName,
@@ -113,20 +117,61 @@ userController.createUser = async(req, res) => {
         strRole: req.body.strRole,
         blnStatus: req.body.blnStatus,
         // alerts: req.body.alerts,
-    }
-    const newUser = new user(OneUser)
-    await newUser.save();
-
-    //Create access token
-    const accessToken = jwt.sign({ _id: newUser._id }, Secret_Key);
-    // Function with email settings
-    emailSettings(req, res);
-    res.json({
-        ok: true,
-        status: 200,
-        msg: "User saved",
-        token: accessToken
     });
+    //const newUser = new user(OneUser)
+
+    // valida que ya exista el correo
+    await Users.findOne({ 'strEmail': req.body.strEmail }).then(async(encontrado) => {
+        if (encontrado) {
+            return res.status(400).json({
+                ok: false,
+                resp: 400,
+                msg: 'El correo ya ha sido registrado',
+                cont: {
+                    OneUser
+                }
+            });
+        }
+        await new Users(OneUser).save();
+
+        //Create access token
+        const accessToken = jwt.sign({ _id: OneUser._id }, Secret_Key);
+
+        let mailOptions = {
+            from: 'leticiagpemoreno03@gmail.com',
+            to: OneUser.strEmail,
+            subject: 'Esta es tu contraseña en caso de no recordarla...',
+
+            html: '<h1>¡Gracias por formar parte de Alertas académicas!</h1><br>' +
+                '<h3>Hola ' + OneUser.strName + ' </h3>' + '<h3>Tu contraseña es: </h3>' +
+                passw,
+        };
+
+        mailer.sendMail(mailOptions);
+
+        // Function with email settings
+        // emailSettings(req, res);
+        return res.status(200).json({
+            ok: true,
+            status: 200,
+            msg: "User saved",
+            token: accessToken
+        });
+
+        // Vista del correo electrónico
+
+
+    }).catch((err) => {
+
+        return res.status(500).json({
+            ok: false,
+            resp: 500,
+            const: {
+                err: err.message
+            }
+        });
+    });
+    //findOne para buscar un solo resultado y el find para varios resultados 
 
 }
 
@@ -166,6 +211,7 @@ userController.login = async(req, res) => {
                         // UserStatus: user.blnStatus,
                         token: accessToken
                     })
+
                 } else {
                     res.json({
                         ok: true,
@@ -252,35 +298,35 @@ function verifyToken(req, res, next) {
 
 }
 // Configuraciones de email
-function emailSettings(req, res) {
-    //EMAIL BLOCK CODE START
+// function emailSettings(req, res) {
+//     //EMAIL BLOCK CODE START
 
-    let transporter = nodemailer.createTransport({
-        host: 'smtp.googlemail.com', // smtp.outlook.com
-        port: 465,
-        secure: true, // use SSL
-        auth: {
-            user: 'leticiagpemoreno03@gmail.com',
-            pass: 'Martinez1214#'
-        }
-    });
-    // setup e-mail data with unicode symbols
-    let mailOptions = {
-        from: 'Test <leticiagpemoreno03@gmail.com>', // sender address
-        to: req.body.strEmail, // list of receivers //mizraimeliab168@gmail.com
-        subject: 'Hello ✔', // Subject line
-        html: emailMessage // html body
+//     let transporter = nodemailer.createTransport({
+//         host: 'smtp.googlemail.com', // smtp.outlook.com
+//         port: 465,
+//         secure: true, // use SSL
+//         auth: {
+//             user: 'leticiagpemoreno03@gmail.com',
+//             pass: 'Martinez1214#'
+//         }
+//     });
+//     // setup e-mail data with unicode symbols
+//     let mailOptions = {
+//         from: 'Test <leticiagpemoreno03@gmail.com>', // sender address
+//         to: req.body.strEmail, // list of receivers //mizraimeliab168@gmail.com
+//         subject: 'Hello ✔', // Subject line
+//         html: emailMessage // html body
 
-    };
-    // send mail with defined transport object
-    transporter.sendMail(mailOptions, function(error, info) {
-        if (error) {
-            return console.log(error);
-        }
-        console.log('Message sent: ' + info.response);
-    });
-    // EMAIL BLOCK CODE END
-}
+//     };
+//     // send mail with defined transport object
+//     transporter.sendMail(mailOptions, function(error, info) {
+//         if (error) {
+//             return console.log(error);
+//         }
+//         console.log('Message sent: ' + info.response);
+//     });
+//     // EMAIL BLOCK CODE END
+// }
 
 
 
