@@ -6,6 +6,7 @@ const User = require('../models/Users'); //subir nivel
 const { rolMenuUsuario } = require('../middlewares/permisosUsuarios')
 const app = express();
 const mailer = require('../libraries/mails');
+const jwt = require('jsonwebtoken');
 
 //Obtiene todos los susuarios 
 app.get('/obtener', [verificaToken, rolMenuUsuario], (req, res) => {
@@ -116,7 +117,6 @@ app.post('/registrar', [verificaToken, rolMenuUsuario], async (req, res) => {
 });
 
 //Registrar sin token 
-
 app.post('/registro', async (req, res) => {
 
     let body = req.body;
@@ -133,6 +133,7 @@ app.post('/registro', async (req, res) => {
         blnStatus: req.body.blnStatus
 
     });
+
 
     // validar el correo que ya existe
     await User.findOne({ 'strEmail': req.body.strEmail }).then(async (encontrado) => {
@@ -219,6 +220,52 @@ app.delete('/eliminar/:idUser', [verificaToken, rolMenuUsuario], (req, res) => {
             status: 200,
             msg: 'Usuario eliminado correctamente',
             resp
+        });
+    });
+});
+
+app.post('/login', (req, res) => {
+    let body = req.body;
+
+    User.findOne({ strEmail: body.strEmail }, (err, usrDB) => {
+
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                status: 400, 
+                msg: 'Algo salio mal',
+                err
+            });
+        }
+
+        if (!usrDB) {
+            return res.status(400).json({
+                ok: false,
+                status: 400,
+                err: {
+                    message: 'Usuario y/o contraseña incorrecta'
+                }
+            });
+        }
+
+        if (!bcrypt.compareSync(body.strPassword, usrDB.strPassword)) {
+            return res.status(400).json({
+                ok: false,
+                status: 400,
+                err: {
+                    message: 'Usuario y/o *contraseña incorrecta'
+                }
+            });
+        }
+
+        let token = jwt.sign({
+            user: usrDB
+        }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN });
+
+        return res.status(200).json({
+            ok: true,
+            user: usrDB,
+            token
         });
     });
 });

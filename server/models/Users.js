@@ -15,8 +15,8 @@ const users = new Schema({
         required: [true, 'Favor de ingresar el primer apellido ']
     },
     strMotherLastName: {
-        type: String,
-        required: [true, 'Favor de ingresar el segundo apellido ']
+        type: String
+        
     },
     strEmail: {
         type: String,
@@ -34,7 +34,7 @@ const users = new Schema({
     idRole: {
         type: Schema.Types.ObjectId,
         ref: 'Role',
-        required: [true, 'Por favor ingrese el rol']
+        default: '5eeee0db16952756482d1868'
        
     },
     blnStatus: {

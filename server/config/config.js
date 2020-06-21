@@ -6,10 +6,10 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'dev';
 let urlDB; 
 
 if(process.env.NODE_ENV === 'dev'){  //Son todas las funciones y procesos que tienen el amibiente del desarrollo que es local 
-    urlDB= 'mongodb://localhost:27017/test_complete';
+    urlDB= 'mongodb+srv://AdminAA:AlertasAcademicas@cluster0-mquqh.mongodb.net/AlertasAcademicas?authSource=admin&replicaSet=Cluster0-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass&retryWrites=true&ssl=true';
     process.log = true;
 }else { //Ambiente de produccion nube = Heroku
-    urlDB= 'mongodb+srv://admin:WsLgybDun0V1DwtE@cluster0-idtoj.mongodb.net/test_complete';
+    urlDB= 'mongodb+srv://AdminAA:AlertasAcademicas@cluster0-mquqh.mongodb.net/AlertasAcademicas?authSource=admin&replicaSet=Cluster0-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass&retryWrites=true&ssl=true';
 }
 
 //Tenemos dos ambientes el de produccion y el de desarrollo 
