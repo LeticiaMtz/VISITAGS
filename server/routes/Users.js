@@ -7,6 +7,9 @@ const { rolMenuUsuario } = require('../middlewares/permisosUsuarios')
 const app = express();
 const mailer = require('../libraries/mails');
 const jwt = require('jsonwebtoken');
+const async = require('async'); //23
+const crypto = require('crypto'); //23
+
 
 //Obtiene todos los susuarios 
 app.get('/obtener', [verificaToken, rolMenuUsuario], (req, res) => {
@@ -29,7 +32,7 @@ app.get('/obtener', [verificaToken, rolMenuUsuario], (req, res) => {
         });
 });
 //Obtener un usuario por id 
-app.get('/obtener/:idUser', [verificaToken, rolMenuUsuario], (req, res) => {
+app.get('/obtener/:idUser', [verificaToken], (req, res) => {
     User.findById(req.params.id)
         .exec((err, users) => {
             if (err) {
@@ -50,7 +53,7 @@ app.get('/obtener/:idUser', [verificaToken, rolMenuUsuario], (req, res) => {
 });
 
 //Crear un nuevo usuario con token y checando si tiene permiso 
-app.post('/registrar', [verificaToken, rolMenuUsuario], async (req, res) => {
+app.post('/registrar', [verificaToken], async(req, res) => {
 
     let body = req.body;
     let pass = req.body.strPassword;
@@ -68,7 +71,7 @@ app.post('/registrar', [verificaToken, rolMenuUsuario], async (req, res) => {
     });
 
     // validar el correo que ya existe
-    await User.findOne({ 'strEmail': req.body.strEmail }).then(async (encontrado) => {
+    await User.findOne({ 'strEmail': req.body.strEmail }).then(async(encontrado) => {
         if (encontrado) {
             return res.status(400).json({
                 ok: false,
@@ -83,7 +86,7 @@ app.post('/registrar', [verificaToken, rolMenuUsuario], async (req, res) => {
 
         await new User(user).save();
         //Create access token
-        let mailOptions = {
+        mailOptions = {
             from: 'notificaciones@utags.edu.mx',
             to: user.strEmail,
             subject: 'Esta es tu contraseña en caso de no recordarla...',
@@ -117,7 +120,7 @@ app.post('/registrar', [verificaToken, rolMenuUsuario], async (req, res) => {
 });
 
 //Registrar sin token 
-app.post('/registro', async (req, res) => {
+app.post('/registro', async(req, res) => {
 
     let body = req.body;
     let pass = req.body.strPassword;
@@ -136,7 +139,7 @@ app.post('/registro', async (req, res) => {
 
 
     // validar el correo que ya existe
-    await User.findOne({ 'strEmail': req.body.strEmail }).then(async (encontrado) => {
+    await User.findOne({ 'strEmail': req.body.strEmail }).then(async(encontrado) => {
         if (encontrado) {
             return res.status(400).json({
                 ok: false,
@@ -184,7 +187,7 @@ app.post('/registro', async (req, res) => {
 
 });
 
-app.put('/actualizar/:idUser', [verificaToken, rolMenuUsuario], (req, res) => {
+app.put('/actualizar/:idUser', [verificaToken], (req, res) => {
     let id = req.params.id;
     let body = _.pick(req.body, ['srtName', 'strLastName', 'strMotherLastName', 'strEmail', 'strPasswor', 'idRole', 'blnStatus']); //FILTRAR del body, on el pick seleccionar los campos que interesan del body 
     //id 'su coleccion, new -> si no existe lo inserta, runVali-> sirve para validar todas las condiciones del modelo 
@@ -203,7 +206,7 @@ app.put('/actualizar/:idUser', [verificaToken, rolMenuUsuario], (req, res) => {
     });
 });
 
-app.delete('/eliminar/:idUser', [verificaToken, rolMenuUsuario], (req, res) => {
+app.delete('/eliminar/:idUser', [verificaToken], (req, res) => {
     let id = req.params.id;
 
     User.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {
@@ -232,7 +235,7 @@ app.post('/login', (req, res) => {
         if (err) {
             return res.status(400).json({
                 ok: false,
-                status: 400, 
+                status: 400,
                 msg: 'Algo salio mal',
                 err
             });
@@ -269,5 +272,204 @@ app.post('/login', (req, res) => {
         });
     });
 });
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////
+
+// API DE ENVIO DEL CORREO PARA RECUPERAR CONTRASEÑA 
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+app.get('/forgot/:strEmail', (req, res) => {
+
+    const strEmail = req.params.strEmail;
+    caducidadToken = '1hr';
+    strUrl = 'http://localhost:4200/#/reset-password';
+
+    if (!strEmail) {
+        return res.status(400).json({
+            ok: false,
+            resp: 400,
+            msg: 'No se recibió un correo válido',
+            cont: {
+                strCorreo
+            }
+        });
+    }
+
+    User.findOne({ strEmail }, { _id: 1, strName: 1, strLastName: 1 }).then(async(user) => {
+
+        //console.log(user.strName);
+
+        if (!user) {
+            return res.status(404).json({
+                ok: false,
+                resp: 404,
+                msg: 'No se encontró ningún usuario que coincida con el correo electrónico proporcionado',
+                cont: {
+                    strEmail
+                }
+            });
+        }
+
+        token = await jwt.sign({
+            function(error, token) {
+                if (error) {
+                    return res.status(500).json({
+
+                        ok: false,
+                        resp: 500,
+                        msg: error
+                    });
+                }
+            },
+            idUser: user._id,
+        }, process.env.SEED, {
+            expiresIn: caducidadToken
+        });
+
+        //Es un Json
+        jsnEmail = {
+            strName: user.strName + ' ' + user.strLastName,
+            strEmail,
+            strUrl: `${strUrl}/${token}`,
+            subject: 'Recuperar Contraseña',
+            nmbEmail: 4
+        };
+        await mailer.sendEmail(jsnEmail);
+
+        return res.status(200).json({
+            ok: true,
+            status: 200,
+            resp: 'Verificar tu correo electrónico.',
+            cont: {
+
+            }
+        });
+
+    }).catch((err) => {
+
+        //console.log(err);
+        return res.status(404).json({
+            ok: false,
+            resp: 404,
+            msg: 'El correo electrónico proporcionado, no existe',
+            cont: {
+                error: Object.keys(err).length === 0 ? err.message : err
+            }
+        })
+    })
+});
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+// API DE RECUPERAR CONTRASEÑA 
+
+////////////////////////////////////////////////////////////////////////////////////////
+app.put('/reset-password/:token', async(req, res) => {
+    const token = req.params.token;
+    let idUser = '';
+
+    passwords = {
+        first: req.body.strFPass,
+        second: req.body.strSPass,
+    };
+
+    console.log(passwords.first);
+
+    if (!passwords.first || !passwords.second) {
+        return res.status(400).json({
+            ok: false,
+            resp: 400,
+            msg: 'No se recibió la contraseña correctamente',
+            cont: {
+                recibido: false
+            }
+        });
+    }
+
+    if ((passwords.first.length != passwords.second.length) ||
+        passwords.first != passwords.second) {
+        return res.status(400).json({
+            ok: false,
+            resp: 400,
+            msg: 'Las contraseñas no coinciden.',
+            cont: {
+                coincidencia: false
+            }
+        });
+    }
+
+    await jwt.verify(token, process.env.SEED, (err, dec) => { // Decodifica el token
+
+        if (err) {
+            return res.status(500).json({
+                ok: false,
+                resp: 500,
+                msg: 'Error al decodificar el token.',
+                cont: {
+                    error: Object.keys(err).length === 0 ? err.message : err
+                }
+            });
+        }
+
+        console.log(dec);
+        if (dec) {
+            idUser = dec.idUser ? dec.idUser : '';
+        }
+    });
+
+    User.findByIdAndUpdate(idUser, { strPassword: bcrypt.hashSync(passwords.first, 10) }).then(async(user) => { //Aqui
+
+        console.log(user);
+
+        if (!user) {
+            return res.status(404).json({
+                ok: false,
+                resp: 404,
+                msg: 'No se encontró la persona',
+                cont: {
+                    user
+                }
+            });
+        }
+
+        jsnEmail = {
+            strName: user.strName + ' ' + user.strLastName,
+            strEmail: user.strEmail,
+            strPassword: passwords.first,
+            subject: 'Cambio de contraseña',
+            nmbEmail: 5
+        }
+        await mailer.sendEmail(jsnEmail);
+
+        return res.status(200).json({
+            ok: true,
+            resp: 200,
+            msg: 'La contraseña se ha actualizado exitosamente.',
+            cont: {
+                user: {
+                    strName: user.strName,
+                    strLastName: user.strLastName,
+                    strMotherLastName: user.strMotherLastName,
+                    strEmail: user.strEmail
+                }
+            }
+        });
+
+    }).catch((err) => {
+
+        return res.status(500).json({
+            ok: false,
+            resp: 500,
+            msg: 'Error al intentar buscar a la persona',
+            cont: {
+                error: Object.keys(err).length === 0 ? err.message : err
+            }
+        });
+
+    });
+})
 
 module.exports = app;

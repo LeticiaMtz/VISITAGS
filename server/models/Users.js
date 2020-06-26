@@ -16,16 +16,16 @@ const users = new Schema({
     },
     strMotherLastName: {
         type: String
-        
+
     },
     strEmail: {
         type: String,
         unique: true,
         required: [true, 'Favor de ingresar el correo ']
-        // validate: {
-        //     validator: function(v) {
-        //         return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,3}))$/.test(v);
-        //     },
+            // validate: {
+            //     validator: function(v) {
+            //         return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,3}))$/.test(v);
+            //     },
     },
     strPassword: {
         type: String,
@@ -35,12 +35,19 @@ const users = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Role',
         default: '5eeee0db16952756482d1868'
-       
+
     },
     blnStatus: {
         type: Boolean,
         default: true
     }
+
+    // strResetPasswordToken: { //23
+    //     type: String
+    // },
+    // strResetPasswordExpires: {
+    //     type: Date
+    // }
 
     // alerts: [{
     //     type: Schema.Types.ObjectId,
