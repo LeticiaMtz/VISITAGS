@@ -8,5 +8,7 @@ app.use('/Roles',require('./Roles'));
 app.use('/Comments',require('./Comments'));
 app.use('/CategoriaApi',require('./CategoriaApi'));
 app.use('/Api',require('./Api'));
+app.use('/carreras',require('./carreras'));
+app.use('/especialidad',require('./especialidad'));
 
 module.exports = app;
