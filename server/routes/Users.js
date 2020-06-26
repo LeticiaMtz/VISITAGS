@@ -32,7 +32,7 @@ app.get('/obtener', [verificaToken, rolMenuUsuario], (req, res) => {
         });
 });
 //Obtener un usuario por id 
-app.get('/obtener/:idUser', [verificaToken, rolMenuUsuario], (req, res) => {
+app.get('/obtener/:idUser', [verificaToken], (req, res) => {
     User.findById(req.params.id)
         .exec((err, users) => {
             if (err) {
@@ -53,7 +53,7 @@ app.get('/obtener/:idUser', [verificaToken, rolMenuUsuario], (req, res) => {
 });
 
 //Crear un nuevo usuario con token y checando si tiene permiso 
-app.post('/registrar', [verificaToken, rolMenuUsuario], async(req, res) => {
+app.post('/registrar', [verificaToken], async(req, res) => {
 
     let body = req.body;
     let pass = req.body.strPassword;
@@ -187,7 +187,7 @@ app.post('/registro', async(req, res) => {
 
 });
 
-app.put('/actualizar/:idUser', [verificaToken, rolMenuUsuario], (req, res) => {
+app.put('/actualizar/:idUser', [verificaToken], (req, res) => {
     let id = req.params.id;
     let body = _.pick(req.body, ['srtName', 'strLastName', 'strMotherLastName', 'strEmail', 'strPasswor', 'idRole', 'blnStatus']); //FILTRAR del body, on el pick seleccionar los campos que interesan del body 
     //id 'su coleccion, new -> si no existe lo inserta, runVali-> sirve para validar todas las condiciones del modelo 
@@ -206,7 +206,7 @@ app.put('/actualizar/:idUser', [verificaToken, rolMenuUsuario], (req, res) => {
     });
 });
 
-app.delete('/eliminar/:idUser', [verificaToken, rolMenuUsuario], (req, res) => {
+app.delete('/eliminar/:idUser', [verificaToken], (req, res) => {
     let id = req.params.id;
 
     User.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {
