@@ -1,68 +1,85 @@
-// Se utiliza la librería Nodemailer que nos permite el envío de correos.
 const nodemailer = require('nodemailer');
+const Hogan = require('hogan.js');
+const fs = require('fs');
+const path = require('path');
+let htmlF = '';
 
-/*
+const mainEmail = '"Alertas Academicas" <notificaciones@utags.edu.mx>';
 
-Se realiza una class para que sea más genérico y se puedan utilizar en diferentes apis si es que se requiere.
-
-*/
-
-class Mailer {
-
+class email {
     constructor() {
 
         this.transport = nodemailer.createTransport({
 
             host: 'smtp.office365.com',
-
             service: 'outlook',
-
             port: 587,
-
             secure: false,
-
             auth: { user: 'notificaciones@utags.edu.mx', pass: 'Cac07974' },
-
             tls: {
-
                 rejectUnauthorized: false
-
             }
-
         });
-
         this.mailOptions = {
-
-            from: '"Orientanción Vocacional" <notificaciones@utags.edu.mx>'
-
+            from: '"Alertas Academicas" <notificaciones@utags.edu.mx>'
         };
-
     }
 
-    sendMail(options) {
+    sendEmail(jsnInfoEmail) {
 
-        // Opciones que se requieren enviar
+        let compiledTemplate;
 
-        let mailOptions = {
+        if (jsnInfoEmail.nmbEmail === 1) { //sin parametros
+            const template = fs.readFileSync(path.resolve(__dirname, `../assets/templates/correo.html`), 'utf-8');
+            compiledTemplate = Hogan.compile(template);
+            htmlF = compiledTemplate.text;
+        }
 
-            ...this.mailOptions,
+        if (jsnInfoEmail.nmbEmail === 2) { //con parametros
+            const template = fs.readFileSync(path.resolve(__dirname, `../assets/templates/index.html`), 'utf-8');
+            compiledTemplate = Hogan.compile(template);
+            htmlF = compiledTemplate.render({ 'strName': jsnInfoEmail.strName, 'strFolio': jsnInfoEmail.strFolio }); //agregar parametros aqui
+        }
 
-            ...options
+        if (jsnInfoEmail.nmbEmail === 3) { //usuario aceptado a moodle
+            const template = fs.readFileSync(path.resolve(__dirname, `../assets/templates/correoAceptados.html`), 'utf-8');
+            compiledTemplate = Hogan.compile(template);
+            htmlF = compiledTemplate.render({ 'strName': jsnInfoEmail.strName, 'strPwd': jsnInfoEmail.strPwd, 'strMatricula': jsnInfoEmail.strMatricula, 'strLiga': jsnInfoEmail.strLiga }); //agregar parametros aqui
+        }
 
+        if (jsnInfoEmail.nmbEmail === 4) { //con parametros
+            const template = fs.readFileSync(path.resolve(__dirname, `../assets/templates/recuperaContrasenia.html`), 'utf-8');
+            compiledTemplate = Hogan.compile(template);
+            htmlF = compiledTemplate.render(jsnInfoEmail); //agregar parametros aqui
+        }
+
+        if (jsnInfoEmail.nmbEmail === 5) { //con parametros
+            const template = fs.readFileSync(path.resolve(__dirname, `../assets/templates/nuevaContrasenia.html`), 'utf-8');
+            compiledTemplate = Hogan.compile(template);
+            htmlF = compiledTemplate.render(jsnInfoEmail); //agregar parametros aqui
+        }
+
+        if (jsnInfoEmail.nmbEmail === 6) { //con parametros
+            const template = fs.readFileSync(path.resolve(__dirname, `../assets/templates/correoAdministradores.html`), 'utf-8');
+            compiledTemplate = Hogan.compile(template);
+            htmlF = compiledTemplate.render({ 'strName': jsnInfoEmail.strName, 'strPassword': jsnInfoEmail.strPassword, 'strLink': jsnInfoEmail.strLink, 'strEmail': jsnInfoEmail.strEmail }); //agregar parametros aqui
+        }
+
+        const emailBody = {
+            from: mainEmail,
+            to: jsnInfoEmail.strEmail,
+            subject: jsnInfoEmail.subject,
+            html: htmlF
         };
 
-        this.transport.sendMail(mailOptions, (error, info) => {
+        this.transport.sendMail(emailBody, (err) => {
+            if (process.log) { console.log('[Enviando Correo]'.yellow); }
 
-            if (error) {
-
-                return console.log(error);
-
+            if (err) {
+                return console.log(err.message);
             }
-
         });
-
     }
-
 }
 
-module.exports = new Mailer();
+module.exports = new email();
