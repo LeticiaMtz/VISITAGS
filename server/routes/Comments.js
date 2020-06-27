@@ -31,22 +31,24 @@ app.get('/obtener', [verificaToken, rolMenuUsuario ], (req, res) => {
 });
 
 //Obtener por id
-app.get('/obtener/:idComment', [verificaToken, rolMenuUsuario ], (req, res) => {
-    Comment.findById(req.params.id)
+app.get('/obtener/:id', (req, res) => {
+    let id = req.params.id;
+    Comment.find({ _id: id })
         .exec((err, comments) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    status: 400, 
-                    msg: 'Error al encontrar el comentario ',
-                    err
+                    status: 400,
+                    msg: 'Ocurrio un error al consultar el comentario',
+                    cnt: err
                 });
             }
             return res.status(200).json({
-                ok: true, 
-                status: 200, 
-                msg: 'Comentario encontrado',
-                comments
+                ok: true,
+                status: 200,
+                msg: 'Se han consultado correctamente el comentario',
+                cont: comments.length,
+                cnt: comments
             });
         });
 });

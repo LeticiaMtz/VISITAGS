@@ -6,49 +6,71 @@ const {rolMenuUsuario} = require('../middlewares/permisosUsuarios');
 const { verificaToken } = require('../middlewares/autenticacion');
 const app = express();
 
-app.get('/obtener', [verificaToken, rolMenuUsuario], (req, res) => {
-    Carrera.find()
-        .exec((err, carDB) => {
+//Obtiene todos las carreras
+app.get('/obtener', (req, res) => {
+
+    Carrera.find({ blnStatus: true }) //select * from usuario where estado=true
+        //solo aceptan valores numericos
+        .exec((err, carrera) => { //ejecuta la funcion
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    status: 400,
-                    msg: 'Error al consultar las carreras',
-                    cnt: err
+                    err
                 });
             }
-
+            console.log(req.carrera);
             return res.status(200).json({
                 ok: true,
-                status: 200,
-                msg: 'Carreras consultadas correctamente',
-                cont: carDB.length,
-                cnt: carDB
+                count: carrera.length,
+                carrera
             });
         });
 });
-
-app.get('/obtener/:idCarrera', [verificaToken, rolMenuUsuario], (req, res) => {
+//Obtener una carrera por id 
+app.get('/obtener/:id', (req, res) => {
     let id = req.params.id;
     Carrera.find({ _id: id })
-        .exec((err, carDB) => {
+        .exec((err, carrera) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
                     status: 400,
-                    msg: 'Error al consultar la carrera',
+                    msg: 'Ocurrio un error al consultar la carrera',
                     cnt: err
                 });
             }
             return res.status(200).json({
                 ok: true,
                 status: 200,
-                msg: 'Carrera consultada correctamente',
-                cont: carDB.length,
-                cnt: carDB
+                msg: 'Se han consultado correctamente la carrera',
+                cont: carrera.length,
+                cnt: carrera
             });
         });
 });
+
+
+
+
+// app.get('/obtener/:idCarrera',  (req, res) => {
+//     Carrera.findById(req.params.id)
+//         .exec((err, carDB) => {
+//             if (err) {
+//                 return res.status(400).json({
+//                     ok: false,
+//                     status: 400, 
+//                     msg: 'Error al encontrar la carrera',
+//                     err
+//                 });
+//             }
+//             return res.status(200).json({
+//                 ok: true, 
+//                 status: 200, 
+//                 msg: 'Carrera encontrada',
+//                 carDB
+//             });
+//         });
+// });
 
 app.post('/registrar', async (req, res) => {
     let body = req.body;
@@ -92,9 +114,9 @@ app.post('/registrar', async (req, res) => {
 
 
 
-app.put('/actualizar/:idCarrera', [verificaToken, rolMenuUsuario], (req, res) => {
+app.put('/actualizar/:idCarrera',(req, res) => {
     let id = req.params.id;
-    let body = _.pick(req.body, ['strCarrera']);
+    let body = _.pick(req.body, ['strCarrera', 'blnStatus', 'aJsnEspecialidad' ]);
     Carrera.findByIdAndUpdate(id, body, { new: true, runValidators: true, context: 'query' }, (err, carDB) => {
         if (err) {
             return res.status(400).json({
@@ -116,7 +138,7 @@ app.put('/actualizar/:idCarrera', [verificaToken, rolMenuUsuario], (req, res) =>
     });
 });
 
-app.delete('/eliminar/:idCarrera', [verificaToken, rolMenuUsuario],  (req, res) => {
+app.delete('/eliminar/:idCarrera',  (req, res) => {
     let id = req.params.id;
 
     Carrera.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {
