@@ -32,22 +32,24 @@ app.get('/obtener', [verificaToken, rolMenuUsuario], (req, res) => {
         });
 });
 //Obtener un usuario por id 
-app.get('/obtener/:idUser', [verificaToken], (req, res) => {
-    User.findById(req.params.id)
+app.get('/obtener/:id', (req, res) => {
+    let id = req.params.id;
+    User.find({ _id: id })
         .exec((err, users) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
                     status: 400,
-                    msg: 'Error al buscar el usuario',
-                    err
+                    msg: 'Ocurrio un error al consultar el usuario',
+                    cnt: err
                 });
             }
             return res.status(200).json({
                 ok: true,
                 status: 200,
-                msg: 'Usuario encontrado',
-                users
+                msg: 'Se han consultado correctamente el usuario',
+                cont: users.length,
+                cnt: users
             });
         });
 });

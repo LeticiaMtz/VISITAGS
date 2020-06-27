@@ -5,7 +5,7 @@ const app = express();
 const { verificaToken } = require('../middlewares/autenticacion');
 const {rolMenuUsuario} = require('../middlewares/permisosUsuarios')
 
-app.get('/obtener', [verificaToken, rolMenuUsuario ],  (req, res) => {
+app.get('/obtener', [verificaToken, rolMenuUsuario ], (req, res) => {
 
     Role.find({ blnStatus: true }) //select * from usuario where estado=true
         //solo aceptan valores numericos
@@ -30,22 +30,24 @@ app.get('/obtener', [verificaToken, rolMenuUsuario ],  (req, res) => {
 });
 
 //Obtener por id
-app.get('/obtener/:idRole', [verificaToken ], (req, res) => {
-    Role.findById(req.params.id)
+app.get('/obtener/:id', (req, res) => {
+    let id = req.params.id;
+    Role.find({ _id: id })
         .exec((err, roles) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    status: 400, 
-                    msg: 'Error al encontrar el rol',
-                    err
+                    status: 400,
+                    msg: 'Ocurrio un error al consultar el rol',
+                    cnt: err
                 });
             }
             return res.status(200).json({
-                ok: true, 
-                status: 200, 
-                msg: 'Rol encontrado',
-                roles
+                ok: true,
+                status: 200,
+                msg: 'Se han consultado correctamente el role',
+                cont: roles.length,
+                cnt: roles
             });
         });
 });
