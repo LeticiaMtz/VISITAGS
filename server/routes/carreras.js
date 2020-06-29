@@ -9,7 +9,7 @@ const app = express();
 //Obtiene todos las carreras
 app.get('/obtener', (req, res) => {
 
-    Carrera.find({ blnStatus: true }) //select * from usuario where estado=true
+    Carrera.find() //select * from usuario where estado=true
         //solo aceptan valores numericos
         .exec((err, carrera) => { //ejecuta la funcion
             if (err) {
@@ -112,28 +112,32 @@ app.post('/registrar', async (req, res) => {
 
 });
 
-
-
-app.put('/actualizar/:idCarrera',(req, res) => {
-    let id = req.params.id;
-    let body = _.pick(req.body, ['strCarrera', 'blnStatus', 'aJsnEspecialidad' ]);
-    Carrera.findByIdAndUpdate(id, body, { new: true, runValidators: true, context: 'query' }, (err, carDB) => {
-        if (err) {
-            return res.status(400).json({
-                ok: false,
-                status: 400,
-                msg: 'Ha ocurrido un error al actualizar la carrera',
-                cnt: err
+app.put('/actualizar/:idCarrera', (req,res) => {
+    let id = req.params.idCarrera;
+    console.log(req.params.idCarrera)
+    const carreraBody =  _.pick(req.body,['strCarrera','blnStatus']);
+    Carrera.find({_id: id}).then((resp) => {
+        if(resp.length > 0){
+            Carrera.findByIdAndUpdate(id,carreraBody).then((resp) => {
+                return res.status(200).json({
+                    ok: true,
+                    msg: 'Actualizada carrera con éxito',
+                    cont: resp.length,
+                    cnt: resp
+                });
+            }).catch((err) =>{
+                return res.status(400).json({
+                    ok: false,
+                    msg: 'Error al actualizar',
+                    err: err
+                });
             });
         }
-
-        return res.status(200).json({
-            ok: true,
-            resp: 200,
-            msg: 'La respuesta se ha actualizado exitosamente.',
-            cont: {
-                carDB
-            }
+    }).catch((err) => {
+        return res.status(400).json({
+            ok: false,
+            msg: 'Error al actualizar',
+            err: err
         });
     });
 });
