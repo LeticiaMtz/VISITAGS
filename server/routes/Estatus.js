@@ -7,6 +7,17 @@ const Estatus = require('../models/Estatus'); //subir nivel
 const app = express();
 
 
+
+//|-----------------Api GET Listado Estatus------------------|
+//| Creada por: Abraham Carranza                             |
+//| Fecha: 7/07/2020                                         |
+//| Api que retorna un listado de estatus                    |
+//| modificada por:                                          |
+//| Fecha de modificacion:                                   |
+//| cambios:                                                 |
+//| Ruta: http://localhost:3000/api/estatus/obtener          |
+//|----------------------------------------------------------|
+
 app.get('/obtener', (req, res) => {
     Estatus.find().exec((err, estatus) => { //ejecuta la funcion
         if (err) {
@@ -48,7 +59,17 @@ app.get('/obtener/:id', (req, res) => {
     });
 });
 
-// Registrar una categoria de crde
+
+//|--------------------Api POST de Estatus-------------------|
+//| Creada por: Abraham Carranza                             |
+//| Fecha: 7/07/2020                                         |
+//| Api que registra un estatus                              |
+//| modificada por:                                          |
+//| Fecha de modificacion:                                   |
+//| cambios:                                                 |
+//| Ruta: http://localhost:3000/api/estatus/registrar        |
+//|----------------------------------------------------------|
+
 app.post('/registrar', async(req, res) => {
     let body = req.body;
 
@@ -87,6 +108,17 @@ app.post('/registrar', async(req, res) => {
 
 });
 
+
+//|--------------------Api PUT de Estatus--------------------|
+//| Creada por: Abraham Carranza                             |
+//| Fecha: 7/07/2020                                         |
+//| Api que actualiza un estatus                             |
+//| modificada por:                                          |
+//| Fecha de modificacion:                                   |
+//| cambios:                                                 |
+//| Ruta: http://localhost:3000/api/estatus/actualizar/:id   |
+//|----------------------------------------------------------|
+
 app.put('/actualizar/:idEstatus', (req, res) => {
     let id = req.params.idEstatus;
     console.log(req.params.idEstatus);
@@ -121,6 +153,17 @@ app.put('/actualizar/:idEstatus', (req, res) => {
 
     });
 });
+
+
+//|------------------Api DELETE de Estatus-------------------|
+//| Creada por: Abraham Carranza                             |
+//| Fecha: 7/07/2020                                         |
+//| Api que elimina un estatus                               |
+//| modificada por:                                          |
+//| Fecha de modificacion:                                   |
+//| cambios:                                                 |
+//| Ruta: http://localhost:3000/api/estatus/eliminar/:id     |
+//|----------------------------------------------------------|
 
 app.delete('/eliminar/:idEstatus', (req, res) => {
     let id = req.params.id;
