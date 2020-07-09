@@ -13,5 +13,6 @@ app.use('/especialidad', require('./especialidad'));
 app.use('/crde', require('./crde'));
 app.use('/motivosCrde', require('./motivosCrde'));
 app.use('/estatus', require('./estatus'));
+app.use('/asignatura',require('./asignatura'));
 
 module.exports = app;
