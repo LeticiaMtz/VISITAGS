@@ -10,5 +10,5 @@ app.use('/CategoriaApi',require('./CategoriaApi'));
 app.use('/Api',require('./Api'));
 app.use('/carreras',require('./carreras'));
 app.use('/especialidad',require('./especialidad'));
-
+app.use('/asignatura',require('./asignatura'));
 module.exports = app;
