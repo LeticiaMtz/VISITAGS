@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { Schema } = mongoose;
+let Schema = mongoose.Schema;
 // Creación de esquema de alertas
 const especialidad = new Schema({
     strEspecialidad: { 
@@ -12,8 +12,10 @@ const especialidad = new Schema({
         default: true
 
     }
-}, {collection: "especialidad"});
-
-
+},{
+    timestamps: true
+});
 
 module.exports = mongoose.model('Especialidad', especialidad);
+
+

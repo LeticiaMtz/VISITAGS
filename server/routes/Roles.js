@@ -5,8 +5,15 @@ const app = express();
 const { verificaToken } = require('../middlewares/autenticacion');
 const {rolMenuUsuario} = require('../middlewares/permisosUsuarios')
 
-app.get('/obtener', [verificaToken, rolMenuUsuario ], (req, res) => {
-
+//|-----------------  Api GET de Roles       ----------------|
+//| Creada por: Leticia Moreno                               |
+//| Api que obtine listado de roles                          |
+//| modificada por:                                          |
+//| Fecha de modificacion:                                   |
+//| cambios:                                                 |
+//| Ruta: http://localhost:3000/api/roles/obtener            |
+//|----------------------------------------------------------|
+app.get('/obtener', [verificaToken], (req, res) => {
     Role.find({ blnStatus: true }) //select * from usuario where estado=true
         //solo aceptan valores numericos
         .exec((err, roles) => { //ejecuta la funcion
@@ -29,8 +36,16 @@ app.get('/obtener', [verificaToken, rolMenuUsuario ], (req, res) => {
         });
 });
 
+//|-----------------   Api GET de Roles      ----------------|
+//| Creada por: Leticia Moreno                               |
+//| Api que obtine un rol por id                             |
+//| modificada por:                                          |
+//| Fecha de modificacion:                                   |
+//| cambios:                                                 |
+//| Ruta: http://localhost:3000/api/roles/obtener/idRole     |
+//|----------------------------------------------------------|
 //Obtener por id
-app.get('/obtener/:id', (req, res) => {
+app.get('/obtener/:id', [verificaToken], (req, res) => {
     let id = req.params.id;
     Role.find({ _id: id })
         .exec((err, roles) => {
@@ -52,7 +67,14 @@ app.get('/obtener/:id', (req, res) => {
         });
 });
 
-//Agregar nueva alerta
+//|-----------------    Api POST de Roles    ----------------|
+//| Creada por: Leticia Moreno                               |
+//| Api que registra un role                                 |
+//| modificada por:                                          |
+//| Fecha de modificacion:                                   |
+//| cambios:                                                 |
+//| Ruta: http://localhost:3000/api/roles/registrar          |
+//|----------------------------------------------------------|
 app.post('/registrar', [verificaToken], (req, res) => {
     let body = req.body;
     let role = new Role({
@@ -83,8 +105,15 @@ app.post('/registrar', [verificaToken], (req, res) => {
 });
 
 
-
-app.put('/actualizar/:idRole', [verificaToken, rolMenuUsuario ], (req, res) => {
+//|-----------------    Api PUT de Roles     ----------------|
+//| Creada por: Leticia Moreno                               |
+//| Api que actualiza un role                                |
+//| modificada por:                                          |
+//| Fecha de modificacion:                                   |
+//| cambios:                                                 |
+//| Ruta: http://localhost:3000/api/roles/actualizar/idRole  |
+//|----------------------------------------------------------|
+app.put('/actualizar/:idRole', [verificaToken], (req, res) => {
     let id = req.params.id;
     let body = _.pick(req.body, ['strRole', 'strDescripcion', 'blnStatus', 'arrApi']); //FILTRAR del body, on el pick seleccionar los campos que interesan del body 
     //id 'su coleccion, new -> si no existe lo inserta, runVali-> sirve para validar todas las condiciones del modelo 
@@ -107,7 +136,15 @@ app.put('/actualizar/:idRole', [verificaToken, rolMenuUsuario ], (req, res) => {
     });
 });
 
-app.delete('/eliminar/:idRole', [verificaToken, rolMenuUsuario ], (req, res) => {
+//|-----------------    Api DELETE de Roles  ----------------|
+//| Creada por: Leticia Moreno                               |
+//| Api que registra un role                                 |
+//| modificada por:                                          |
+//| Fecha de modificacion:                                   |
+//| cambios:                                                 |
+//| Ruta: http://localhost:3000/api/roles/eliminar/idRole          |
+//|----------------------------------------------------------|
+app.delete('/eliminar/:idRole', [verificaToken], (req, res) => {
     let id = req.params.id;
 
     //update from - set 

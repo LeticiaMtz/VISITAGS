@@ -10,9 +10,17 @@ const jwt = require('jsonwebtoken');
 const async = require('async'); //23
 const crypto = require('crypto'); //23
 
-
+//|-----------------Api GET Listado Usuarios ----------------|
+//| Creada por: Leticia Moreno                               |
+//| Api que retorna un listado de usuarios                   |
+//| modificada por:                                          |
+//| Fecha de modificacion:                                   |
+//| cambios:                                                 |
+//| Ruta: http://localhost:3000/api/users/obtener            |
+//|----------------------------------------------------------|
 //Obtiene todos los susuarios 
-app.get('/obtener', [verificaToken, rolMenuUsuario], (req, res) => {
+
+app.get('/obtener', [verificaToken], (req, res) => {
 
     User.find({ blnStatus: true }) //select * from usuario where estado=true
         //solo aceptan valores numericos
@@ -31,8 +39,18 @@ app.get('/obtener', [verificaToken, rolMenuUsuario], (req, res) => {
             });
         });
 });
+
+//|-----------------Api GET Listado Usuario Id --------------|
+//| Creada por: Leticia Moreno                               |
+//| Api que retorna un listado de usuario por id             |
+//| modificada por:                                          |
+//| Fecha de modificacion:                                   |
+//| cambios:                                                 |
+//| Ruta: http://localhost:3000/api/users/obtener/idUser     |
+//|----------------------------------------------------------|
 //Obtener un usuario por id 
-app.get('/obtener/:id', (req, res) => {
+
+app.get('/obtener/:id', [verificaToken], (req, res) => {
     let id = req.params.id;
     User.find({ _id: id })
         .exec((err, users) => {
@@ -54,7 +72,16 @@ app.get('/obtener/:id', (req, res) => {
         });
 });
 
+//|-----------------Api POST de Usuarios     ----------------|
+//| Creada por: Leticia Moreno                               |
+//| Api que registra un usuario                              |
+//| modificada por:                                          |
+//| Fecha de modificacion:                                   |
+//| cambios:                                                 |
+//| Ruta: http://localhost:3000/api/users/registrar          |
+//|----------------------------------------------------------|
 //Crear un nuevo usuario con token y checando si tiene permiso 
+
 app.post('/registrar', [verificaToken], async(req, res) => {
 
     let body = req.body;
@@ -121,7 +148,16 @@ app.post('/registrar', [verificaToken], async(req, res) => {
 
 });
 
+//|-----------------Api POST de Usuarios     ----------------|
+//| Creada por: Leticia Moreno                               |
+//| Api que registra un usuario sin token                    |
+//| modificada por:                                          |
+//| Fecha de modificacion:                                   |
+//| cambios:                                                 |
+//| Ruta: http://localhost:3000/api/users/registrar          |
+//|----------------------------------------------------------|
 //Registrar sin token 
+
 app.post('/registro', async(req, res) => {
 
     let body = req.body;
@@ -189,6 +225,14 @@ app.post('/registro', async(req, res) => {
 
 });
 
+//|-----------------Api PUT de Usuarios      ----------------|
+//| Creada por: Leticia Moreno                               |
+//| Api que actualiza un usuario                             |
+//| modificada por:                                          |
+//| Fecha de modificacion:                                   |
+//| cambios:                                                 |
+//| Ruta: http://localhost:3000/api/users/actualizar/idUser  |
+//|----------------------------------------------------------|
 app.put('/actualizar/:idUser', [verificaToken], (req, res) => {
     let id = req.params.id;
     let body = _.pick(req.body, ['srtName', 'strLastName', 'strMotherLastName', 'strEmail', 'strPasswor', 'idRole', 'blnStatus']); //FILTRAR del body, on el pick seleccionar los campos que interesan del body 
@@ -208,6 +252,14 @@ app.put('/actualizar/:idUser', [verificaToken], (req, res) => {
     });
 });
 
+//|-----------------Api DELETE de Usuarios   ----------------|
+//| Creada por: Leticia Moreno                               |
+//| Api que elimina un usuario                               |
+//| modificada por:                                          |
+//| Fecha de modificacion:                                   |
+//| cambios:                                                 |
+//| Ruta: http://localhost:3000/api/users/eliminar/idUser    |
+//|----------------------------------------------------------|
 app.delete('/eliminar/:idUser', [verificaToken], (req, res) => {
     let id = req.params.id;
 
@@ -229,6 +281,14 @@ app.delete('/eliminar/:idUser', [verificaToken], (req, res) => {
     });
 });
 
+//|-----------------Api POST de Usuarios     ----------------|
+//| Creada por: Leticia Moreno                               |
+//| Api que logea un usuario                                 |
+//| modificada por:                                          |
+//| Fecha de modificacion:                                   |
+//| cambios:                                                 |
+//| Ruta: http://localhost:3000/api/users/login              |
+//|----------------------------------------------------------|
 app.post('/login', (req, res) => {
     let body = req.body;
 
@@ -283,7 +343,7 @@ app.post('/login', (req, res) => {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-app.get('/forgot/:strEmail', (req, res) => {
+app.get('/forgot/:strEmail',  (req, res) => {
 
     const strEmail = req.params.strEmail;
     caducidadToken = '1hr';
@@ -369,7 +429,7 @@ app.get('/forgot/:strEmail', (req, res) => {
 // API DE RECUPERAR CONTRASEÑA 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-app.put('/reset-password/:token', async(req, res) => {
+app.put('/reset-password/:token',  async(req, res) => {
     const token = req.params.token;
     let idUser = '';
 

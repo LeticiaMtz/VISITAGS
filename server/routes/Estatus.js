@@ -18,7 +18,7 @@ const app = express();
 //| Ruta: http://localhost:3000/api/estatus/obtener          |
 //|----------------------------------------------------------|
 
-app.get('/obtener', (req, res) => {
+app.get('/obtener', [verificaToken], (req, res) => {
     Estatus.find().exec((err, estatus) => { //ejecuta la funcion
         if (err) {
             return res.status(400).json({
@@ -37,7 +37,7 @@ app.get('/obtener', (req, res) => {
     });
 });
 
-app.get('/obtener/:id', (req, res) => {
+app.get('/obtener/:id', [verificaToken], (req, res) => {
     let id = req.params.id;
 
     Estatus.find({ _id: id }).exec((err, estatus) => {
@@ -70,7 +70,7 @@ app.get('/obtener/:id', (req, res) => {
 //| Ruta: http://localhost:3000/api/estatus/registrar        |
 //|----------------------------------------------------------|
 
-app.post('/registrar', async(req, res) => {
+app.post('/registrar', [verificaToken], async(req, res) => {
     let body = req.body;
 
     let estatus = new Estatus({
@@ -119,7 +119,7 @@ app.post('/registrar', async(req, res) => {
 //| Ruta: http://localhost:3000/api/estatus/actualizar/:id   |
 //|----------------------------------------------------------|
 
-app.put('/actualizar/:idEstatus', (req, res) => {
+app.put('/actualizar/:idEstatus', [verificaToken], (req, res) => {
     let id = req.params.idEstatus;
     console.log(req.params.idEstatus);
     const estatusBody = _.pick(req.body, ['strNombre', 'blnActivo', 'strDescripcion']);
@@ -165,7 +165,7 @@ app.put('/actualizar/:idEstatus', (req, res) => {
 //| Ruta: http://localhost:3000/api/estatus/eliminar/:id     |
 //|----------------------------------------------------------|
 
-app.delete('/eliminar/:idEstatus', (req, res) => {
+app.delete('/eliminar/:idEstatus', [verificaToken], (req, res) => {
     let id = req.params.id;
 
     Estatus.findByIdAndUpdate(id, { blnActivo: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {

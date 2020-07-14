@@ -4,9 +4,17 @@ const app = express();
 const mongoose = require('mongoose');
 const Especialidad = require('../models/especialidad');
 const Carrera = require('../models/carreras');
+const { verificaToken } = require('../middlewares/autenticacion');
 
-
-app.post('/registrar/:idCarrera', (req, res) => {
+//|-----------------     Api POST de Especialidad        ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que registra una especialidad                                    |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/especialidad/registrar/idCarrera     |
+//|----------------------------------------------------------------------|
+app.post('/registrar/:idCarrera', [verificaToken], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);
@@ -84,8 +92,15 @@ app.post('/registrar/:idCarrera', (req, res) => {
         });
 });
 
-
-app.get('/obtener/:idCarrera', (req, res) => {
+//|-----------------     Api GET de Especialidad         ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que obtiene listado de las especialidades                        |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/especialidad/obtener/idCarrera       |
+//|----------------------------------------------------------------------|
+app.get('/obtener/:idCarrera', [verificaToken], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
     }
@@ -146,7 +161,15 @@ app.get('/obtener/:idCarrera', (req, res) => {
 
 });
 
-app.put('/actualizar/:idCarrera/:idEspecialidad',  (req, res) => {
+//|-----------------     Api PUT de Especialidad         ----------------------------|
+//| Creada por: Leticia Moreno                                                       |
+//| Api que actualiza una especialidad                                               |
+//| modificada por:                                                                  |
+//| Fecha de modificacion:                                                           |
+//| cambios:                                                                         |
+//| Ruta: http://localhost:3000/api/especialidad/actualizar/idCarrera/idEspecialidad |
+//|----------------------------------------------------------------------------------|
+app.put('/actualizar/:idCarrera/:idEspecialidad', [verificaToken], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);
@@ -250,7 +273,15 @@ app.put('/actualizar/:idCarrera/:idEspecialidad',  (req, res) => {
 
 });
 
-app.delete('/eliminar/:idCarrera/:idEspecialidad', (req, res) => {
+//|-----------------     Api DELETE de Especialidad      --------------------------|
+//| Creada por: Leticia Moreno                                                     |
+//| Api que elimina una especialidad                                               |
+//| modificada por:                                                                |
+//| Fecha de modificacion:                                                         |
+//| cambios:                                                                       |
+//| Ruta: http://localhost:3000/api/especialidad/eliminar/idCarrera/idEspecialidad |
+//|--------------------------------------------------------------------------------|
+app.delete('/eliminar/:idCarrera/:idEspecialidad', [verificaToken], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);

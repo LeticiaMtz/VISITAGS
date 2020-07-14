@@ -4,9 +4,18 @@ const app = express();
 const mongoose = require('mongoose');
 const Api = require('../models/Api');
 const CategoriaApi = require('../models/CategoriaApi');
+const { verificaToken } = require('../middlewares/autenticacion');
 
 
-app.post('/registrar/:idCategoria', (req, res) => {
+//|-----------------          Api POST de api            ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que registra una api                                             |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/api/registrar                        |
+//|----------------------------------------------------------------------|
+app.post('/registrar/:idCategoria', [verificaToken], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);
@@ -84,8 +93,15 @@ app.post('/registrar/:idCategoria', (req, res) => {
         });
 });
 
-
-app.get('/obtener/:idCategoria', (req, res) => {
+//|-----------------          Api GET de api            ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que obtiene el listado de apis registradas                       |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/api/obtener                          |
+//|----------------------------------------------------------------------|
+app.get('/obtener/:idCategoria', [verificaToken], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
     }
@@ -146,7 +162,15 @@ app.get('/obtener/:idCategoria', (req, res) => {
 
 });
 
-app.put('/actualizar/:idCategoria/:idApi',  (req, res) => {
+//|-----------------          Api PUT de api             ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que actualiza una api                                            |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/api/actualizar/idCategoria/idApi     |
+//|----------------------------------------------------------------------|
+app.put('/actualizar/:idCategoria/:idApi', [verificaToken], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);
@@ -252,7 +276,15 @@ app.put('/actualizar/:idCategoria/:idApi',  (req, res) => {
 
 });
 
-app.delete('/eliminar/:idCategoria/:idApi', (req, res) => {
+//|-----------------          Api DELETE de api          ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que elimina una api                                              |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/api/eliminar/idCategoria/idApi       |
+//|----------------------------------------------------------------------|
+app.delete('/eliminar/:idCategoria/:idApi', [verificaToken], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);
