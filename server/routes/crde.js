@@ -5,9 +5,16 @@ const Crde = require('../models/crde');
 const {rolMenuUsuario} = require('../middlewares/permisosUsuarios');
 const { verificaToken } = require('../middlewares/autenticacion');
 const app = express();
-
+//|-----------------     Api GET de categoria crde       ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que obtiene listado de categorias de crde                         |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/crde/obtener                         |
+//|----------------------------------------------------------------------|
 //Obtiene todos las categorias de crde
-app.get('/obtener', (req, res) => {
+app.get('/obtener', [verificaToken], (req, res) => {
 
     Crde.find() //select * from usuario where estado=true
         //solo aceptan valores numericos
@@ -28,8 +35,16 @@ app.get('/obtener', (req, res) => {
             });
         });
 });
+//|-----------------     Api GET de categoria crde       ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que obtiene listado de categorias de crde segun id                |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/crde/obtener/id                      |
+//|----------------------------------------------------------------------|
 //Obtener una categoria de crde por id 
-app.get('/obtener/:id', (req, res) => {
+app.get('/obtener/:id', [verificaToken], (req, res) => {
     let id = req.params.id;
     Crde.find({ _id: id })
         .exec((err, crde) => {
@@ -50,8 +65,17 @@ app.get('/obtener/:id', (req, res) => {
             });
         });
 });
+
+//|-----------------     Api POST de categoria crde      ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que registra una categoria de crde                               |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/crde/registrar                       |
+//|----------------------------------------------------------------------|
 // Registrar una categoria de crde
-app.post('/registrar', async (req, res) => {
+app.post('/registrar', [verificaToken], async (req, res) => {
     let body = req.body;
     //para poder mandar los datos a la coleccion
     let crde = new Crde({
@@ -91,7 +115,15 @@ app.post('/registrar', async (req, res) => {
 
 });
 
-app.put('/actualizar/:idCrde', (req,res) => {
+//|-----------------     Api PUT de categoria crde       ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que actualiza una categoria de crde                              |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/crde/actualizar/idCrde               |
+//|----------------------------------------------------------------------|
+app.put('/actualizar/:idCrde', [verificaToken], (req,res) => {
     let id = req.params.idCrde;
     console.log(req.params.idCrde)
     const crdeBody =  _.pick(req.body,['strCategoria','blnStatus']);
@@ -121,7 +153,15 @@ app.put('/actualizar/:idCrde', (req,res) => {
     });
 });
 
-app.delete('/eliminar/:idCrde',  (req, res) => {
+//|-----------------     Api DELETE de categoria crde    ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que elimina una categoria de crde                                |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/crde/eliminar/idCrde                 |
+//|----------------------------------------------------------------------|
+app.delete('/eliminar/:idCrde', [verificaToken], (req, res) => {
     let id = req.params.id;
 
     Crde.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {

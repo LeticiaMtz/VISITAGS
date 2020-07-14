@@ -7,7 +7,7 @@ const { verificaToken } = require('../middlewares/autenticacion');
 const app = express();
 
 //Obtiene todos las asignaturas
-app.get('/obtener', (req, res) => {
+app.get('/obtener', [verificaToken], (req, res) => {
 
     Asignatura.find() 
         //solo aceptan valores numericos
@@ -28,7 +28,7 @@ app.get('/obtener', (req, res) => {
 });
 
 //Obtener una asignatura por id 
-app.get('/obtener/:id', (req, res) => {
+app.get('/obtener/:id', [verificaToken], (req, res) => {
     let id = req.params.id;
     Asignatura.find({ _id: id })
         .exec((err, asignatura) => {
@@ -51,7 +51,7 @@ app.get('/obtener/:id', (req, res) => {
 });
 
 
-app.post('/registrar', async (req, res) => {
+app.post('/registrar', [verificaToken], async (req, res) => {
     let body = req.body;
     //para poder mandar los datos a la coleccion
     let asignatura = new Asignatura({
@@ -91,7 +91,7 @@ app.post('/registrar', async (req, res) => {
 });
 
 
-app.post('/registrar/cargaMasiva', async (req, res) => {
+app.post('/registrar/cargaMasiva', [verificaToken], async (req, res) => {
     let asignatura = new Asignatura();
     let elem = 0;
     let body = req.body;
@@ -112,7 +112,7 @@ app.post('/registrar/cargaMasiva', async (req, res) => {
     })
 });
 
-app.put('/actualizar/:idAsignatura', (req,res) => {
+app.put('/actualizar/:idAsignatura', [verificaToken], (req,res) => {
     let id = req.params.idAsignatura;
 
     const asignaturaBody =  _.pick(req.body,['strAsignatura', 'strSiglas', 'blnStatus']);
@@ -142,7 +142,7 @@ app.put('/actualizar/:idAsignatura', (req,res) => {
     });
 });
 
-app.delete('/eliminar/:idAsignatura',  (req, res) => {
+app.delete('/eliminar/:idAsignatura', [verificaToken],  (req, res) => {
     let id = req.params.idAsignatura;
 
     Asignatura.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {

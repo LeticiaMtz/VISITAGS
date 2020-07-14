@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { Schema } = mongoose;
+let Schema = mongoose.Schema;
 // Creación de esquema de alertas
 const roles = new Schema({
     strRole: { 
@@ -20,6 +20,8 @@ const roles = new Schema({
     }]
 
 
-}, {collection: "Role"});
+},{
+    timestamps: true
+});
 
 module.exports = mongoose.model('Role', roles);

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
+let Schema = mongoose.Schema;
 const Especialidad = require('./especialidad');
-const { Schema } = mongoose;
 // Creación de esquema de alertas
 const carrera = new Schema({
     strCarrera: {
@@ -15,7 +15,9 @@ const carrera = new Schema({
     },
     aJsnEspecialidad: [Especialidad.schema]
   
-}, {collection: "carreras"});
+},{
+     timestamps: true
+ });
 
 
 

@@ -6,8 +6,15 @@ const { rolMenuUsuario } = require('../middlewares/permisosUsuarios');
 const Alert = require('../models/Alerts'); //subir nivel
 const app = express();
 
+//|-----------------          Api GET de alertas         ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que obtiene el listado de las alertas registradas                |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/alerts/obtener                       |
+//|----------------------------------------------------------------------|
 app.get('/obtener', [verificaToken, rolMenuUsuario ], (req, res) => {
-
     Alert.find({ blnStatus: true }) //select * from usuario where estado=true
         //solo aceptan valores numericos
         .exec((err, alerts) => { //ejecuta la funcion
@@ -30,6 +37,14 @@ app.get('/obtener', [verificaToken, rolMenuUsuario ], (req, res) => {
         });
 });
 
+//|-----------------          Api GET de alertas         ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que obtiene el listado de las alertas registradas por id         |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/alerts/obtener/idAlert               |
+//|----------------------------------------------------------------------|
 //Obtener por id
 app.get('/obtener/:idAlert', [verificaToken, rolMenuUsuario ], (req, res) => {
     Alert.findById(req.params.id)
@@ -51,6 +66,14 @@ app.get('/obtener/:idAlert', [verificaToken, rolMenuUsuario ], (req, res) => {
         });
 });
 
+//|-----------------          Api POST de alertas        ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que registra una alerta                                          |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/alerts/registrar                     |
+//|----------------------------------------------------------------------|
 //Agregar nueva alerta
 app.post('/registrar', [verificaToken, rolMenuUsuario ], (req, res) => {
     let body = req.body;
@@ -82,8 +105,14 @@ app.post('/registrar', [verificaToken, rolMenuUsuario ], (req, res) => {
     });
 });
 
-
-
+//|-----------------          Api PUT de alertas         ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que actualiza una alerta                                         |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/alerts/actualizar/idAlert            |
+//|----------------------------------------------------------------------|
 app.put('/actualizar/:idAlert', [verificaToken, rolMenuUsuario ], (req, res) => {
     let id = req.params.id;
     let body = _.pick(req.body, ['strMatricula', 'strStudentName', 'strEducationalProgram', 'strIncidence', 'strTracing', 'strUser', 'dteDate', 'blnStatus']); //FILTRAR del body, on el pick seleccionar los campos que interesan del body 
@@ -107,7 +136,15 @@ app.put('/actualizar/:idAlert', [verificaToken, rolMenuUsuario ], (req, res) => 
     });
 });
 
-app.delete('/eliminar/:idAlert', (req, res) => {
+//|-----------------          Api DELETE de alertas      ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que elimina una alerta                                           |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/alerts/eliminar/idAlert              |
+//|----------------------------------------------------------------------|
+app.delete('/eliminar/:idAlert', [verificaToken], (req, res) => {
     let id = req.params.id;
 
     //update from - set 

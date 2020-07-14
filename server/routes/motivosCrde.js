@@ -4,9 +4,17 @@ const app = express();
 const mongoose = require('mongoose');
 const Motivo = require('../models/motivosCrde');
 const Crde = require('../models/crde');
+const { verificaToken } = require('../middlewares/autenticacion');
 
-
-app.post('/registrar/:idCrde', (req, res) => {
+//|----------------- Api POST de MotivosCrde --------------------|
+//| Creada por: Leticia Moreno                                   |
+//| Api que registra un motivoCrde                               |
+//| modificada por:                                              |
+//| Fecha de modificacion:                                       |
+//| cambios:                                                     |
+//| Ruta: http://localhost:3000/api/motivosCrde/registrar/idCrde |
+//|--------------------------------------------------------------|
+app.post('/registrar/:idCrde', [verificaToken], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);
@@ -27,57 +35,68 @@ app.post('/registrar/:idCrde', (req, res) => {
     }
 
     Crde.findOne({
-            '_id': req.params.idCrde,
-            'aJsnMotivo.strNombre':  motivo.strNombre,
-            // 'aJsnMotivo.strClave':  motivo.strClave,
-            'aJsnMotivo.blnStatus': true
-        })
-        Crde.findOne({
-            '_id': req.params.idCrde,
-            'aJsnMotivo.strClave':  motivo.strClave,
-            'aJsnMotivo.blnStatus': true
-        })
-        .populate('aJsnMotivo')
-        .then((resp) => {
-            if (resp) {
-                return res.status(400).json({
-                    ok: false,
-                    resp: 400,
-                    msg: `Error: El motivo " ${ motivo.strNombre} "y/o la clave ${motivo.strClave}" ya se encuentra registradas.`,
-                    cont: {
-                        resp
-                    }
-                });
-            } else {
-                Crde.findOneAndUpdate({
+        '_id': req.params.idCrde,
+        'aJsnMotivo.strNombre': motivo.strNombre,
+        // 'aJsnMotivo.strClave':  motivo.strClave,
+        'aJsnMotivo.blnStatus': true
+    }).then((resp) => {
+        if (resp !== null) {
+            return res.status(400).send({
+                ok: false,
+                resp: 400,
+                msg: 'Error el motivo ya se encuentra registrado',
+                cont: {
+                    resp
+                }
+            })
+        } else {
+            Crde.findOne({
+                '_id': req.params.idCrde,
+                'aJsnMotivo.strClave': motivo.strClave,
+                'aJsnMotivo.blnStatus': true
+            }).then((resp) => {
+                if (resp !== null) {
+                    return res.status(400).send({
+                        ok: false,
+                        resp: 400,
+                        msg: 'Error la clave ya se encuentra registrado',
+                        cont: {
+                            resp
+                        }
+                    })
+                } else {
+                    Crde.findOneAndUpdate({
                         '_id': req.params.idCrde
                     }, {
                         $push: {
                             aJsnMotivo: motivo
                         }
                     })
-                    .then((crde) => {
-                        return res.status(200).json({
-                            ok: true,
-                            resp: 200,
-                            msg: 'Success: Informacion insertada correctamente.',
-                            cont: {
-                                motivo
-                            }
+                        .then((crde) => {
+                            return res.status(200).json({
+                                ok: true,
+                                resp: 200,
+                                msg: 'Success: Informacion insertada correctamente.',
+                                cont: {
+                                    motivo
+                                }
+                            });
+                        })
+                        .catch((err) => {
+                            return res.status(500).json({
+                                ok: false,
+                                resp: 500,
+                                msg: 'Error: Error al registrar el motivo',
+                                cont: {
+                                    err: err.message
+                                }
+                            });
                         });
-                    })
-                    .catch((err) => {
-                        return res.status(500).json({
-                            ok: false,
-                            resp: 500,
-                            msg: 'Error: Error al registrar el motivo',
-                            cont: {
-                                err: err.message
-                            }
-                        });
-                    });
-            }
-        })
+                }
+            })
+        }
+
+    })
         .catch((err) => {
             return res.status(500).json({
                 ok: false,
@@ -90,8 +109,15 @@ app.post('/registrar/:idCrde', (req, res) => {
         });
 });
 
-
-app.get('/obtener/:idCrde', (req, res) => {
+//|-----------------   Api GET de motivosCrde -----------------|
+//| Creada por: Leticia Moreno                                 |
+//| Api que ontine listado de los motivosCrde                  |
+//| modificada por:                                            |
+//| Fecha de modificacion:                                     |
+//| cambios:                                                   |
+//| Ruta: http://localhost:3000/api/motivosCrde/obtener/idCrde |
+//|------------------------------------------------------------|
+app.get('/obtener/:idCrde', [verificaToken], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
     }
@@ -151,8 +177,15 @@ app.get('/obtener/:idCrde', (req, res) => {
         });
 
 });
-
-app.put('/actualizar/:idCrde/:idMotivo',  (req, res) => {
+//|-----------------  Api PUT de MotivosCrde -----------------------------|
+//| Creada por: Leticia Moreno                                            |
+//| Api que actualiza un motivoCrde                                       |
+//| modificada por:                                                       |
+//| Fecha de modificacion:                                                |
+//| cambios:                                                              |
+//| Ruta: http://localhost:3000/api/motivosCrde/actualizar/idCrde/idMoivo |
+//|-----------------------------------------------------------------------|
+app.put('/actualizar/:idCrde/:idMotivo', [verificaToken], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);
@@ -259,7 +292,15 @@ app.put('/actualizar/:idCrde/:idMotivo',  (req, res) => {
 
 });
 
-app.delete('/eliminar/:idCrde/:idMotivo', (req, res) => {
+//|----------------- Api DELETE de MotivosCrde ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que elimina un motivo Crde                                       |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/motivosCrde/eliminar/idCrde/idMotivo |
+//|----------------------------------------------------------------------|
+app.delete('/eliminar/:idCrde/:idMotivo', [verificaToken], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);

@@ -22,8 +22,6 @@ const motivosCrde = new Schema({
     timestamps: true
 });
 
-motivosCrde.plugin(uniqueValidator, {
-    message: '{PATH} Debe ser único y diferente'
-});
+motivosCrde.plugin(uniqueValidator, { type: 'mongoose-unique-validator' });
  
 module.exports = mongoose.model('motivosCrde', motivosCrde);

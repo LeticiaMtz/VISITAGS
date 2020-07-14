@@ -31,7 +31,7 @@ app.get('/obtener', [verificaToken, rolMenuUsuario ], (req, res) => {
 });
 
 //Obtener por id
-app.get('/obtener/:id', (req, res) => {
+app.get('/obtener/:id', [verificaToken], (req, res) => {
     let id = req.params.id;
     Comment.find({ _id: id })
         .exec((err, comments) => {

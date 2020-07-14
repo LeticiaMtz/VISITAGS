@@ -6,6 +6,14 @@ const {rolMenuUsuario} = require('../middlewares/permisosUsuarios');
 const { verificaToken } = require('../middlewares/autenticacion');
 const app = express();
 
+//|-----------------     Api GET de categoriaApi         ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que obtiene listado de categorias api                             |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/categoiaApi/obtener                  |
+//|----------------------------------------------------------------------|
 app.get('/obtener', [verificaToken, rolMenuUsuario], (req, res) => {
     CategoriaApi.find()
         .exec((err, catApis) => {
@@ -28,6 +36,14 @@ app.get('/obtener', [verificaToken, rolMenuUsuario], (req, res) => {
         });
 });
 
+//|-----------------     Api GET de categoriaApi         ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que obtiene listado de categorias api segun id                    |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/categoiaApi/obtener/idCategoria      |
+//|----------------------------------------------------------------------|
 app.get('/obtener/:idCategoria', [verificaToken, rolMenuUsuario], (req, res) => {
     let id = req.params.id;
     CategoriaApi.find({ _id: id })
@@ -50,6 +66,14 @@ app.get('/obtener/:idCategoria', [verificaToken, rolMenuUsuario], (req, res) => 
         });
 });
 
+//|-----------------     Api POST de categoriaApi        ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que registra una categoria api                                   |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/categoiaApi/registrar                |
+//|----------------------------------------------------------------------|
 app.post('/registrar', [verificaToken], (req, res) => {
     let body = req.body;
     let categoriaApi = new CategoriaApi({
@@ -77,6 +101,14 @@ app.post('/registrar', [verificaToken], (req, res) => {
     });
 });
 
+//|-----------------     Api PUT de categoriaApi         ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que actualiza una categoria api                                  |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/categoiaApi/actualizar/idCategoria   |
+//|----------------------------------------------------------------------|
 app.put('/actualizar/:idCategoria', [verificaToken, rolMenuUsuario], (req, res) => {
     let id = req.params.id;
     let body = _.pick(req.body, ['strName', 'strDescripcion']);
@@ -101,6 +133,14 @@ app.put('/actualizar/:idCategoria', [verificaToken, rolMenuUsuario], (req, res) 
     });
 });
 
+//|-----------------     Api DELETE de categoriaApi      ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que elimina una categoria api                                    |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/categoiaApi/eliminar/idCategoria     |
+//|----------------------------------------------------------------------|
 app.delete('/eliminar/:idCategoria', [verificaToken, rolMenuUsuario],  (req, res) => {
     let id = req.params.id;
 
