@@ -117,8 +117,12 @@ app.post('/registrar', async (req, res) => {
 //|-------------------------------------------------------------------|
 app.put('/actualizar/:idModalidad', (req, res) => {
     let id = req.params.idModalidad;
+    let numParam  = Object.keys(req.body).length;
 
-    const modalidadBody =  _.pick(req.body,['strModalidad', 'blnStatus']);
+    let modalidadBody;
+    if(numParam == 2) modalidadBody =  _.pick(req.body,['strModalidad', 'blnStatus']);
+    if(numParam == 1) modalidadBody =  _.pick(req.body,['blnStatus']);
+        
     Modalidad.find({_id: id}).then((resp) => {
         if(resp.length > 0){
             Modalidad.findByIdAndUpdate(id, modalidadBody).then((resp) => {
