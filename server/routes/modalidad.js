@@ -120,9 +120,20 @@ app.put('/actualizar/:idModalidad', (req, res) => {
     let numParam  = Object.keys(req.body).length;
 
     let modalidadBody;
-    if(numParam == 2) modalidadBody =  _.pick(req.body,['strModalidad', 'blnStatus']);
-    if(numParam == 1) modalidadBody =  _.pick(req.body,['blnStatus']);
-        
+    if(numParam == 6) {
+        modalidadBody =  _.pick(req.body,['strModalidad', 'blnStatus']);
+    } 
+    if(numParam == 1) {
+        modalidadBody =  _.pick(req.body,['blnStatus']);
+    }
+    if(numParam !== 6 && numParam !== 1){
+        return res.status(400).json({
+            ok: false,
+            msg: 'Error al actualizar la modalidad',
+            err: 'El número de parametros enviados no concuerdan con los que requiere la API'
+        });
+    } 
+
     Modalidad.find({_id: id}).then((resp) => {
         if(resp.length > 0){
             Modalidad.findByIdAndUpdate(id, modalidadBody).then((resp) => {
@@ -149,7 +160,7 @@ app.put('/actualizar/:idModalidad', (req, res) => {
     });
 });
 
-//|-------------------Api PUT de Modalidad----------------------------|
+//|-------------------Api DELETE de Modalidad----------------------------|
 //| Creada por: Martin Palacios                                       |
 //| Api que elimina (desactiva) el tipo de modalidad                  |
 //| modificada por:                                                   |
