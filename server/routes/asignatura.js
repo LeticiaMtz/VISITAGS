@@ -6,7 +6,14 @@ const {rolMenuUsuario} = require('../middlewares/permisosUsuarios');
 const { verificaToken } = require('../middlewares/autenticacion');
 const app = express();
 
-//Obtiene todos las asignaturas
+//|----------------- Api GET de Asignatura ----------------------|
+//| Creada por: Martin Palacios                                  |
+//| Api que obtiene todas las asignaturas registradas            |
+//| modificada por:                                              |
+//| Fecha de modificacion:                                       |
+//| cambios:                                                     |
+//| Ruta: http://localhost:3000/api/asignatura/obtener           |
+//|--------------------------------------------------------------|
 app.get('/obtener', [verificaToken], (req, res) => {
 
     Asignatura.find() 
@@ -27,7 +34,15 @@ app.get('/obtener', [verificaToken], (req, res) => {
         });
 });
 
-//Obtener una asignatura por id 
+//|----------------- Api GET by id de Asignatura ----------------|
+//| Creada por: Martin Palacios                                  |
+//| Api que obtiene una asignatura especifica mediante           |
+//| un ID                                                        |
+//| modificada por:                                              |
+//| Fecha de modificacion:                                       |
+//| cambios:                                                     |
+//| Ruta: http://localhost:3000/api/asignatura/obtener/id        |
+//|--------------------------------------------------------------|
 app.get('/obtener/:id', [verificaToken], (req, res) => {
     let id = req.params.id;
     Asignatura.find({ _id: id })
@@ -50,7 +65,14 @@ app.get('/obtener/:id', [verificaToken], (req, res) => {
         });
 });
 
-
+//|----------------- Api POST de Asignatura-- -------------------|
+//| Creada por: Martin Palacios                                  |
+//| Api que registra la asignatura                               |
+//| modificada por:                                              |
+//| Fecha de modificacion:                                       |
+//| cambios:                                                     |
+//| Ruta: http://localhost:3000/api/asignatura/registrar         |
+//|--------------------------------------------------------------|
 app.post('/registrar', [verificaToken], async (req, res) => {
     let body = req.body;
     //para poder mandar los datos a la coleccion
@@ -90,7 +112,14 @@ app.post('/registrar', [verificaToken], async (req, res) => {
 
 });
 
-
+//|----------------- Api POST de Asignatura---------------------------|
+//| Creada por: Martin Palacios                                       |
+//| Api que registra masivamente las asignaturas                      |
+//| modificada por:                                                   |
+//| Fecha de modificacion:                                            |
+//| cambios:                                                          |
+//| Ruta: http://localhost:3000/api/asignatura/registrar/cargaMasiva  |
+//|-------------------------------------------------------------------|
 app.post('/registrar/cargaMasiva', [verificaToken], async (req, res) => {
     let asignatura = new Asignatura();
     let elem = 0;
@@ -112,6 +141,14 @@ app.post('/registrar/cargaMasiva', [verificaToken], async (req, res) => {
     })
 });
 
+//|-------------------Api PUT de Asignatura----------------------------|
+//| Creada por: Martin Palacios                                        |
+//| Api que actualiza la asignatura                                    |
+//| modificada por:                                                    |
+//| Fecha de modificacion:                                             |
+//| cambios:                                                           |
+//| Ruta: http://localhost:3000/api/asignatura/actualizar/idAsignatura |
+//|--------------------------------------------------------------------|
 app.put('/actualizar/:idAsignatura', [verificaToken], (req,res) => {
     let id = req.params.idAsignatura;
 
@@ -142,6 +179,14 @@ app.put('/actualizar/:idAsignatura', [verificaToken], (req,res) => {
     });
 });
 
+//|-------------------Api DELETE de Asignatura---------------------------|
+//| Creada por: Martin Palacios                                       |
+//| Api que elimina (desactiva) la asignatura                         |
+//| modificada por:                                                   |
+//| Fecha de modificacion:                                            |
+//| cambios:                                                          |
+//| Ruta: http://localhost:3000/api/asignatura/eliminar/idModalidad   |
+//|-------------------------------------------------------------------|
 app.delete('/eliminar/:idAsignatura', [verificaToken],  (req, res) => {
     let id = req.params.idAsignatura;
 
@@ -164,6 +209,15 @@ app.delete('/eliminar/:idAsignatura', [verificaToken],  (req, res) => {
     });
 });
 
+//|---------------METODO de carga masiva de Asignatura----------------|
+//| Creado por: Martin Palacios                                       |
+//| Descripción: El metodo va procesando y guardando cada uno de los  |
+//| registros que obtiene como parametros desde la api CARGA MASIVA   |
+//| la cual esta invocando al mismo.                                  |
+//| Modificado por:                                                   |
+//| Fecha de modificación:                                            |
+//| Cambios:                                                          |
+//|-------------------------------------------------------------------|
 let insertToDatabase = (asignatura, strAsignaturaParam, elem) => {
     Asignatura.findOne({ 'strAsignatura': strAsignaturaParam }).then( encontrado  => {
         if (encontrado) return console.log(`registro ${strAsignaturaParam} repetido: num registro ${elem}`);
