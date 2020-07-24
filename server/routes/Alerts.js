@@ -75,35 +75,46 @@ app.get('/obtener/:idAlert', [verificaToken, rolMenuUsuario ], (req, res) => {
 //| Ruta: http://localhost:3000/api/alerts/registrar                     |
 //|----------------------------------------------------------------------|
 //Agregar nueva alerta
-app.post('/registrar', [verificaToken, rolMenuUsuario ], (req, res) => {
+app.post('/registrar', [verificaToken], async (req, res) => {
     let body = req.body;
+    //para poder mandar los datos a la coleccion
     let alert = new Alert({
-        //para poder mandar los datos a la coleccion
-        strMatricula: body.strMatricula,
-        strStudentName: body.strStudentName,
-        strEducationalProgram: body.strEducationalProgram,
-        strIncidence: body.strIncidence, 
-        strTracing: body.strIncidence, 
-        strUser: body.strUser
-    });
+        idUser: body.idUser,
+        idEstatus: body.idEstatus, 
+        strMatricula: body.strMatricula, 
+        strNombreAlumno: body.strNombreAlumno, 
+        idAsigantura: body.idAsigantura, 
+        idEspecialidad: body.idEspecialidad, 
+        strGrupo: body.strGrupo, 
+        chrTurno: body.chrTurno, 
+        idModalidad: body.idModalidad, 
+        strDescripcion: body.strDescripcion, 
+        arrCrde: body.arrCrde, 
+        aJsnEvidencias: body.aJsnEvidencias, 
+        aJsnSeguimiento: body.aJsnSeguimiento, 
+        blnStatus: body.blnStatus
 
-    alert.save((err, aleDB) => {
-        if (err) {
-            return res.status(400).json({
-                ok: false,
-                status: 400, 
-                msg: 'Error al registrar el alerta',
-                err
+    });
+    
+        alert.save((err, alert) => {
+            if(err){
+                return res.status(400).json({
+                    ok: false, 
+                    err
+                });
+            }
+            return res.status(200).json({
+                ok: true,
+                status: 200,
+                msg: "Alerta registrada correctamente",
+                cont: {
+                    alert
+                }
             });
-        }
-        return res.status(200).json({
-            ok: true,
-            status: 200, 
-            msg: 'Se registro la alerta correctamente', 
-            aleDB
         });
     });
-});
+
+
 
 //|-----------------          Api PUT de alertas         ----------------|
 //| Creada por: Leticia Moreno                                           |
@@ -113,26 +124,33 @@ app.post('/registrar', [verificaToken, rolMenuUsuario ], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/alerts/actualizar/idAlert            |
 //|----------------------------------------------------------------------|
-app.put('/actualizar/:idAlert', [verificaToken, rolMenuUsuario ], (req, res) => {
-    let id = req.params.id;
-    let body = _.pick(req.body, ['strMatricula', 'strStudentName', 'strEducationalProgram', 'strIncidence', 'strTracing', 'strUser', 'dteDate', 'blnStatus']); //FILTRAR del body, on el pick seleccionar los campos que interesan del body 
-    //id 'su coleccion, new -> si no existe lo inserta, runVali-> sirve para validar todas las condiciones del modelo 
-    Alert.findByIdAndUpdate(id, body, { new: true, runValidators: true, context: 'query' }, (err, aleDB) => {
-        if (err) {
-            return res.status(400).json({
-                ok: false,
-                status: 400, 
-                msg: 'Error al actualizar alerta',
-                err
+app.put('/actualizar/:idAlert', [verificaToken], (req,res) => {
+    let id = req.params.idAlert;
+    console.log(req.params.idAlert)
+    const alertBody =  _.pick(req.body,['idUser','idEstatus', 'strMatricula', 'strNombreAlumno', 'idAsigantura', 'idEspecialidad', 'strGrupo', 'chrTurno', 'idModalidad', 'strDescripcion', 'arrCrde', 'aJsnEvidencias', 'aJsnSeguimiento', 'blnStatus']);
+    Alert.find({_id: id}).then((resp) => {
+        if(resp.length > 0){
+            Alert.findByIdAndUpdate(id,alertBody).then((resp) => {
+                return res.status(200).json({
+                    ok: true,
+                    msg: 'Actualizada con éxito',
+                    cont: resp.length,
+                    cnt: resp
+                });
+            }).catch((err) =>{
+                return res.status(400).json({
+                    ok: false,
+                    msg: 'Error al actualizar',
+                    err: err
+                });
             });
         }
-        return res.status(200).json({
-            ok: true,
-            status: 200, 
-            msg: 'Alerta actualizada correctamente',
-            aleDB
+    }).catch((err) => {
+        return res.status(400).json({
+            ok: false,
+            msg: 'Error al actualizar',
+            err: err
         });
-
     });
 });
 

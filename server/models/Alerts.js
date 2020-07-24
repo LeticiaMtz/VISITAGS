@@ -1,49 +1,66 @@
 const mongoose = require('mongoose');
 const User = require('./Users')
-const { Schema } = mongoose;
+const Estatus = require('./Estatus')
+const Asignatura = require('./asignatura')
+const Especialidad = require('./especialidad')
+const Crde = require('./crde')
+const Evidencias = require('./evidencias');
+const Seguimiento = require('./seguimiento');
+let Schema = mongoose.Schema;
 // Creación de esquema de alertas
 const alerts = new Schema({
+    idUser: {
+        type: String
+   },
+   idEstatus: {
+       type: Schema.Types.ObjectId, 
+       ref: 'Estatus'
+   },
     strMatricula: {
-         type: Number, 
+         type: String, 
          required: [true, 'Porfavor ingresa la matricula']
     },
-    strStudentName: {
+    strNombreAlumno: {
          type: String,
          required: [true, 'Porfavor ingresa el nombre completo del estudiante']
     },
-    strEducationalProgram: { 
+    idAsignatura: {
+        type: Schema.Types.ObjectId, 
+        ref: 'Asignatura'
+    },
+    idEspecialidad: {
+        type: Schema.Types.ObjectId, 
+        ref: 'Especialidad'
+    },
+    strGrupo: {
         type: String, 
-        required: [true, 'Porfavor ingresa el programa educativo'] 
-    },
-    strIncidence: { 
-        type: String, 
-        required: [true, 'Porfavor ingresa la insidencia'] 
-    },
-    strTracing: { 
-        type: String, 
-        required: [true, 'Porfavor ingresa el seguimiento']
-    },
-    strUser: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: [true, 'Por favor ingrese el usuario']
-       
-    },
-    //id_user : {type: Number },
-    // comment: [{type: String}],
-    // comment: [{type: Schema.ObjectId, ref: "Comment"}],
-    dteDate: {
-        type: Date, 
-        default: Date.now
-    }, 
-    blnStatus: {
-        type: Boolean, 
-        default: true
-    }
+        required: [true, 'Porfavor ingresa el grupo']
+   },
+   chrTurno: {
+    type: String, 
+    required: [true, 'Porfavor ingresa el turno']
+   },
+   idModalidad: {
+    type: Schema.Types.ObjectId, 
+    ref: 'Modalidad'
+   },
+   strDescripcion: {
+       type:String, 
+       required: [true, 'Porfavor ingresa alguna descripcion']
+   }, 
+   arrCrde: [{
+    type: Schema.Types.ObjectId, 
+    ref: 'Crde'
+   }],
+   aJsnEvidencias: [Evidencias.schema], 
+   aJsnSeguimiento: [Seguimiento.schema], 
+   blnStatus:{
+    type: Boolean, 
+    default: true
 
+}
+},{
+    timestamps: true
 });
-
-
-
 
 module.exports = mongoose.model('Alerts', alerts);

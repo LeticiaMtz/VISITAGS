@@ -1,9 +1,8 @@
 const mongoose = require('mongoose');
-const autoIncrement = require('mongoose-auto-increment');
 const { Schema } = mongoose;
 const Role = require('./Roles')
+const Especialidad = require('./especialidad')
 
-autoIncrement.initialize(mongoose);
 //Creación del esquema de usuarios
 const users = new Schema({
     strName: {
@@ -33,32 +32,18 @@ const users = new Schema({
         default: '5eeee0db16952756482d1868'
 
     },
+    arrEspecialidadPermiso: [{
+        type: Schema.Types.ObjectId, 
+        ref: 'Especialidad'
+    }],
     blnStatus: {
         type: Boolean,
         default: true
     }
-
-    // strResetPasswordToken: { //23
-    //     type: String
-    // },
-    // strResetPasswordExpires: {
-    //     type: Date
-    // }
-
-    // alerts: [{
-    //     type: Schema.Types.ObjectId,
-    //     ref: 'Alerts'
-    // }]
 }, {
     timestamps: true
 });
 
-users.plugin(autoIncrement.plugin, {
-    model: '_id',
-    field: '_id',
-    startAt: 1,
-    incrementBy: 1
-});
 
 
 module.exports = mongoose.model('User', users);
