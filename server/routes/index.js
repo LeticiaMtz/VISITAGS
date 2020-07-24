@@ -15,5 +15,8 @@ app.use('/motivosCrde', require('./motivosCrde'));
 app.use('/estatus', require('./estatus'));
 app.use('/asignatura',require('./asignatura'));
 app.use('/modalidad', require('./modalidad'));
+app.use('/evidencias',require('./evidencias'));
+app.use('/seguimiento',require('./seguimiento'));
+app.use('/fileEvidencias',require('./fileEvidencias'));
 
 module.exports = app;
