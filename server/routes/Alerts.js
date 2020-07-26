@@ -5,6 +5,7 @@ const { verificaToken } = require('../middlewares/autenticacion');
 const { rolMenuUsuario } = require('../middlewares/permisosUsuarios');
 const Alert = require('../models/Alerts'); //subir nivel
 const app = express();
+const fileUpload = require('../libraries/subirArchivo(1)');
 
 //|-----------------          Api GET de alertas         ----------------|
 //| Creada por: Leticia Moreno                                           |
@@ -14,14 +15,14 @@ const app = express();
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/alerts/obtener                       |
 //|----------------------------------------------------------------------|
-app.get('/obtener', [verificaToken, rolMenuUsuario ], (req, res) => {
+app.get('/obtener', [], (req, res) => {
     Alert.find({ blnStatus: true }) //select * from usuario where estado=true
         //solo aceptan valores numericos
         .exec((err, alerts) => { //ejecuta la funcion
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    status: 400, 
+                    status: 400,
                     msg: 'Error al generar la lista',
                     err
                 });
@@ -29,7 +30,7 @@ app.get('/obtener', [verificaToken, rolMenuUsuario ], (req, res) => {
             console.log(req.alert);
             return res.status(200).json({
                 ok: true,
-                status: 200, 
+                status: 200,
                 msg: 'Lista de alertas generada exitosamente',
                 count: alerts.length,
                 alerts
@@ -46,20 +47,20 @@ app.get('/obtener', [verificaToken, rolMenuUsuario ], (req, res) => {
 //| Ruta: http://localhost:3000/api/alerts/obtener/idAlert               |
 //|----------------------------------------------------------------------|
 //Obtener por id
-app.get('/obtener/:idAlert', [verificaToken, rolMenuUsuario ], (req, res) => {
+app.get('/obtener/:idAlert', [verificaToken, rolMenuUsuario], (req, res) => {
     Alert.findById(req.params.id)
         .exec((err, alerts) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    status: 400, 
+                    status: 400,
                     msg: 'Error al encontrar la alerta ',
                     err
                 });
             }
             return res.status(200).json({
-                ok: true, 
-                status: 200, 
+                ok: true,
+                status: 200,
                 msg: 'Alerta encontrada',
                 alerts
             });
@@ -75,44 +76,62 @@ app.get('/obtener/:idAlert', [verificaToken, rolMenuUsuario ], (req, res) => {
 //| Ruta: http://localhost:3000/api/alerts/registrar                     |
 //|----------------------------------------------------------------------|
 //Agregar nueva alerta
-app.post('/registrar', [verificaToken], async (req, res) => {
+app.post('/registrar', async(req, res) => {
+
+    let aJsnEvidencias = [];
+    if (req.files) {
+
+        for (const archivo of req.files.aJsnEvidencias) {
+            let strNombreFile = await fileUpload.subirArchivo(archivo, 'evidencias');
+            aJsnEvidencias.push({
+                strNombre: strNombreFile,
+                strFileEvidencia: `/envidencias/${strNombreFile}`,
+                blnActivo: true
+            })
+        }
+
+        // console.log('Sí entró');
+        // console.log(req.files);
+    }
+
     let body = req.body;
     //para poder mandar los datos a la coleccion
+    console.log(aJsnEvidencias);
     let alert = new Alert({
         idUser: body.idUser,
-        idEstatus: body.idEstatus, 
-        strMatricula: body.strMatricula, 
-        strNombreAlumno: body.strNombreAlumno, 
-        idAsigantura: body.idAsigantura, 
-        idEspecialidad: body.idEspecialidad, 
-        strGrupo: body.strGrupo, 
-        chrTurno: body.chrTurno, 
-        idModalidad: body.idModalidad, 
-        strDescripcion: body.strDescripcion, 
-        arrCrde: body.arrCrde, 
-        aJsnEvidencias: body.aJsnEvidencias, 
-        aJsnSeguimiento: body.aJsnSeguimiento, 
-        blnStatus: body.blnStatus
-
+        idEstatus: body.idEstatus,
+        strMatricula: body.strMatricula,
+        strNombreAlumno: body.strNombreAlumno,
+        idAsigantura: body.idAsigantura,
+        idEspecialidad: body.idEspecialidad,
+        strGrupo: body.strGrupo,
+        chrTurno: body.chrTurno,
+        idModalidad: body.idModalidad,
+        strDescripcion: body.strDescripcion,
+        arrCrde: body.arrCrde,
+        blnStatus: body.blnStatus,
+        aJsnEvidencias
     });
-    
-        alert.save((err, alert) => {
-            if(err){
-                return res.status(400).json({
-                    ok: false, 
-                    err
-                });
-            }
-            return res.status(200).json({
-                ok: true,
-                status: 200,
-                msg: "Alerta registrada correctamente",
-                cont: {
-                    alert
-                }
+
+    console.log(alert);
+
+    alert.save((err, alert) => {
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                err
             });
+        }
+        return res.status(200).json({
+            ok: true,
+            status: 200,
+            msg: "Alerta registrada correctamente",
+            cont: {
+                alert
+            }
         });
     });
+});
 
 
 
@@ -124,20 +143,20 @@ app.post('/registrar', [verificaToken], async (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/alerts/actualizar/idAlert            |
 //|----------------------------------------------------------------------|
-app.put('/actualizar/:idAlert', [verificaToken], (req,res) => {
+app.put('/actualizar/:idAlert', [verificaToken], (req, res) => {
     let id = req.params.idAlert;
     console.log(req.params.idAlert)
-    const alertBody =  _.pick(req.body,['idUser','idEstatus', 'strMatricula', 'strNombreAlumno', 'idAsigantura', 'idEspecialidad', 'strGrupo', 'chrTurno', 'idModalidad', 'strDescripcion', 'arrCrde', 'aJsnEvidencias', 'aJsnSeguimiento', 'blnStatus']);
-    Alert.find({_id: id}).then((resp) => {
-        if(resp.length > 0){
-            Alert.findByIdAndUpdate(id,alertBody).then((resp) => {
+    const alertBody = _.pick(req.body, ['idUser', 'idEstatus', 'strMatricula', 'strNombreAlumno', 'idAsigantura', 'idEspecialidad', 'strGrupo', 'chrTurno', 'idModalidad', 'strDescripcion', 'arrCrde', 'aJsnEvidencias', 'aJsnSeguimiento', 'blnStatus']);
+    Alert.find({ _id: id }).then((resp) => {
+        if (resp.length > 0) {
+            Alert.findByIdAndUpdate(id, alertBody).then((resp) => {
                 return res.status(200).json({
                     ok: true,
                     msg: 'Actualizada con éxito',
                     cont: resp.length,
                     cnt: resp
                 });
-            }).catch((err) =>{
+            }).catch((err) => {
                 return res.status(400).json({
                     ok: false,
                     msg: 'Error al actualizar',
@@ -170,14 +189,14 @@ app.delete('/eliminar/:idAlert', [verificaToken], (req, res) => {
         if (err) {
             return res.status(400).json({
                 ok: false,
-                status: 400, 
+                status: 400,
                 msg: 'Error al eliminar alerta',
                 err
             });
         }
         return res.status(200).json({
             ok: true,
-            status:200, 
+            status: 200,
             msg: 'Alerta eliminada correctamente',
             resp
         });

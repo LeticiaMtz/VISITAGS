@@ -2,7 +2,7 @@ const express = require('express');
 var mongoose = require('mongoose');
 const _ = require('underscore');
 const Asignatura = require('../models/asignatura');
-const {rolMenuUsuario} = require('../middlewares/permisosUsuarios');
+const { rolMenuUsuario } = require('../middlewares/permisosUsuarios');
 const { verificaToken } = require('../middlewares/autenticacion');
 const app = express();
 
@@ -14,9 +14,9 @@ const app = express();
 //| cambios:                                                     |
 //| Ruta: http://localhost:3000/api/asignatura/obtener           |
 //|--------------------------------------------------------------|
-app.get('/obtener', [verificaToken], (req, res) => {
+app.get('/obtener', [], (req, res) => {
 
-    Asignatura.find() 
+    Asignatura.find()
         //solo aceptan valores numericos
         .exec((err, asignatura) => {
             if (err) {
@@ -73,7 +73,7 @@ app.get('/obtener/:id', [verificaToken], (req, res) => {
 //| cambios:                                                     |
 //| Ruta: http://localhost:3000/api/asignatura/registrar         |
 //|--------------------------------------------------------------|
-app.post('/registrar', [verificaToken], async (req, res) => {
+app.post('/registrar', [verificaToken], async(req, res) => {
     let body = req.body;
     //para poder mandar los datos a la coleccion
     let asignatura = new Asignatura({
@@ -81,7 +81,7 @@ app.post('/registrar', [verificaToken], async (req, res) => {
         strSiglas: body.strSiglas,
         blnStatus: body.blnStatus
     });
-    
+
 
     Asignatura.findOne({ 'strAsignatura': body.strAsignatura }).then((encontrado) => {
         if (encontrado) {
@@ -93,9 +93,9 @@ app.post('/registrar', [verificaToken], async (req, res) => {
             });
         }
         asignatura.save((err, asignatura) => {
-            if(err){
+            if (err) {
                 return res.status(400).json({
-                    ok: false, 
+                    ok: false,
                     err
                 });
             }
@@ -120,14 +120,14 @@ app.post('/registrar', [verificaToken], async (req, res) => {
 //| cambios:                                                          |
 //| Ruta: http://localhost:3000/api/asignatura/registrar/cargaMasiva  |
 //|-------------------------------------------------------------------|
-app.post('/registrar/cargaMasiva', [verificaToken], async (req, res) => {
+app.post('/registrar/cargaMasiva', [verificaToken], async(req, res) => {
     let asignatura = new Asignatura();
     let elem = 0;
     let body = req.body;
     //console.log(body.cargaMasiva);
 
 
-    body.cargaMasiva.forEach( element => {
+    body.cargaMasiva.forEach(element => {
         asignatura = new Asignatura({
             strAsignatura: element.strAsignatura,
             strSiglas: element.strSiglas,
@@ -149,20 +149,20 @@ app.post('/registrar/cargaMasiva', [verificaToken], async (req, res) => {
 //| cambios:                                                           |
 //| Ruta: http://localhost:3000/api/asignatura/actualizar/idAsignatura |
 //|--------------------------------------------------------------------|
-app.put('/actualizar/:idAsignatura', [verificaToken], (req,res) => {
+app.put('/actualizar/:idAsignatura', [verificaToken], (req, res) => {
     let id = req.params.idAsignatura;
 
-    const asignaturaBody =  _.pick(req.body,['strAsignatura', 'strSiglas', 'blnStatus']);
-    Asignatura.find({_id: id}).then((resp) => {
-        if(resp.length > 0){
-            Asignatura.findByIdAndUpdate(id,asignaturaBody).then((resp) => {
+    const asignaturaBody = _.pick(req.body, ['strAsignatura', 'strSiglas', 'blnStatus']);
+    Asignatura.find({ _id: id }).then((resp) => {
+        if (resp.length > 0) {
+            Asignatura.findByIdAndUpdate(id, asignaturaBody).then((resp) => {
                 return res.status(200).json({
                     ok: true,
                     msg: 'Asignatura actualizada exitosamente',
                     cont: resp.length,
                     cnt: resp
                 });
-            }).catch((err) =>{
+            }).catch((err) => {
                 return res.status(400).json({
                     ok: false,
                     msg: 'Error al actualizar',
@@ -187,7 +187,7 @@ app.put('/actualizar/:idAsignatura', [verificaToken], (req,res) => {
 //| cambios:                                                          |
 //| Ruta: http://localhost:3000/api/asignatura/eliminar/idModalidad   |
 //|-------------------------------------------------------------------|
-app.delete('/eliminar/:idAsignatura', [verificaToken],  (req, res) => {
+app.delete('/eliminar/:idAsignatura', [verificaToken], (req, res) => {
     let id = req.params.idAsignatura;
 
     Asignatura.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {
@@ -219,10 +219,10 @@ app.delete('/eliminar/:idAsignatura', [verificaToken],  (req, res) => {
 //| Cambios:                                                          |
 //|-------------------------------------------------------------------|
 let insertToDatabase = (asignatura, strAsignaturaParam, elem) => {
-    Asignatura.findOne({ 'strAsignatura': strAsignaturaParam }).then( encontrado  => {
+    Asignatura.findOne({ 'strAsignatura': strAsignaturaParam }).then(encontrado => {
         if (encontrado) return console.log(`registro ${strAsignaturaParam} repetido: num registro ${elem}`);
 
-        asignatura.save().then( guardado  => {
+        asignatura.save().then(guardado => {
             if (!guardado) return console.log(`error al guardar ${strAsignaturaParam}, num registro ${elem}`);
             if (guardado) return console.log(`asignatura: ${strAsignaturaParam} guardada: num registro ${elem}`);
         }).catch(err => {

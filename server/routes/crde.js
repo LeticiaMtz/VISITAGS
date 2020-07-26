@@ -2,7 +2,7 @@ const express = require('express');
 var mongoose = require('mongoose');
 const _ = require('underscore');
 const Crde = require('../models/crde');
-const {rolMenuUsuario} = require('../middlewares/permisosUsuarios');
+const { rolMenuUsuario } = require('../middlewares/permisosUsuarios');
 const { verificaToken } = require('../middlewares/autenticacion');
 const app = express();
 //|-----------------     Api GET de categoria crde       ----------------|
@@ -14,7 +14,7 @@ const app = express();
 //| Ruta: http://localhost:3000/api/crde/obtener                         |
 //|----------------------------------------------------------------------|
 //Obtiene todos las categorias de crde
-app.get('/obtener', [verificaToken], (req, res) => {
+app.get('/obtener', [], (req, res) => {
 
     Crde.find() //select * from usuario where estado=true
         //solo aceptan valores numericos
@@ -75,16 +75,16 @@ app.get('/obtener/:id', [verificaToken], (req, res) => {
 //| Ruta: http://localhost:3000/api/crde/registrar                       |
 //|----------------------------------------------------------------------|
 // Registrar una categoria de crde
-app.post('/registrar', [verificaToken], async (req, res) => {
+app.post('/registrar', [verificaToken], async(req, res) => {
     let body = req.body;
     //para poder mandar los datos a la coleccion
     let crde = new Crde({
         strCategoria: body.strCategoria,
         aJsnMotivo: body.aJsnMotivo,
-        blnStatus: body.blnStatus, 
+        blnStatus: body.blnStatus,
 
     });
-    
+
 
     Crde.findOne({ 'strCategoria': body.strCategoria }).then((encontrado) => {
         if (encontrado) {
@@ -96,9 +96,9 @@ app.post('/registrar', [verificaToken], async (req, res) => {
             });
         }
         crde.save((err, crde) => {
-            if(err){
+            if (err) {
                 return res.status(400).json({
-                    ok: false, 
+                    ok: false,
                     err
                 });
             }
@@ -123,20 +123,20 @@ app.post('/registrar', [verificaToken], async (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/crde/actualizar/idCrde               |
 //|----------------------------------------------------------------------|
-app.put('/actualizar/:idCrde', [verificaToken], (req,res) => {
+app.put('/actualizar/:idCrde', [verificaToken], (req, res) => {
     let id = req.params.idCrde;
     console.log(req.params.idCrde)
-    const crdeBody =  _.pick(req.body,['strCategoria','blnStatus']);
-    Crde.find({_id: id}).then((resp) => {
-        if(resp.length > 0){
-            Crde.findByIdAndUpdate(id,crdeBody).then((resp) => {
+    const crdeBody = _.pick(req.body, ['strCategoria', 'blnStatus']);
+    Crde.find({ _id: id }).then((resp) => {
+        if (resp.length > 0) {
+            Crde.findByIdAndUpdate(id, crdeBody).then((resp) => {
                 return res.status(200).json({
                     ok: true,
                     msg: 'Actualizada con éxito',
                     cont: resp.length,
                     cnt: resp
                 });
-            }).catch((err) =>{
+            }).catch((err) => {
                 return res.status(400).json({
                     ok: false,
                     msg: 'Error al actualizar',

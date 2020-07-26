@@ -100,7 +100,7 @@ app.post('/registrar/:idCarrera', [verificaToken], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/especialidad/obtener/idCarrera       |
 //|----------------------------------------------------------------------|
-app.get('/obtener/:idCarrera', [verificaToken], (req, res) => {
+app.get('/obtener/:idCarrera', [], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
     }
