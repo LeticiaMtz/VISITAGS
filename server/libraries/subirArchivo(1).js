@@ -5,10 +5,11 @@ const uniqid = require('uniqid');
 const path = require('path');
 const fs = require('fs');
 const app = express();
+const mv = require('move-file');
 
 app.use(fileUpload());
 
-const subirArchivo = async(file, route ) => {
+const subirArchivo = async(file, route) => {
     let nameImg = uniqid() + path.extname(file.name);
 
     // if (!exts.includes(file.mimetype)) {
@@ -17,12 +18,12 @@ const subirArchivo = async(file, route ) => {
 
     // await file.mv(path.resolve(__dirname, `../../uploads/${route}/${nameImg}`)).catch((error) => {
     //     throw new Error('Error al tratar de subir el archivo al servidor');
-    await file.mv(`uploads/${route}/${nameImg}`, (err) =>{ //Es todo el path de la imagen
+    await file.mv(`uploads/${route}/${nameImg}`, (err) => { //Es todo el path de la imagen
         if (err) {
             console.log(err)
         }
     });
-  
+
 
     return nameImg;
 };
