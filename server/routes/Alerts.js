@@ -6,6 +6,13 @@ const { rolMenuUsuario } = require('../middlewares/permisosUsuarios');
 const Alert = require('../models/Alerts'); //subir nivel
 const app = express();
 const fileUpload = require('../libraries/subirArchivo(1)');
+const User = require('../models/Users');
+const { select } = require('underscore');
+
+const idProfesor = '5eeee0db16952756482d1868';
+const idDirector = '5eeee0db16952756482d1869';
+const idCoordinador = '5eeee0db16952756482d186a';
+const idAdministrador = "5f1e2419ad1ebd0b08edab74";
 
 //|-----------------          Api GET de alertas         ----------------|
 //| Creada por: Leticia Moreno                                           |
@@ -47,7 +54,7 @@ app.get('/obtener', [], (req, res) => {
 //| Ruta: http://localhost:3000/api/alerts/obtener/idAlert               |
 //|----------------------------------------------------------------------|
 //Obtener por id
-app.get('/obtener/:idAlert', [verificaToken, rolMenuUsuario], (req, res) => {
+app.get('/obtener/:idAlert', [], (req, res) => {
     Alert.findById(req.params.id)
         .exec((err, alerts) => {
             if (err) {
@@ -201,6 +208,93 @@ app.delete('/eliminar/:idAlert', [verificaToken], (req, res) => {
             resp
         });
     });
+});
+
+//|------------------- Api GET de alertas por usuario -------------------|
+//| Creada por: Abraham Carranza                                         |
+//| Api que obtiene alertas dependiendo del rol del usuario              |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/alerts/obtenerAlertas/idRol/idUser   |
+//|----------------------------------------------------------------------|
+
+app.get('/obtenerAlertas/:idRol/:idUser', async(req, res) => {
+    let idRol = req.params.idRol;
+    let idUser = req.params.idUser;
+
+    if (idRol == idProfesor) {
+        Alert.find({ idUser: idUser }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }, { path: 'arrCrde' }]).then((resp) => {
+
+            return res.status(200).json({
+                ok: true,
+                status: 200,
+                msg: 'Se han consultado correctamente las alertas',
+                cont: resp.length,
+                cnt: resp
+            });
+        }).catch((err) => {
+            console.log(err);
+            return res.status(400).json({
+                ok: false,
+                status: 400,
+                msg: 'Ocurrio un error al consultar las alertas',
+                cnt: err
+            });
+        });
+    } else if (idRol == idAdministrador) {
+
+        Alert.find().sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }, { path: 'arrCrde' }]).then((resp) => {
+
+            return res.status(200).json({
+                ok: true,
+                status: 200,
+                msg: 'Se han consultado correctamente',
+                cont: resp.length,
+                cnt: resp
+            });
+        }).catch((err) => {
+            console.log(err);
+            return res.status(400).json({
+                ok: false,
+                status: 400,
+                msg: 'Ocurrio un error al consultar el rol',
+                cnt: err
+            });
+        });
+    } else if (idRol == idCoordinador || idRol == idDirector) {
+
+        let usuario = await User.findById(idUser);
+
+        if (!usuario) {
+            return res.status(400).json({
+                ok: false,
+                status: 400,
+                msg: 'Ocurrio un error al consultar el rol',
+                cnt: err
+            });
+        }
+
+        let arrEspecialidad = usuario.arrEspecialidadPermiso;
+        let arrAlertas = [];
+
+        for (const idEspecialidad of arrEspecialidad) {
+            console.log(idEspecialidad);
+            await Alert.find({ idEspecialidad }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }, { path: 'arrCrde' }]).then(async(alertas) => {
+
+                console.log(alertas);
+                await arrAlertas.push(alertas);
+            })
+        };
+        return res.status(200).json({
+            ok: true,
+            status: 200,
+            msg: 'Se han consultado correctamente',
+            cont: arrAlertas.length,
+            cnt: arrAlertas
+        });
+    };
+
 });
 
 module.exports = app;
