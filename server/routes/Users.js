@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
-const { verificaToken } = require('../middlewares/autenticacion');
+const {  } = require('../middlewares/autenticacion');
 const User = require('../models/Users'); //subir nivel
 const { rolMenuUsuario } = require('../middlewares/permisosUsuarios')
 const app = express();
@@ -20,7 +20,7 @@ const crypto = require('crypto'); //23
 //|----------------------------------------------------------|
 //Obtiene todos los susuarios 
 
-app.get('/obtener', [verificaToken], (req, res) => {
+app.get('/obtener', [], (req, res) => {
 
     User.find({ blnStatus: true }) //select * from usuario where estado=true
         //solo aceptan valores numericos
@@ -54,7 +54,7 @@ app.get('/obtener', [verificaToken], (req, res) => {
 //|----------------------------------------------------------|
 //Obtener un usuario por id 
 
-app.get('/obtener/:id', [verificaToken], (req, res) => {
+app.get('/obtener/:id', [], (req, res) => {
     let id = req.params.id;
     User.find({ _id: id })
         .exec((err, users) => {
@@ -86,7 +86,7 @@ app.get('/obtener/:id', [verificaToken], (req, res) => {
 //|----------------------------------------------------------|
 //Crear un nuevo usuario con token y checando si tiene permiso 
 
-app.post('/registrar', [verificaToken], async(req, res) => {
+app.post('/registrar', [], async(req, res) => {
 
     let body = req.body;
     let pass = req.body.strPassword;
@@ -244,7 +244,7 @@ app.post('/registro', async(req, res) => {
 //| Ruta: http://localhost:3000/api/users/actualizar/idUser  |
 //|-----------------------------------------------------------
 
-app.put('/actualizar/:idUser', [verificaToken], (req, res) => {
+app.put('/actualizar/:idUser', [], (req, res) => {
     let id = req.params.idUser;
     console.log(req.params.idUser)
     const userBody = _.pick(req.body, ['srtName', 'strLastName', 'strMotherLastName', 'strEmail', 'strPassword', 'idRole','arrEspecialidadPermiso', 'blnStatus']);
@@ -284,7 +284,7 @@ app.put('/actualizar/:idUser', [verificaToken], (req, res) => {
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/users/eliminar/idUser    |
 //|----------------------------------------------------------|
-app.delete('/eliminar/:idUser', [verificaToken], (req, res) => {
+app.delete('/eliminar/:idUser', [], (req, res) => {
     let id = req.params.id;
 
     User.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, user) => {

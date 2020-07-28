@@ -3,7 +3,7 @@ var mongoose = require('mongoose');
 const _ = require('underscore');
 const Crde = require('../models/crde');
 const { rolMenuUsuario } = require('../middlewares/permisosUsuarios');
-const { verificaToken } = require('../middlewares/autenticacion');
+const {  } = require('../middlewares/autenticacion');
 const app = express();
 //|-----------------     Api GET de categoria crde       ----------------|
 //| Creada por: Leticia Moreno                                           |
@@ -46,7 +46,7 @@ app.get('/obtener', [], (req, res) => {
 //| Ruta: http://localhost:3000/api/crde/obtener/id                      |
 //|----------------------------------------------------------------------|
 //Obtener una categoria de crde por id 
-app.get('/obtener/:id', [verificaToken], (req, res) => {
+app.get('/obtener/:id', [], (req, res) => {
     let id = req.params.id;
     Crde.find({ _id: id })
         .exec((err, crde) => {
@@ -77,7 +77,7 @@ app.get('/obtener/:id', [verificaToken], (req, res) => {
 //| Ruta: http://localhost:3000/api/crde/registrar                       |
 //|----------------------------------------------------------------------|
 // Registrar una categoria de crde
-app.post('/registrar', [verificaToken], async(req, res) => {
+app.post('/registrar', [], async(req, res) => {
     let body = req.body;
     //para poder mandar los datos a la coleccion
     let crde = new Crde({
@@ -129,7 +129,7 @@ app.post('/registrar', [verificaToken], async(req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/crde/actualizar/idCrde               |
 //|----------------------------------------------------------------------|
-app.put('/actualizar/:idCrde', [verificaToken], (req, res) => {
+app.put('/actualizar/:idCrde', [], (req, res) => {
     let id = req.params.idCrde;
     console.log(req.params.idCrde)
     const crdeBody = _.pick(req.body, ['strCategoria', 'blnStatus']);
@@ -170,7 +170,7 @@ app.put('/actualizar/:idCrde', [verificaToken], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/crde/eliminar/idCrde                 |
 //|----------------------------------------------------------------------|
-app.delete('/eliminar/:idCrde', [verificaToken], (req, res) => {
+app.delete('/eliminar/:idCrde', [], (req, res) => {
     let id = req.params.id;
 
     Crde.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {

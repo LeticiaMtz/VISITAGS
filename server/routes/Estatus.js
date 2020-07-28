@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
-const { verificaToken } = require('../middlewares/autenticacion');
+const {  } = require('../middlewares/autenticacion');
 const { rolMenuUsuario } = require('../middlewares/permisosUsuarios');
 const Estatus = require('../models/Estatus'); //subir nivel
 const app = express();
@@ -18,26 +18,28 @@ const app = express();
 //| Ruta: http://localhost:3000/api/estatus/obtener          |
 //|----------------------------------------------------------|
 
-app.get('/obtener', [verificaToken], (req, res) => {
+app.get('/obtener', [], (req, res) => {
     Estatus.find().exec((err, estatus) => { //ejecuta la funcion
         if (err) {
             return res.status(400).json({
                 ok: false,
-                msg: 'error al generar la lista',
-                resp: err
+                status: 200,
+                msg: 'Error al generar la lista',
+                cnt: err
             });
         }
         console.log(req.estatus);
         return res.status(200).json({
             ok: true,
+            status: 200,
             msg: 'Lista generada exiosamente',
-            count: estatus.length,
-            resp: estatus
+            cont: estatus.length,
+            cnt: estatus
         });
     });
 });
 
-app.get('/obtener/:id', [verificaToken], (req, res) => {
+app.get('/obtener/:id', [], (req, res) => {
     let id = req.params.id;
 
     Estatus.find({ _id: id }).exec((err, estatus) => {
@@ -70,7 +72,7 @@ app.get('/obtener/:id', [verificaToken], (req, res) => {
 //| Ruta: http://localhost:3000/api/estatus/registrar        |
 //|----------------------------------------------------------|
 
-app.post('/registrar', [verificaToken], async(req, res) => {
+app.post('/registrar', [], async(req, res) => {
     let body = req.body;
 
     let estatus = new Estatus({
@@ -83,8 +85,9 @@ app.post('/registrar', [verificaToken], async(req, res) => {
         if (encontrado) {
             return res.status(400).json({
                 ok: false,
-                resp: 400,
+                status: 400,
                 msg: 'El nombre del estatus ya ha sido registrado',
+                cnt: encontrado
             });
         }
 
@@ -92,16 +95,17 @@ app.post('/registrar', [verificaToken], async(req, res) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    resp: err
+                    status: 400,
+                    msg: 'El estatus ya ha sido registrado',
+                    cnt: err
                 });
             }
             return res.status(200).json({
                 ok: true,
                 status: 200,
                 msg: "Categoria del estatus fué registrado correctamente",
-                cont: {
-                    resp: estatus
-                }
+                cont: estatus.length,
+                cnt: estatus
             });
         });
     });
@@ -119,7 +123,7 @@ app.post('/registrar', [verificaToken], async(req, res) => {
 //| Ruta: http://localhost:3000/api/estatus/actualizar/:id   |
 //|----------------------------------------------------------|
 
-app.put('/actualizar/:idEstatus', [verificaToken], (req, res) => {
+app.put('/actualizar/:idEstatus', [], (req, res) => {
     let id = req.params.idEstatus;
     console.log(req.params.idEstatus);
     const estatusBody = _.pick(req.body, ['strNombre', 'blnActivo', 'strDescripcion']);
@@ -130,6 +134,7 @@ app.put('/actualizar/:idEstatus', [verificaToken], (req, res) => {
             Estatus.findByIdAndUpdate(id, estatusBody).then((resp) => {
                 return res.status(200).json({
                     ok: true,
+                    status: 200,
                     msg: 'Actualizado con éxito',
                     cont: resp.length,
                     cnt: resp
@@ -137,6 +142,7 @@ app.put('/actualizar/:idEstatus', [verificaToken], (req, res) => {
             }).catch((err) => {
                 return res.status(400).json({
                     ok: false,
+                    status: 400,
                     msg: 'Error al actualizar',
                     err: err
                 });
@@ -147,6 +153,7 @@ app.put('/actualizar/:idEstatus', [verificaToken], (req, res) => {
 
         return res.status(400).json({
             ok: false,
+            status: 400,
             msg: 'Error al actualizar',
             err: err
         });
@@ -165,7 +172,7 @@ app.put('/actualizar/:idEstatus', [verificaToken], (req, res) => {
 //| Ruta: http://localhost:3000/api/estatus/eliminar/:id     |
 //|----------------------------------------------------------|
 
-app.delete('/eliminar/:idEstatus', [verificaToken], (req, res) => {
+app.delete('/eliminar/:idEstatus', [], (req, res) => {
     let id = req.params.id;
 
     Estatus.findByIdAndUpdate(id, { blnActivo: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {
@@ -182,6 +189,7 @@ app.delete('/eliminar/:idEstatus', [verificaToken], (req, res) => {
             ok: true,
             status: 200,
             msg: 'Se ha eliminado correctamente el estatus',
+            cont: resp.length,
             cnt: resp
         });
 

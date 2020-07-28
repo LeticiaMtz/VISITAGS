@@ -39,7 +39,7 @@ app.get('/obtener', [], (req, res) => {
                 ok: true,
                 status: 200,
                 msg: 'Lista de alertas generada exitosamente',
-                count: alerts.length,
+                cont: alerts.length,
                 cnt: alerts
             });
         });
@@ -62,7 +62,7 @@ app.get('/obtener/:idAlert', [], (req, res) => {
                     ok: false,
                     status: 400,
                     msg: 'Error al encontrar la alerta ',
-                    err
+                    cnt: err
                 });
             }
             return res.status(200).json({
@@ -137,9 +137,7 @@ app.post('/registrar', async(req, res) => {
             status: 200,
             msg: "Alerta registrada correctamente",
             cont: alert.length, 
-            cnt: {
-                alert
-            }
+            cnt: alert
         });
     });
 });

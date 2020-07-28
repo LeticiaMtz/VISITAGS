@@ -4,7 +4,7 @@ const app = express();
 const mongoose = require('mongoose');
 const Especialidad = require('../models/especialidad');
 const Carrera = require('../models/carreras');
-const { verificaToken } = require('../middlewares/autenticacion');
+const {  } = require('../middlewares/autenticacion');
 
 //|-----------------     Api POST de Especialidad        ----------------|
 //| Creada por: Leticia Moreno                                           |
@@ -14,7 +14,7 @@ const { verificaToken } = require('../middlewares/autenticacion');
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/especialidad/registrar/idCarrera     |
 //|----------------------------------------------------------------------|
-app.post('/registrar/:idCarrera', [verificaToken], (req, res) => {
+app.post('/registrar/:idCarrera', [], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);
@@ -171,7 +171,7 @@ app.get('/obtener/:idCarrera', [], (req, res) => {
 //| cambios:                                                                         |
 //| Ruta: http://localhost:3000/api/especialidad/actualizar/idCarrera/idEspecialidad |
 //|----------------------------------------------------------------------------------|
-app.put('/actualizar/:idCarrera/:idEspecialidad', [verificaToken], (req, res) => {
+app.put('/actualizar/:idCarrera/:idEspecialidad', [], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);
@@ -284,7 +284,7 @@ app.put('/actualizar/:idCarrera/:idEspecialidad', [verificaToken], (req, res) =>
 //| cambios:                                                                       |
 //| Ruta: http://localhost:3000/api/especialidad/eliminar/idCarrera/idEspecialidad |
 //|--------------------------------------------------------------------------------|
-app.delete('/eliminar/:idCarrera/:idEspecialidad', [verificaToken], (req, res) => {
+app.delete('/eliminar/:idCarrera/:idEspecialidad', [], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);

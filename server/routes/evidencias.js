@@ -4,7 +4,7 @@ const app = express();
 const mongoose = require('mongoose');
 const Evidencias = require('../models/evidencias');
 const Alerts = require('../models/Alerts');
-const { verificaToken } = require('../middlewares/autenticacion');
+const {  } = require('../middlewares/autenticacion');
 
 
 //|-----------------          Api POST de api            ----------------|
@@ -15,7 +15,7 @@ const { verificaToken } = require('../middlewares/autenticacion');
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/api/registrar                        |
 //|----------------------------------------------------------------------|
-app.post('/registrar/:idAlert', [verificaToken], (req, res) => {
+app.post('/registrar/:idAlert', [], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);
@@ -84,7 +84,7 @@ app.post('/registrar/:idAlert', [verificaToken], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/api/obtener                          |
 //|----------------------------------------------------------------------|
-app.get('/obtener/:idAlert', [verificaToken], (req, res) => {
+app.get('/obtener/:idAlert', [], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
     }
@@ -154,7 +154,7 @@ app.get('/obtener/:idAlert', [verificaToken], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/api/actualizar/idCategoria/idApi     |
 //|----------------------------------------------------------------------|
-app.put('/actualizar/:idAlert/:idEvidencia', [verificaToken], (req, res) => {
+app.put('/actualizar/:idAlert/:idEvidencia', [], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);
@@ -271,7 +271,7 @@ app.put('/actualizar/:idAlert/:idEvidencia', [verificaToken], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/api/eliminar/idCategoria/idApi       |
 //|----------------------------------------------------------------------|
-app.delete('/eliminar/:idAlert/:idEvidencia', [verificaToken], (req, res) => {
+app.delete('/eliminar/:idAlert/:idEvidencia', [], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);
