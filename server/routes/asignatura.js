@@ -4,6 +4,7 @@ const _ = require('underscore');
 const Asignatura = require('../models/asignatura');
 const { rolMenuUsuario } = require('../middlewares/permisosUsuarios');
 const { verificaToken } = require('../middlewares/autenticacion');
+const asignatura = require('../models/asignatura');
 const app = express();
 
 //|----------------- Api GET de Asignatura ----------------------|
@@ -22,14 +23,18 @@ app.get('/obtener', [], (req, res) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    err
+                    status: 400,
+                    msg: 'Error al consultar las asignaturas',
+                    cnt: err
                 });
             }
             console.log(req.asignatura);
             return res.status(200).json({
                 ok: true,
-                count: asignatura.length,
-                asignatura
+                status: 200,
+                msg: 'Asignaturas consultadas exitosamente',
+                cont: asignatura.length,
+                cnt: asignatura
             });
         });
 });
@@ -51,14 +56,14 @@ app.get('/obtener/:id', [verificaToken], (req, res) => {
                 return res.status(400).json({
                     ok: false,
                     status: 400,
-                    msg: 'Ocurrio un error al consultar la asignatura',
+                    msg: 'Error al consultar la asignatura',
                     cnt: err
                 });
             }
             return res.status(200).json({
                 ok: true,
                 status: 200,
-                msg: 'Se ha consultado correctamente la asignatura',
+                msg: 'Asignatura consultada exitosamente',
                 cont: asignatura.length,
                 cnt: asignatura
             });
@@ -87,8 +92,9 @@ app.post('/registrar', [verificaToken], async(req, res) => {
         if (encontrado) {
             return res.status(400).json({
                 ok: false,
-                resp: 400,
+                status: 400,
                 msg: 'La asignatura ya ha sido registrada',
+                cnt: encontrado
 
             });
         }
@@ -96,23 +102,24 @@ app.post('/registrar', [verificaToken], async(req, res) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    err
+                    status: 400,
+                    msg: 'Error al registrar la asignatura',
+                    cnt: err
                 });
             }
             return res.status(200).json({
                 ok: true,
                 status: 200,
-                msg: "Asignatura registrada correctamente",
-                cont: {
-                    asignatura
-                }
+                msg: "Asignatura registrada exitosamente",
+                cont: asignatura.length,
+                cnt: asignatura
             });
         });
     });
 
 });
 
-//|----------------- Api POST de Asignatura---------------------------|
+//|----------------- Api POST Masivo de Asignatura---------------------------|
 //| Creada por: Martin Palacios                                       |
 //| Api que registra masivamente las asignaturas                      |
 //| modificada por:                                                   |
@@ -158,6 +165,7 @@ app.put('/actualizar/:idAsignatura', [verificaToken], (req, res) => {
             Asignatura.findByIdAndUpdate(id, asignaturaBody).then((resp) => {
                 return res.status(200).json({
                     ok: true,
+                    status: 200,
                     msg: 'Asignatura actualizada exitosamente',
                     cont: resp.length,
                     cnt: resp
@@ -165,7 +173,8 @@ app.put('/actualizar/:idAsignatura', [verificaToken], (req, res) => {
             }).catch((err) => {
                 return res.status(400).json({
                     ok: false,
-                    msg: 'Error al actualizar',
+                    status: 400,
+                    msg: 'Error al actualizar asignatura',
                     err: err
                 });
             });
@@ -173,6 +182,7 @@ app.put('/actualizar/:idAsignatura', [verificaToken], (req, res) => {
     }).catch((err) => {
         return res.status(400).json({
             ok: false,
+            status: 400,
             msg: 'Error al actualizar',
             err: err
         });
@@ -196,14 +206,15 @@ app.delete('/eliminar/:idAsignatura', [verificaToken], (req, res) => {
             return res.status(400).json({
                 ok: false,
                 status: 400,
-                msg: 'Ha ocurrido un error al eliminar la asignatura',
+                msg: 'Error al eliminar la asignatura',
                 cnt: err
             });
         }
         return res.status(200).json({
             ok: true,
             status: 200,
-            msg: 'Se ha eliminado correctamente la asignatura',
+            msg: 'Asignatura eliminada exitosamente',
+            cont: resp.length,
             cnt: resp
         });
     });

@@ -19,14 +19,17 @@ app.get('/obtener', (req, res) => {
         if (err) {
             return res.status(400).json({
                 ok: false,
+                status: 400,
+                msg: 'Error al consultar las modalidades',
                 err
             });
         }
-        console.log(req.modalidad);
         return res.status(200).json({
             ok: true,
-            count: modalidad.length,
-            modalidad
+            status: 200,
+            msg: 'Modalidades consultadas exitosamente',
+            cont: modalidad.length,
+            cnt: modalidad
         });
     });
 });
@@ -48,14 +51,14 @@ app.get('/obtener/:id', (req, res) => {
                 return res.status(400).json({
                     ok: false,
                     status: 400,
-                    msg: 'Ocurrio un error al consultar la modalidad',
+                    msg: 'Error al consultar la modalidad',
                     cnt: err
                 });
             }
             return res.status(200).json({
                 ok: true,
                 status: 200,
-                msg: 'Se ha consultado correctamente la modalidad',
+                msg: 'Modalidad consultada exitosamente',
                 cont: modalidad.length,
                 cnt: modalidad
             });
@@ -83,25 +86,26 @@ app.post('/registrar', async (req, res) => {
         if (encontrado) {
             return res.status(400).json({
                 ok: false,
-                resp: 400,
+                status: 400,
                 msg: 'La modalidad ya ha sido registrada',
-
+                cnt: encontrado
             });
         }
         modalidad.save((err, modalidad) => {
             if(err){
                 return res.status(400).json({
-                    ok: false, 
-                    err
+                    ok: false,
+                    status: 400,
+                    msg: 'Error al registrar la modalidad', 
+                    cnt: err
                 });
             }
             return res.status(200).json({
                 ok: true,
                 status: 200,
-                msg: "Modalidad registrada correctamente",
-                cont: {
-                    modalidad
-                }
+                msg: "Modalidad registrada exitosamente",
+                cont: modalidad.length,
+                cnt: modalidad
             });
         });
     });
@@ -129,6 +133,7 @@ app.put('/actualizar/:idModalidad', (req, res) => {
     if(numParam !== 6 && numParam !== 1){
         return res.status(400).json({
             ok: false,
+            status: 400,
             msg: 'Error al actualizar la modalidad',
             err: 'El número de parametros enviados no concuerdan con los que requiere la API'
         });
@@ -139,6 +144,7 @@ app.put('/actualizar/:idModalidad', (req, res) => {
             Modalidad.findByIdAndUpdate(id, modalidadBody).then((resp) => {
                 return res.status(200).json({
                     ok: true,
+                    status:200,
                     msg: 'Modalidad actualizada exitosamente',
                     cont: resp.length,
                     cnt: resp
@@ -146,16 +152,18 @@ app.put('/actualizar/:idModalidad', (req, res) => {
             }).catch((err) =>{
                 return res.status(400).json({
                     ok: false,
+                    status:400,
                     msg: 'Error al actualizar la modalidad',
-                    err: err
+                    cnt: err
                 });
             });
         }
     }).catch((err) => {
         return res.status(400).json({
             ok: false,
+            status:400,
             msg: 'Error al actualizar la modalidad',
-            err: err
+            cnt: err
         });
     });
 });
@@ -185,6 +193,7 @@ app.delete('/eliminar/:idModalidad',  (req, res) => {
             ok: true,
             status: 200,
             msg: 'Se ha eliminado correctamente la modalidad',
+            cont: resp.length,
             cnt: resp
         });
     });
