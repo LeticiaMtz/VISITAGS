@@ -28,14 +28,18 @@ app.get('/obtener', [verificaToken], (req, res) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    err
+                    status: 400, 
+                    msg: 'No se pudo obtener la lista de usuarios',
+                    cnt: err
                 });
             }
             console.log(req.user);
             return res.status(200).json({
                 ok: true,
-                count: users.length,
-                users
+                status: 200, 
+                msg: 'Lista de usuarios generada exitosamente', 
+                cont: users.length,
+                cnt: users
             });
         });
 });
@@ -95,6 +99,7 @@ app.post('/registrar', [verificaToken], async(req, res) => {
         strEmail: req.body.strEmail,
         strPassword: bcrypt.hashSync(body.strPassword, 10),
         idRole: req.body.idRole,
+        arrEspecialidadPermiso: req.body.arrEspecialidadPermiso,
         blnStatus: req.body.blnStatus
 
     });
@@ -130,7 +135,8 @@ app.post('/registrar', [verificaToken], async(req, res) => {
             ok: true,
             status: 200,
             msg: "Usuario registrado correctamente",
-            cont: {
+            cont: user.length,
+            cnt: {
                 user
             }
         });
@@ -139,8 +145,9 @@ app.post('/registrar', [verificaToken], async(req, res) => {
         console.log(err);
         return res.status(500).json({
             ok: false,
-            resp: 500,
-            const: {
+            status: 500,
+            msg: 'Algo salio mal',
+            cnt: {
                 err: err.message
             }
         });
@@ -171,6 +178,7 @@ app.post('/registro', async(req, res) => {
         strEmail: req.body.strEmail,
         strPassword: bcrypt.hashSync(body.strPassword, 10),
         idRole: req.body.idRole,
+        arrEspecialidadPermiso: req.body. arrEspecialidadPermiso,
         blnStatus: req.body.blnStatus
 
     });
@@ -207,7 +215,8 @@ app.post('/registro', async(req, res) => {
             ok: true,
             status: 200,
             msg: "Usuario registrado correctamente",
-            cont: {
+            cont: user.length,
+            cnt: {
                 user
             }
         });
@@ -217,7 +226,8 @@ app.post('/registro', async(req, res) => {
         return res.status(500).json({
             ok: false,
             resp: 500,
-            const: {
+            msg: 'Algo salio mal',
+            cnt: {
                 err: err.message
             }
         });
@@ -232,26 +242,40 @@ app.post('/registro', async(req, res) => {
 //| Fecha de modificacion:                                   |
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/users/actualizar/idUser  |
-//|----------------------------------------------------------|
+//|-----------------------------------------------------------
+
 app.put('/actualizar/:idUser', [verificaToken], (req, res) => {
-    let id = req.params.id;
-    let body = _.pick(req.body, ['srtName', 'strLastName', 'strMotherLastName', 'strEmail', 'strPasswor', 'idRole', 'blnStatus']); //FILTRAR del body, on el pick seleccionar los campos que interesan del body 
-    //id 'su coleccion, new -> si no existe lo inserta, runVali-> sirve para validar todas las condiciones del modelo 
-    User.findByIdAndUpdate(id, body, { new: true, runValidators: true, context: 'query' }, (err, usrDB) => {
-        if (err) {
-            return res.status(400).json({
-                ok: false,
-                err
+    let id = req.params.idUser;
+    console.log(req.params.idUser)
+    const userBody = _.pick(req.body, ['srtName', 'strLastName', 'strMotherLastName', 'strEmail', 'strPassword', 'idRole','arrEspecialidadPermiso', 'blnStatus']);
+    User.find({ _id: id }).then((resp) => {
+        if (resp.length > 0) {
+            User.findByIdAndUpdate(id, userBody).then((resp) => {
+                return res.status(200).json({
+                    ok: true,
+                    status: 200, 
+                    msg: 'Usuario actualizado con éxito',
+                    cont: resp.length,
+                    cnt: resp
+                });
+            }).catch((err) => {
+                return res.status(400).json({
+                    ok: false,
+                    status: 400,
+                    msg: 'Error al actualizar',
+                    err: err
+                });
             });
         }
-        return res.status(200).json({
-            ok: true,
-            usrDB
+    }).catch((err) => {
+        return res.status(400).json({
+            ok: false,
+            status: 400, 
+            msg: 'Error al actualizar',
+            err: err
         });
-
     });
 });
-
 //|-----------------Api DELETE de Usuarios   ----------------|
 //| Creada por: Leticia Moreno                               |
 //| Api que elimina un usuario                               |
@@ -263,7 +287,7 @@ app.put('/actualizar/:idUser', [verificaToken], (req, res) => {
 app.delete('/eliminar/:idUser', [verificaToken], (req, res) => {
     let id = req.params.id;
 
-    User.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {
+    User.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, user) => {
         if (err) {
             return res.status(400).json({
                 ok: false,
@@ -276,7 +300,8 @@ app.delete('/eliminar/:idUser', [verificaToken], (req, res) => {
             ok: true,
             status: 200,
             msg: 'Usuario eliminado correctamente',
-            resp
+            cont: user.length,
+            cnt: user
         });
     });
 });

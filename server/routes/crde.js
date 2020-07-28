@@ -22,16 +22,18 @@ app.get('/obtener', [], (req, res) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
+                    status: 400, 
                     msg: 'error al generar la lista',
-                    err
+                    cnt: err
                 });
             }
             console.log(req.crde);
             return res.status(200).json({
                 ok: true,
+                status: 200, 
                 msg: 'Lista generada exiosamente',
                 count: crde.length,
-                crde
+                cnt: crde
             });
         });
 });
@@ -90,8 +92,9 @@ app.post('/registrar', [verificaToken], async(req, res) => {
         if (encontrado) {
             return res.status(400).json({
                 ok: false,
-                resp: 400,
+                status: 400,
                 msg: 'El nombre de la categoria ya ha sido registrada',
+                cnt: err
 
             });
         }
@@ -99,14 +102,17 @@ app.post('/registrar', [verificaToken], async(req, res) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    err
+                    status: 400, 
+                    mg: 'No se pudo guardar la nueva categoria',
+                    cnt: err
                 });
             }
             return res.status(200).json({
                 ok: true,
                 status: 200,
                 msg: "Categoria de crde registrada correctamente",
-                cont: {
+                cont: crde.length, 
+                cnt: {
                     crde
                 }
             });
@@ -132,6 +138,7 @@ app.put('/actualizar/:idCrde', [verificaToken], (req, res) => {
             Crde.findByIdAndUpdate(id, crdeBody).then((resp) => {
                 return res.status(200).json({
                     ok: true,
+                    status: 400, 
                     msg: 'Actualizada con éxito',
                     cont: resp.length,
                     cnt: resp
@@ -139,16 +146,18 @@ app.put('/actualizar/:idCrde', [verificaToken], (req, res) => {
             }).catch((err) => {
                 return res.status(400).json({
                     ok: false,
+                    status: 400, 
                     msg: 'Error al actualizar',
-                    err: err
+                    cnt: err
                 });
             });
         }
     }).catch((err) => {
         return res.status(400).json({
             ok: false,
+            status: 400, 
             msg: 'Error al actualizar',
-            err: err
+            cnt: err
         });
     });
 });
@@ -178,6 +187,7 @@ app.delete('/eliminar/:idCrde', [verificaToken], (req, res) => {
             ok: true,
             status: 200,
             msg: 'Se ha eliminado correctamente la categoria crde',
+            cont: resp.length, 
             cnt: resp
         });
     });

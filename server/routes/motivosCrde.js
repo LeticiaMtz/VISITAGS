@@ -45,7 +45,8 @@ app.post('/registrar/:idCrde', [verificaToken], (req, res) => {
                 ok: false,
                 resp: 400,
                 msg: 'Error el motivo ya se encuentra registrado',
-                cont: {
+                cont: resp.length, 
+                cnt: {
                     resp
                 }
             })
@@ -77,7 +78,8 @@ app.post('/registrar/:idCrde', [verificaToken], (req, res) => {
                                 ok: true,
                                 resp: 200,
                                 msg: 'Success: Informacion insertada correctamente.',
-                                cont: {
+                                cont: motivo.length, 
+                                cnt: {
                                     motivo
                                 }
                             });
@@ -144,7 +146,8 @@ app.get('/obtener/:idCrde', [verificaToken], (req, res) => {
                     ok: true,
                     resp: 200,
                     msg: 'Success: Informacion obtenida correctamente.',
-                    cont: {
+                    cont: rutas.length, 
+                    cnt: {
                         rutas
                     }
                 });
@@ -270,7 +273,8 @@ app.put('/actualizar/:idCrde/:idMotivo', [verificaToken], (req, res) => {
                     ok: true,
                     resp: 200,
                     msg: 'Success: Informacion actualizada correctamente.',
-                    cont: {
+                    cont: ruta.length, 
+                    cnt: {
                         ruta
                     }
                 });
@@ -318,7 +322,8 @@ app.delete('/eliminar/:idCrde/:idMotivo', [verificaToken], (req, res) => {
                 ok: true,
                 resp: 200,
                 msg: 'Success: Informacion eliminada correctamente.',
-                cont: {
+                cont: resp.length, 
+                cnt: {
                     resp
                 }
             });

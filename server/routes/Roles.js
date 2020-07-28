@@ -30,8 +30,8 @@ app.get('/obtener', [verificaToken], (req, res) => {
                 ok: true,
                 status: 200, 
                 msg: 'Lista de commentarios generada exitosamente',
-                count: roles.length,
-                roles
+                cont: roles.length,
+                cnt: roles
             });
         });
 });
@@ -45,7 +45,7 @@ app.get('/obtener', [verificaToken], (req, res) => {
 //| Ruta: http://localhost:3000/api/roles/obtener/idRole     |
 //|----------------------------------------------------------|
 //Obtener por id
-app.get('/obtener/:id', [verificaToken], (req, res) => {
+app.get('/obtener/:id',  (req, res) => {
     let id = req.params.id;
     Role.find({ _id: id })
         .exec((err, roles) => {
@@ -99,7 +99,8 @@ app.post('/registrar', [verificaToken], (req, res) => {
             ok: true,
             status: 200, 
             msg: 'Se registro el rol correctamente', 
-            rolDB
+            cont: rolDB.length, 
+            cnt: rolDB
         });
     });
 });
@@ -114,25 +115,35 @@ app.post('/registrar', [verificaToken], (req, res) => {
 //| Ruta: http://localhost:3000/api/roles/actualizar/idRole  |
 //|----------------------------------------------------------|
 app.put('/actualizar/:idRole', [verificaToken], (req, res) => {
-    let id = req.params.id;
-    let body = _.pick(req.body, ['strRole', 'strDescripcion', 'blnStatus', 'arrApi']); //FILTRAR del body, on el pick seleccionar los campos que interesan del body 
-    //id 'su coleccion, new -> si no existe lo inserta, runVali-> sirve para validar todas las condiciones del modelo 
-    Role.findByIdAndUpdate(id, body, { new: true, runValidators: true, context: 'query' }, (err, rolDB) => {
-        if (err) {
-            return res.status(400).json({
-                ok: false,
-                status: 400, 
-                msg: 'Error al actualizar rol',
-                err
+    let id = req.params.idRole;
+    console.log(req.params.idRole)
+    const roleBody = _.pick(req.body, ['strRole', 'strDescripcion', 'blnStatus', 'arrApi']);
+    Role.find({ _id: id }).then((resp) => {
+        if (resp.length > 0) {
+            Role.findByIdAndUpdate(id, roleBody).then((resp) => {
+                return res.status(200).json({
+                    ok: true,
+                    status: 200, 
+                    msg: 'Rol actualizado con éxito',
+                    cont: resp.length,
+                    cnt: resp
+                });
+            }).catch((err) => {
+                return res.status(400).json({
+                    ok: false,
+                    status: 400,
+                    msg: 'Error al actualizar el rol',
+                    err: err
+                });
             });
         }
-        return res.status(200).json({
-            ok: true,
-            status: 200, 
-            msg: 'Rol actualizado correctamente',
-            rolDB
+    }).catch((err) => {
+        return res.status(400).json({
+            ok: false,
+            status: 400, 
+            msg: 'Error al actualizar el rol',
+            err: err
         });
-
     });
 });
 
@@ -159,9 +170,10 @@ app.delete('/eliminar/:idRole', [verificaToken], (req, res) => {
         }
         return res.status(200).json({
             ok: true,
-            status:200, 
+            status: 200, 
             msg: 'Rol eliminado correctamente',
-            resp
+            cont: resp.length, 
+            cnt: resp
         });
     });
 });

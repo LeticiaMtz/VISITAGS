@@ -29,7 +29,7 @@ app.post('/registrar/:idAlert', [verificaToken], (req, res) => {
             ok: false,
             resp: 500,
             msg: 'Error: Error al registrar el motivo',
-            cont: {
+            cnt: {
                 err
             }
         });
@@ -46,7 +46,8 @@ app.post('/registrar/:idAlert', [verificaToken], (req, res) => {
                                 ok: true,
                                 resp: 200,
                                 msg: 'Success: Informacion insertada correctamente.',
-                                cont: {
+                                cont: evidencias.length, 
+                                cnt: {
                                     evidencias
                                 }
                             });
@@ -56,7 +57,7 @@ app.post('/registrar/:idAlert', [verificaToken], (req, res) => {
                                 ok: false,
                                 resp: 500,
                                 msg: 'Error: Error al registrar el motivo',
-                                cont: {
+                                cnt: {
                                     err: err.message
                                 }
                             });
@@ -67,7 +68,7 @@ app.post('/registrar/:idAlert', [verificaToken], (req, res) => {
                 ok: false,
                 resp: 500,
                 msg: 'Error: Error interno',
-                cont: {
+                cnt: {
                     err: err.message
                 }
             });
@@ -110,7 +111,8 @@ app.get('/obtener/:idAlert', [verificaToken], (req, res) => {
                     ok: true,
                     resp: 200,
                     msg: 'Success: Informacion obtenida correctamente.',
-                    cont: {
+                    cont: rutas.length, 
+                    cnt: {
                         rutas
                     }
                 });
@@ -121,7 +123,7 @@ app.get('/obtener/:idAlert', [verificaToken], (req, res) => {
                     ok: true,
                     resp: 404,
                     msg: 'Error: La alerta no existe o no cuenta con evidencias',
-                    cont: {
+                    cnt: {
                         rutas
                     }
                 });
@@ -135,7 +137,7 @@ app.get('/obtener/:idAlert', [verificaToken], (req, res) => {
                 ok: false,
                 resp: 500,
                 msg: "Error: Error al obtener las apis de la categoría.",
-                cont: {
+                cnt: {
                     err: err.message
                 }
             });
@@ -172,7 +174,7 @@ app.put('/actualizar/:idAlert/:idEvidencia', [verificaToken], (req, res) => {
             ok: false,
             resp: 500,
             msg: 'Error: Error al actualizar la api',
-            cont: {
+            cnt: {
                 err
             }
         });
@@ -202,7 +204,7 @@ app.put('/actualizar/:idAlert/:idEvidencia', [verificaToken], (req, res) => {
                 ok: false,
                 resp: 500,
                 msg: 'Error: Error del servidor',
-                cont: {
+                cnt: {
                     err
                 }
             });
@@ -214,7 +216,7 @@ app.put('/actualizar/:idAlert/:idEvidencia', [verificaToken], (req, res) => {
                     ok: false,
                     resp: 400,
                     msg: 'Error: La evidencia ya se encuentra registrada',
-                    cont: {
+                    cnt: {
                         resp
                     }
                 });
@@ -238,7 +240,8 @@ app.put('/actualizar/:idAlert/:idEvidencia', [verificaToken], (req, res) => {
                     ok: true,
                     resp: 200,
                     msg: 'Success: Informacion actualizada correctamente.',
-                    cont: {
+                    cont: ruta.length, 
+                    cnt: {
                         ruta
                     }
                 });
@@ -250,7 +253,7 @@ app.put('/actualizar/:idAlert/:idEvidencia', [verificaToken], (req, res) => {
                     ok: false,
                     resp: 500,
                     msg: 'Error: Error al modificar la evidencia',
-                    cont: {
+                    cnt: {
                         err
                     }
                 });
@@ -286,7 +289,7 @@ app.delete('/eliminar/:idAlert/:idEvidencia', [verificaToken], (req, res) => {
                 ok: true,
                 resp: 200,
                 msg: 'Success: Informacion insertada correctamente.',
-                cont: {
+                cnt: {
                     resp
                 }
             });
@@ -298,7 +301,7 @@ app.delete('/eliminar/:idAlert/:idEvidencia', [verificaToken], (req, res) => {
                 ok: false,
                 resp: 500,
                 msg: 'Error: Error al eliminar la api.',
-                cont: {
+                cnt: {
                     err: err.message
                 }
             });
