@@ -28,7 +28,7 @@ app.post('/registrar/:idCarrera', [verificaToken], (req, res) => {
             ok: false,
             resp: 500,
             msg: 'Error: Error al registrar la especialidad',
-            cont: {
+            cnt: {
                 err
             }
         });
@@ -46,7 +46,7 @@ app.post('/registrar/:idCarrera', [verificaToken], (req, res) => {
                     ok: false,
                     resp: 400,
                     msg: `Error: La especialidad " ${ especialidad.strEspecialidad } " ya se encuentra registrada.`,
-                    cont: {
+                    cnt: {
                         resp
                     }
                 });
@@ -63,7 +63,8 @@ app.post('/registrar/:idCarrera', [verificaToken], (req, res) => {
                             ok: true,
                             resp: 200,
                             msg: 'Success: Informacion insertada correctamente.',
-                            cont: {
+                            cont: especialidad.length, 
+                            cnt: {
                                 especialidad
                             }
                         });
@@ -73,7 +74,7 @@ app.post('/registrar/:idCarrera', [verificaToken], (req, res) => {
                             ok: false,
                             resp: 500,
                             msg: 'Error: Error al registrar la especialidad',
-                            cont: {
+                            cnt: {
                                 err: err.message
                             }
                         });
@@ -85,7 +86,7 @@ app.post('/registrar/:idCarrera', [verificaToken], (req, res) => {
                 ok: false,
                 resp: 500,
                 msg: 'Error: Error interno',
-                cont: {
+                cnt: {
                     err: err.message
                 }
             });
@@ -127,7 +128,8 @@ app.get('/obtener/:idCarrera', [], (req, res) => {
                     ok: true,
                     resp: 200,
                     msg: 'Success: Informacion obtenida correctamente.',
-                    cont: {
+                    cont: rutas.length, 
+                    cnt: {
                         rutas
                     }
                 });
@@ -138,7 +140,7 @@ app.get('/obtener/:idCarrera', [], (req, res) => {
                     ok: true,
                     resp: 404,
                     msg: 'Error: La carrera no existe o no cuenta con rutas de especialidad',
-                    cont: {
+                    cnt: {
                         rutas
                     }
                 });
@@ -152,7 +154,7 @@ app.get('/obtener/:idCarrera', [], (req, res) => {
                 ok: false,
                 resp: 500,
                 msg: "Error: Error al obtener las especialidades de la carrera.",
-                cont: {
+                cnt: {
                     err: err.message
                 }
             });
@@ -188,7 +190,7 @@ app.put('/actualizar/:idCarrera/:idEspecialidad', [verificaToken], (req, res) =>
             ok: false,
             resp: 500,
             msg: 'Error: Error al actualizar la especialidad',
-            cont: {
+            cnt: {
                 err
             }
         });
@@ -216,7 +218,7 @@ app.put('/actualizar/:idCarrera/:idEspecialidad', [verificaToken], (req, res) =>
                 ok: false,
                 resp: 500,
                 msg: 'Error: Error del servidor',
-                cont: {
+                cnt: {
                     err
                 }
             });
@@ -228,7 +230,7 @@ app.put('/actualizar/:idCarrera/:idEspecialidad', [verificaToken], (req, res) =>
                     ok: false,
                     resp: 400,
                     msg: 'Error: La especialidad ya se encuentra registrada',
-                    cont: {
+                    cnt: {
                         resp
                     }
                 });
@@ -251,7 +253,8 @@ app.put('/actualizar/:idCarrera/:idEspecialidad', [verificaToken], (req, res) =>
                     ok: true,
                     resp: 200,
                     msg: 'Success: Informacion actualizada correctamente.',
-                    cont: {
+                    cont: ruta.length, 
+                    cnt: {
                         ruta
                     }
                 });
@@ -263,7 +266,7 @@ app.put('/actualizar/:idCarrera/:idEspecialidad', [verificaToken], (req, res) =>
                     ok: false,
                     resp: 500,
                     msg: 'Error: Error al modificar la especialidad',
-                    cont: {
+                    cnt: {
                         err
                     }
                 });
@@ -299,7 +302,8 @@ app.delete('/eliminar/:idCarrera/:idEspecialidad', [verificaToken], (req, res) =
                 ok: true,
                 resp: 200,
                 msg: 'Success: Informacion insertada correctamente.',
-                cont: {
+                cont: resp.length, 
+                cnt: {
                     resp
                 }
             });
@@ -311,7 +315,7 @@ app.delete('/eliminar/:idCarrera/:idEspecialidad', [verificaToken], (req, res) =
                 ok: false,
                 resp: 500,
                 msg: 'Error: Error al eliminar la  especialidad.',
-                cont: {
+                cnt: {
                     err: err.message
                 }
             });

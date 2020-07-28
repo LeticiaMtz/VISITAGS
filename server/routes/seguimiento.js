@@ -48,7 +48,8 @@ app.post('/registrar/:idAlert', [verificaToken], (req, res) => {
                             ok: true,
                             resp: 200,
                             msg: 'Success: Informacion insertada correctamente.',
-                            cont: {
+                            cont: seguimiento.length, 
+                            cnt: {
                                 seguimiento
                             }
                         });
@@ -118,7 +119,8 @@ app.post('/registrar/:idAlert/:idSeguimiento', [verificaToken], (req, res) => {
                                 ok: true,
                                 resp: 200,
                                 msg: 'Success: Informacion insertada correctamente.',
-                                cont: {
+                                cont: evidencias.length,
+                                cnt: {
                                     evidencias
                                 }
                             });
@@ -181,7 +183,8 @@ app.get('/obtener/:idAlert', [verificaToken], (req, res) => {
                     ok: true,
                     resp: 200,
                     msg: 'Success: Informacion obtenida correctamente.',
-                    cont: {
+                    cont: rutas.length,
+                    cnt: {
                         rutas
                     }
                 });
@@ -364,8 +367,9 @@ app.delete('/eliminar/:idAlert/:idSeguimeinto', [verificaToken], (req, res) => {
             return res.status(200).json({
                 ok: true,
                 resp: 200,
-                msg: 'Success: Informacion insertada correctamente.',
-                cont: {
+                msg: 'Success: Informacion eliminada correctamente.',
+                cont: resp.length,
+                cnt: {
                     resp
                 }
             });

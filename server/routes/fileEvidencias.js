@@ -22,9 +22,9 @@ app.put('/upload/:ruta/:idAlert/:idEvidencia', (req, res) =>{
     if (!req.files) {
         return res.status(400).json({
             ok: false, 
-            err:{
-                message: 'No se a seleccionado ningun archivo'
-            }
+            status: 400, 
+            msg: 'No se a seleccionado ningun archivo',
+            cnt: err
         })
     }
 
@@ -35,7 +35,9 @@ app.put('/upload/:ruta/:idAlert/:idEvidencia', (req, res) =>{
                     subirArchivo.borraArchivo(nombre, 'evidencias');
                     return res.status(400).json({
                         ok: false,
-                        err
+                        status: 400, 
+                        msg: 'No se pudo subir el archivo', 
+                        cnt: err
                     });
                 }
 
@@ -45,60 +47,30 @@ app.put('/upload/:ruta/:idAlert/:idEvidencia', (req, res) =>{
                            Alerts.findOneAndUpdate({'aJsnEvidencias._id': idEvidencia, _id: idAlert},{$set: {'aJsnEvidencias.$.strFileEvidencia': nombreImagen}}).then(resp => {
                             return res.status(200).json({
                                 ok: true,
-                                resp
+                                status: 200, 
+                                msg: 'Se subio el archivo exitosamente',
+                                cnt: resp
                             }); 
                         }).catch(err =>{
                             return res.status(400).json({
                                 ok: false,
-                                err
+                                status: 400, 
+                                mg: 'Algo salio mal', 
+                                cnt: err
                             });
                         });
         
                 });
-                // Alerts.aJsnEvidencias.strFileEvidencia = nombreArchivo;
-        
-                // Alerts.save((err, eviDB)=>{
-                //     if (err) {
-                //         subirArchivo.borraArchivo(nombreArchivo, 'evidencias');
-                //         return res.status(400).json({
-                //             ok: false,
-                //             err
-                //         });
-                //     }
-        
-                //     return res.status(200).json({
-                //         ok: true, 
-                //         eviDB
-                //     });
-                // });
-        
-
         break;
         default: 
         return res.status(400).json({
             ok: false, 
-            err: {
-                message: 'Ruta no valida'
-            }
+            status: 400, 
+            msg: 'Ruta no valida', 
+            cnt: err
         });
     }   
 
 });
-
-function fileEvidencias(id, res, nombreArchivo, archivo, ruta){ 
- 
-}
-
-
-
-
-function borrarArchivo(nombreArchivo, ruta){
-    let pathImg = path.resolve(__dirname, `../../uploads/${ruta}/${nombreArchivo}`);
-    if(fs.existsSync(pathImg)){
-        fs.unlinkSync(pathImg);
-
-    }
-    console.log('Archivo borrado con exito');
-}
 
 module.exports = app;

@@ -29,7 +29,7 @@ app.post('/registrar/:idCategoria', [verificaToken], (req, res) => {
             ok: false,
             resp: 500,
             msg: 'Error: Error al registrar la api',
-            cont: {
+            cnt: {
                 err
             }
         });
@@ -47,7 +47,7 @@ app.post('/registrar/:idCategoria', [verificaToken], (req, res) => {
                     ok: false,
                     resp: 400,
                     msg: `Error: La Api " ${ api.strNameApi } " ya se encuentra registrada.`,
-                    cont: {
+                    cnt: {
                         resp
                     }
                 });
@@ -64,7 +64,8 @@ app.post('/registrar/:idCategoria', [verificaToken], (req, res) => {
                             ok: true,
                             resp: 200,
                             msg: 'Success: Informacion insertada correctamente.',
-                            cont: {
+                            cont: api.length, 
+                            cnt: {
                                 api
                             }
                         });
@@ -74,7 +75,7 @@ app.post('/registrar/:idCategoria', [verificaToken], (req, res) => {
                             ok: false,
                             resp: 500,
                             msg: 'Error: Error al registrar la api',
-                            cont: {
+                            cnt: {
                                 err: err.message
                             }
                         });
@@ -86,7 +87,7 @@ app.post('/registrar/:idCategoria', [verificaToken], (req, res) => {
                 ok: false,
                 resp: 500,
                 msg: 'Error: Error interno',
-                cont: {
+                cnt: {
                     err: err.message
                 }
             });
@@ -128,7 +129,8 @@ app.get('/obtener/:idCategoria', [verificaToken], (req, res) => {
                     ok: true,
                     resp: 200,
                     msg: 'Success: Informacion obtenida correctamente.',
-                    cont: {
+                    cont: rutas.length,
+                    cnt: {
                         rutas
                     }
                 });
@@ -139,7 +141,7 @@ app.get('/obtener/:idCategoria', [verificaToken], (req, res) => {
                     ok: true,
                     resp: 404,
                     msg: 'Error: La categoría no existe o no cuenta con rutas de apis',
-                    cont: {
+                    cnt: {
                         rutas
                     }
                 });
@@ -153,7 +155,7 @@ app.get('/obtener/:idCategoria', [verificaToken], (req, res) => {
                 ok: false,
                 resp: 500,
                 msg: "Error: Error al obtener las apis de la categoría.",
-                cont: {
+                cnt: {
                     err: err.message
                 }
             });
@@ -190,7 +192,7 @@ app.put('/actualizar/:idCategoria/:idApi', [verificaToken], (req, res) => {
             ok: false,
             resp: 500,
             msg: 'Error: Error al actualizar la api',
-            cont: {
+            cnt: {
                 err
             }
         });
@@ -218,7 +220,7 @@ app.put('/actualizar/:idCategoria/:idApi', [verificaToken], (req, res) => {
                 ok: false,
                 resp: 500,
                 msg: 'Error: Error del servidor',
-                cont: {
+                cnt: {
                     err
                 }
             });
@@ -230,7 +232,7 @@ app.put('/actualizar/:idCategoria/:idApi', [verificaToken], (req, res) => {
                     ok: false,
                     resp: 400,
                     msg: 'Error: La api ya se encuentra registrada',
-                    cont: {
+                    cnt: {
                         resp
                     }
                 });
@@ -254,7 +256,8 @@ app.put('/actualizar/:idCategoria/:idApi', [verificaToken], (req, res) => {
                     ok: true,
                     resp: 200,
                     msg: 'Success: Informacion actualizada correctamente.',
-                    cont: {
+                    cont: ruta.length,
+                    cnt: {
                         ruta
                     }
                 });
@@ -266,7 +269,7 @@ app.put('/actualizar/:idCategoria/:idApi', [verificaToken], (req, res) => {
                     ok: false,
                     resp: 500,
                     msg: 'Error: Error al modificar la api',
-                    cont: {
+                    cnt: {
                         err
                     }
                 });
@@ -302,7 +305,8 @@ app.delete('/eliminar/:idCategoria/:idApi', [verificaToken], (req, res) => {
                 ok: true,
                 resp: 200,
                 msg: 'Success: Informacion insertada correctamente.',
-                cont: {
+                cont: resp.length, 
+                cnt: {
                     resp
                 }
             });
@@ -314,7 +318,7 @@ app.delete('/eliminar/:idCategoria/:idApi', [verificaToken], (req, res) => {
                 ok: false,
                 resp: 500,
                 msg: 'Error: Error al eliminar la api.',
-                cont: {
+                cnt: {
                     err: err.message
                 }
             });

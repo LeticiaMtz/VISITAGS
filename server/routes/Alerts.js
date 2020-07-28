@@ -40,7 +40,7 @@ app.get('/obtener', [], (req, res) => {
                 status: 200,
                 msg: 'Lista de alertas generada exitosamente',
                 count: alerts.length,
-                alerts
+                cnt: alerts
             });
         });
 });
@@ -69,7 +69,8 @@ app.get('/obtener/:idAlert', [], (req, res) => {
                 ok: true,
                 status: 200,
                 msg: 'Alerta encontrada',
-                alerts
+                cont: alerts.length, 
+                cnt: alerts
             });
         });
 });
@@ -126,14 +127,17 @@ app.post('/registrar', async(req, res) => {
         if (err) {
             return res.status(400).json({
                 ok: false,
-                err
+                status: 400, 
+                msg: 'Ocurrio un error, la alerta no se pudo registrar', 
+                cnt: err
             });
         }
         return res.status(200).json({
             ok: true,
             status: 200,
             msg: "Alerta registrada correctamente",
-            cont: {
+            cont: alert.length, 
+            cnt: {
                 alert
             }
         });
@@ -159,6 +163,7 @@ app.put('/actualizar/:idAlert', [verificaToken], (req, res) => {
             Alert.findByIdAndUpdate(id, alertBody).then((resp) => {
                 return res.status(200).json({
                     ok: true,
+                    status: 200, 
                     msg: 'Actualizada con éxito',
                     cont: resp.length,
                     cnt: resp
@@ -166,16 +171,18 @@ app.put('/actualizar/:idAlert', [verificaToken], (req, res) => {
             }).catch((err) => {
                 return res.status(400).json({
                     ok: false,
+                    status: 400, 
                     msg: 'Error al actualizar',
-                    err: err
+                    cnt: err
                 });
             });
         }
     }).catch((err) => {
         return res.status(400).json({
             ok: false,
+            status: 400, 
             msg: 'Error al actualizar',
-            err: err
+            cnt: err
         });
     });
 });
@@ -198,14 +205,15 @@ app.delete('/eliminar/:idAlert', [verificaToken], (req, res) => {
                 ok: false,
                 status: 400,
                 msg: 'Error al eliminar alerta',
-                err
+                cnt: err
             });
         }
         return res.status(200).json({
             ok: true,
             status: 200,
             msg: 'Alerta eliminada correctamente',
-            resp
+            cont: resp.length, 
+            cnt: resp
         });
     });
 });

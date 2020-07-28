@@ -93,7 +93,8 @@ app.post('/registrar', [verificaToken], (req, res) => {
             ok: true,
             resp: 200,
             msg: 'Se ha registrado correctamente la categoriaApi',
-            cont: {
+            cont: catDB.length, 
+            cnt: {
                 catDB
             }
         });
@@ -109,30 +110,38 @@ app.post('/registrar', [verificaToken], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/categoiaApi/actualizar/idCategoria   |
 //|----------------------------------------------------------------------|
-app.put('/actualizar/:idCategoria', [verificaToken, rolMenuUsuario], (req, res) => {
-    let id = req.params.id;
-    let body = _.pick(req.body, ['strName', 'strDescripcion']);
-    CategoriaApi.findByIdAndUpdate(id, body, { new: true, runValidators: true, context: 'query' }, (err, catDB) => {
-        if (err) {
-            return res.status(400).json({
-                ok: false,
-                status: 400,
-                msg: 'Ha ocurrido un error al actualizar el API',
-                cnt: err
+app.put('/actualizar/:idCategoriaApi', [verificaToken], (req, res) => {
+    let id = req.params.idCategoriaApi;
+    console.log(req.params.idCategoriaApi)
+    const categoriaApiBody = _.pick(req.body, ['strName', 'strDescripcion', 'blnStatus']);
+    CategoriaApi.find({ _id: id }).then((resp) => {
+        if (resp.length > 0) {
+            CategoriaApi.findByIdAndUpdate(id, categoriaApiBody).then((resp) => {
+                return res.status(200).json({
+                    ok: true,
+                    status: 200, 
+                    msg: 'Categoria actualizada con éxito',
+                    cont: resp.length,
+                    cnt: resp
+                });
+            }).catch((err) => {
+                return res.status(400).json({
+                    ok: false,
+                    status: 400,
+                    msg: 'Error al actualizar',
+                    err: err
+                });
             });
         }
-
-        return res.status(200).json({
-            ok: true,
-            resp: 200,
-            msg: 'La respuesta se ha actualizado exitosamente.',
-            cont: {
-                categoriaApi
-            }
+    }).catch((err) => {
+        return res.status(400).json({
+            ok: false,
+            status: 400, 
+            msg: 'Error al actualizar',
+            err: err
         });
     });
 });
-
 //|-----------------     Api DELETE de categoriaApi      ----------------|
 //| Creada por: Leticia Moreno                                           |
 //| Api que elimina una categoria api                                    |
@@ -158,6 +167,7 @@ app.delete('/eliminar/:idCategoria', [verificaToken, rolMenuUsuario],  (req, res
             ok: true,
             status: 200,
             msg: 'Se ha eliminado correctamente la CategoriaApi',
+            cont: resp.length,
             cnt: resp
         });
     });

@@ -33,9 +33,8 @@ app.post('/login', (req, res) => {
             return res.status(400).json({
                 ok: false,
                 status: 400,
-                err: {
-                    message: 'Usuario y/o *contraseña incorrecta'
-                }
+                msg: 'Usuario y/o *contraseña incorrecta',
+                cnt: err
             });
         }
 
@@ -45,7 +44,9 @@ app.post('/login', (req, res) => {
 
         return res.status(200).json({
             ok: true,
-            user: usrDB,
+            status: 200, 
+            msg: 'Usuario logeado correctamente',
+            cnt: usrDB,
             token
         });
     });
