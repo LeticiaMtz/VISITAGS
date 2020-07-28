@@ -23,13 +23,17 @@ app.get('/obtener', [], (req, res) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
+                    status: 400,
+                    msg: 'Error al consultar las carreras',
                     err
                 });
             }
             console.log(req.carrera);
             return res.status(200).json({
                 ok: true,
-                count: carrera.length,
+                status: 200,
+                msg: 'Carreras consultadas exitosamente',
+                cont: carrera.length,
                 carrera
             });
         });
@@ -53,14 +57,14 @@ app.get('/obtener/:id', [verificaToken], (req, res) => {
                 return res.status(400).json({
                     ok: false,
                     status: 400,
-                    msg: 'Ocurrio un error al consultar la carrera',
+                    msg: 'Error al consultar la carrera',
                     cnt: err
                 });
             }
             return res.status(200).json({
                 ok: true,
                 status: 200,
-                msg: 'Se han consultado correctamente la carrera',
+                msg: 'Carrera consultada exitosamente',
                 cont: carrera.length,
                 cnt: carrera
             });
@@ -93,8 +97,9 @@ app.post('/registrar', [verificaToken], async(req, res) => {
         if (encontrado) {
             return res.status(400).json({
                 ok: false,
-                resp: 400,
+                status: 400,
                 msg: 'La carrera ya ha sido registrada',
+                cnt: encontrado
 
             });
         }
@@ -102,16 +107,17 @@ app.post('/registrar', [verificaToken], async(req, res) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    err
+                    status: 200,
+                    msg: 'Error al registrar la carrera',
+                    err: err
                 });
             }
             return res.status(200).json({
                 ok: true,
                 status: 200,
-                msg: "Carrera registrado correctamente",
-                cont: {
-                    carrera
-                }
+                msg: "Carrera registrada exitosamente",
+                cont: carrera.length,
+                cnt: carrera
             });
         });
     });
@@ -136,14 +142,16 @@ app.put('/actualizar/:idCarrera', [verificaToken], (req, res) => {
             Carrera.findByIdAndUpdate(id, carreraBody).then((resp) => {
                 return res.status(200).json({
                     ok: true,
-                    msg: 'Actualizada carrera con éxito',
+                    status: 200,
+                    msg: 'Carrera actualizada exitosamente',
                     cont: resp.length,
                     cnt: resp
                 });
             }).catch((err) => {
                 return res.status(400).json({
                     ok: false,
-                    msg: 'Error al actualizar',
+                    status: 400,
+                    msg: 'Error al actualizar la carrera',
                     err: err
                 });
             });
@@ -151,6 +159,7 @@ app.put('/actualizar/:idCarrera', [verificaToken], (req, res) => {
     }).catch((err) => {
         return res.status(400).json({
             ok: false,
+            status: 400,
             msg: 'Error al actualizar',
             err: err
         });
@@ -183,6 +192,7 @@ app.delete('/eliminar/:idCarrera', [verificaToken], (req, res) => {
             ok: true,
             status: 200,
             msg: 'Se ha eliminado correctamente la carrera',
+            cont: resp.length,
             cnt: resp
         });
     });
