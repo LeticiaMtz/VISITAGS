@@ -4,7 +4,7 @@ const app = express();
 const mongoose = require('mongoose');
 const Motivo = require('../models/motivosCrde');
 const Crde = require('../models/crde');
-const { verificaToken } = require('../middlewares/autenticacion');
+const {  } = require('../middlewares/autenticacion');
 
 //|----------------- Api POST de MotivosCrde --------------------|
 //| Creada por: Leticia Moreno                                   |
@@ -14,7 +14,7 @@ const { verificaToken } = require('../middlewares/autenticacion');
 //| cambios:                                                     |
 //| Ruta: http://localhost:3000/api/motivosCrde/registrar/idCrde |
 //|--------------------------------------------------------------|
-app.post('/registrar/:idCrde', [verificaToken], (req, res) => {
+app.post('/registrar/:idCrde', [], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);
@@ -119,7 +119,7 @@ app.post('/registrar/:idCrde', [verificaToken], (req, res) => {
 //| cambios:                                                   |
 //| Ruta: http://localhost:3000/api/motivosCrde/obtener/idCrde |
 //|------------------------------------------------------------|
-app.get('/obtener/:idCrde', [verificaToken], (req, res) => {
+app.get('/obtener/:idCrde', [], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
     }
@@ -188,7 +188,7 @@ app.get('/obtener/:idCrde', [verificaToken], (req, res) => {
 //| cambios:                                                              |
 //| Ruta: http://localhost:3000/api/motivosCrde/actualizar/idCrde/idMoivo |
 //|-----------------------------------------------------------------------|
-app.put('/actualizar/:idCrde/:idMotivo', [verificaToken], (req, res) => {
+app.put('/actualizar/:idCrde/:idMotivo', [], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);
@@ -304,7 +304,7 @@ app.put('/actualizar/:idCrde/:idMotivo', [verificaToken], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/motivosCrde/eliminar/idCrde/idMotivo |
 //|----------------------------------------------------------------------|
-app.delete('/eliminar/:idCrde/:idMotivo', [verificaToken], (req, res) => {
+app.delete('/eliminar/:idCrde/:idMotivo', [], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);

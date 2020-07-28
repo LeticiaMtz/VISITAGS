@@ -48,7 +48,7 @@ app.get('/obtener', [], (req, res) => {
 //| cambios:                                                     |
 //| Ruta: http://localhost:3000/api/asignatura/obtener/id        |
 //|--------------------------------------------------------------|
-app.get('/obtener/:id', [verificaToken], (req, res) => {
+app.get('/obtener/:id', (req, res) => {
     let id = req.params.id;
     Asignatura.find({ _id: id })
         .exec((err, asignatura) => {
@@ -78,7 +78,7 @@ app.get('/obtener/:id', [verificaToken], (req, res) => {
 //| cambios:                                                     |
 //| Ruta: http://localhost:3000/api/asignatura/registrar         |
 //|--------------------------------------------------------------|
-app.post('/registrar', [verificaToken], async(req, res) => {
+app.post('/registrar', async(req, res) => {
     let body = req.body;
     //para poder mandar los datos a la coleccion
     let asignatura = new Asignatura({
@@ -127,7 +127,7 @@ app.post('/registrar', [verificaToken], async(req, res) => {
 //| cambios:                                                          |
 //| Ruta: http://localhost:3000/api/asignatura/registrar/cargaMasiva  |
 //|-------------------------------------------------------------------|
-app.post('/registrar/cargaMasiva', [verificaToken], async(req, res) => {
+app.post('/registrar/cargaMasiva', async(req, res) => {
     let asignatura = new Asignatura();
     let elem = 0;
     let body = req.body;
@@ -156,7 +156,7 @@ app.post('/registrar/cargaMasiva', [verificaToken], async(req, res) => {
 //| cambios:                                                           |
 //| Ruta: http://localhost:3000/api/asignatura/actualizar/idAsignatura |
 //|--------------------------------------------------------------------|
-app.put('/actualizar/:idAsignatura', [verificaToken], (req, res) => {
+app.put('/actualizar/:idAsignatura', (req, res) => {
     let id = req.params.idAsignatura;
 
     const asignaturaBody = _.pick(req.body, ['strAsignatura', 'strSiglas', 'blnStatus']);
@@ -197,7 +197,7 @@ app.put('/actualizar/:idAsignatura', [verificaToken], (req, res) => {
 //| cambios:                                                          |
 //| Ruta: http://localhost:3000/api/asignatura/eliminar/idModalidad   |
 //|-------------------------------------------------------------------|
-app.delete('/eliminar/:idAsignatura', [verificaToken], (req, res) => {
+app.delete('/eliminar/:idAsignatura', (req, res) => {
     let id = req.params.idAsignatura;
 
     Asignatura.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {

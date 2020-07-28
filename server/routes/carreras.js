@@ -3,7 +3,7 @@ var mongoose = require('mongoose');
 const _ = require('underscore');
 const Carrera = require('../models/carreras');
 const { rolMenuUsuario } = require('../middlewares/permisosUsuarios');
-const { verificaToken } = require('../middlewares/autenticacion');
+const {  } = require('../middlewares/autenticacion');
 const app = express();
 
 //|-----------------     Api GET de carreras             ----------------|
@@ -15,7 +15,7 @@ const app = express();
 //| Ruta: http://localhost:3000/api/carreras/obtener                     |
 //|----------------------------------------------------------------------|
 //Obtiene todos las carreras
-app.get('/obtener', [], (req, res) => {
+app.get('/obtener', (req, res) => {
 
     Carrera.find() //select * from usuario where estado=true
         //solo aceptan valores numericos
@@ -25,7 +25,7 @@ app.get('/obtener', [], (req, res) => {
                     ok: false,
                     status: 400,
                     msg: 'Error al consultar las carreras',
-                    err
+                    cnt: err
                 });
             }
             console.log(req.carrera);
@@ -34,7 +34,7 @@ app.get('/obtener', [], (req, res) => {
                 status: 200,
                 msg: 'Carreras consultadas exitosamente',
                 cont: carrera.length,
-                carrera
+                cnt: carrera
             });
         });
 });
@@ -49,7 +49,7 @@ app.get('/obtener', [], (req, res) => {
 //| Ruta: http://localhost:3000/api/carreras/obtener/id                     |
 //|----------------------------------------------------------------------|
 //Obtener una carrera por id 
-app.get('/obtener/:id', [verificaToken], (req, res) => {
+app.get('/obtener/:id', [], (req, res) => {
     let id = req.params.id;
     Carrera.find({ _id: id })
         .exec((err, carrera) => {
@@ -82,7 +82,7 @@ app.get('/obtener/:id', [verificaToken], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/carreras/registrar                   |
 //|----------------------------------------------------------------------|
-app.post('/registrar', [verificaToken], async(req, res) => {
+app.post('/registrar', [], async(req, res) => {
     let body = req.body;
     //para poder mandar los datos a la coleccion
     let carrera = new Carrera({
@@ -133,7 +133,7 @@ app.post('/registrar', [verificaToken], async(req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/carreras/actualizar/idCarrera        |
 //|----------------------------------------------------------------------|
-app.put('/actualizar/:idCarrera', [verificaToken], (req, res) => {
+app.put('/actualizar/:idCarrera', [], (req, res) => {
     let id = req.params.idCarrera;
     console.log(req.params.idCarrera)
     const carreraBody = _.pick(req.body, ['strCarrera', 'blnStatus']);
@@ -175,7 +175,7 @@ app.put('/actualizar/:idCarrera', [verificaToken], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/carreras/eliminar/idCarrera          |
 //|----------------------------------------------------------------------|
-app.delete('/eliminar/:idCarrera', [verificaToken], (req, res) => {
+app.delete('/eliminar/:idCarrera', [], (req, res) => {
     let id = req.params.id;
 
     Carrera.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {
