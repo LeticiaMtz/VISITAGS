@@ -28,6 +28,10 @@ const alerts = new Schema({
         type: Schema.Types.ObjectId, 
         ref: 'Asignatura'
     },
+    idCarrera: {
+        type: Schema.Types.ObjectId, 
+        ref: 'Carrera'
+    }, 
     idEspecialidad: {
         type: Schema.Types.ObjectId, 
         ref: 'Especialidad'
@@ -48,10 +52,7 @@ const alerts = new Schema({
        type:String, 
        required: [true, 'Porfavor ingresa alguna descripcion']
    }, 
-   arrCrde: [{
-    type: Schema.Types.ObjectId, 
-    ref: 'Crde'
-   }],
+ 
    aJsnEvidencias: [Evidencias.schema], 
    aJsnSeguimiento: [Seguimiento.schema], 
    blnStatus:{

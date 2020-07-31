@@ -4,8 +4,11 @@ const app = express();
 const mongoose = require('mongoose');
 const Evidencias = require('../models/evidencias');
 const Alerts = require('../models/Alerts');
-const {  } = require('../middlewares/autenticacion');
+const {} = require('../middlewares/autenticacion');
 
+// SUBIR LOS ARCHIVOS 
+const cargarImagenes = require('../libraries/cargaImagenes');
+const rutaImg = 'imgEvidencia';
 
 //|-----------------          Api POST de api            ----------------|
 //| Creada por: Leticia Moreno                                           |
@@ -15,64 +18,81 @@ const {  } = require('../middlewares/autenticacion');
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/api/registrar                        |
 //|----------------------------------------------------------------------|
-app.post('/registrar/:idAlert', [], (req, res) => {
-    if (process.log) {
-        console.log(' params ', req.params);
-        console.log(' body ', req.body);
-    }
-    const evidencias = new Evidencias(req.body);
+app.post('/registrar/:idAlert', [], async(req, res) => {
 
-    let err = evidencias.validateSync();
+    let nombreImg;
 
-    if (err) {
-        return res.status(500).json({
-            ok: false,
-            resp: 500,
-            msg: 'Error: Error al registrar el motivo',
-            cnt: {
-                err
-            }
-        });
-    }
-                    Alerts.findOneAndUpdate({
-                        '_id': req.params.idAlert
-                    }, {
-                        $push: {
-                            aJsnEvidencias: evidencias
-                        }
-                    })
-                        .then((alert) => {
-                            return res.status(200).json({
-                                ok: true,
-                                resp: 200,
-                                msg: 'Success: Informacion insertada correctamente.',
-                                cont: evidencias.length, 
-                                cnt: {
-                                    evidencias
-                                }
-                            });
-                        })
-                        .catch((err) => {
-                            return res.status(500).json({
-                                ok: false,
-                                resp: 500,
-                                msg: 'Error: Error al registrar el motivo',
-                                cnt: {
-                                    err: err.message
-                                }
-                            });
-                        });
-                })
-        if ((err) => {
-            return res.status(500).json({
+    await Alerts.findOne({ 'strNombre': req.body.strNombre }).then(async(resp) => {
+        if (resp) {
+            return res.status(400).json({
                 ok: false,
-                resp: 500,
-                msg: 'Error: Error interno',
-                cnt: {
+                resp: 400,
+                msg: 'La evidencia ya se encuentra registrado en la base de datos.',
+                cont: {
+                    err: req.body.strNombre
+                }
+            });
+        }
+
+        if (!req.files) {
+            return res.status(400).json({
+                ok: false,
+                resp: '400',
+                msg: 'No se ha seleccionado ningún archivo',
+                cont: {
+                    file: req.files
+                }
+            });
+        }
+
+        // console.log(req.files.strFileEvidencia, 'reqqq');
+        await cargarImagenes.subirImagen(req.files.strFileEvidencia, rutaImg).then((fileName) => {
+
+            nombreImg = fileName;
+
+        }).catch((err) => {
+            console.log(err);
+            return res.status(400).json({
+                ok: false,
+                resp: 400,
+                msg: 'Error al procesar el archivo',
+                cont: {
                     err: err.message
                 }
             });
         });
+
+        const evidencias = new Evidencias({
+
+            strNombre: req.body.strNombre,
+            strFileEvidencia: nombreImg,
+            blnStatus: req.body.blnStatus
+
+        });
+        await evidencias.save().then((evidencia) => {
+
+            return res.status(200).json({
+                ok: true,
+                resp: 200,
+                msg: 'La evidencia se ha registrado exitosamente.',
+                cont: {
+                    evidencia
+                }
+            });
+        }).catch((err) => {
+            cargarImagenes.borrarImagen(nombreImg, rutaImg);
+            return res.status(500).json({
+                ok: false,
+                resp: 500,
+                msg: 'Error al insertar registrar una evidencia.',
+                cont: {
+                    err: err.message
+                }
+            });
+        });
+    });
+
+});
 
 
 
@@ -111,7 +131,7 @@ app.get('/obtener/:idAlert', [], (req, res) => {
                     ok: true,
                     resp: 200,
                     msg: 'Success: Informacion obtenida correctamente.',
-                    cont: rutas.length, 
+                    cont: rutas.length,
                     cnt: {
                         rutas
                     }
@@ -187,8 +207,8 @@ app.put('/actualizar/:idAlert/:idEvidencia', [], (req, res) => {
         {
             $match: {
                 'aJsnEvidencias.blnStatus': true,
-                'aJsnEvidencias.strNombre': req.body.strNombre, 
-                'aJsnEvidencias.strFileEvidencia': req.body.strFileEvidencia, 
+                'aJsnEvidencias.strNombre': req.body.strNombre,
+                'aJsnEvidencias.strFileEvidencia': req.body.strFileEvidencia,
 
             }
         },
@@ -240,7 +260,7 @@ app.put('/actualizar/:idAlert/:idEvidencia', [], (req, res) => {
                     ok: true,
                     resp: 200,
                     msg: 'Success: Informacion actualizada correctamente.',
-                    cont: ruta.length, 
+                    cont: ruta.length,
                     cnt: {
                         ruta
                     }
