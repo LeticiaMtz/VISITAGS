@@ -4,7 +4,7 @@ const app = express();
 const mongoose = require('mongoose');
 const Especialidad = require('../models/especialidad');
 const Carrera = require('../models/carreras');
-const {  } = require('../middlewares/autenticacion');
+const {} = require('../middlewares/autenticacion');
 
 //|-----------------     Api POST de Especialidad        ----------------|
 //| Creada por: Leticia Moreno                                           |
@@ -63,7 +63,7 @@ app.post('/registrar/:idCarrera', [], (req, res) => {
                             ok: true,
                             resp: 200,
                             msg: 'Success: Informacion insertada correctamente.',
-                            cont: especialidad.length, 
+                            cont: especialidad.length,
                             cnt: {
                                 especialidad
                             }
@@ -102,6 +102,7 @@ app.post('/registrar/:idCarrera', [], (req, res) => {
 //| Ruta: http://localhost:3000/api/especialidad/obtener/idCarrera       |
 //|----------------------------------------------------------------------|
 app.get('/obtener/:idCarrera', [], (req, res) => {
+    console.log(req);
     if (process.log) {
         console.log(' params ', req.params);
     }
@@ -128,7 +129,7 @@ app.get('/obtener/:idCarrera', [], (req, res) => {
                     ok: true,
                     resp: 200,
                     msg: 'Success: Informacion obtenida correctamente.',
-                    cont: rutas.length, 
+                    cont: rutas.length,
                     cnt: {
                         rutas
                     }
@@ -162,6 +163,27 @@ app.get('/obtener/:idCarrera', [], (req, res) => {
         });
 
 });
+
+// API DE PRUEBA 
+// app.get('/obtener/:idCarrera'), [], (req, res) => {
+
+//     idCarrera = req.params.idCarrera;
+
+//     if (!idCarrera || idCarrera.length != 24){
+//         return res.status(400).json({
+//             ok: false,
+//             resp: 400,
+//             msg: 'La carrera no existe o no cuenta con rutas de especialidad',
+//             cont: {
+//                 idCarrera
+//             }
+//         });
+//     }
+
+
+
+
+// };
 
 //|-----------------     Api PUT de Especialidad         ----------------------------|
 //| Creada por: Leticia Moreno                                                       |
@@ -253,7 +275,7 @@ app.put('/actualizar/:idCarrera/:idEspecialidad', [], (req, res) => {
                     ok: true,
                     resp: 200,
                     msg: 'Success: Informacion actualizada correctamente.',
-                    cont: ruta.length, 
+                    cont: ruta.length,
                     cnt: {
                         ruta
                     }
@@ -302,7 +324,7 @@ app.delete('/eliminar/:idCarrera/:idEspecialidad', [], (req, res) => {
                 ok: true,
                 resp: 200,
                 msg: 'Success: Informacion insertada correctamente.',
-                cont: resp.length, 
+                cont: resp.length,
                 cnt: {
                     resp
                 }

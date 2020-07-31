@@ -69,7 +69,7 @@ app.get('/obtener/:idAlert', [], (req, res) => {
                 ok: true,
                 status: 200,
                 msg: 'Alerta encontrada',
-                cont: alerts.length, 
+                cont: alerts.length,
                 cnt: alerts
             });
         });
@@ -89,7 +89,7 @@ app.post('/registrar', async(req, res) => {
     let aJsnEvidencias = [];
     if (req.files) {
 
-        for (const archivo of req.files.aJsnEvidencias) {
+        for (const archivo of aJsnEvidencias) {
             let strNombreFile = await fileUpload.subirArchivo(archivo, 'evidencias');
             aJsnEvidencias.push({
                 strNombre: strNombreFile,
@@ -111,6 +111,7 @@ app.post('/registrar', async(req, res) => {
         strMatricula: body.strMatricula,
         strNombreAlumno: body.strNombreAlumno,
         idAsigantura: body.idAsigantura,
+        idCarrera: body.idCarrera,
         idEspecialidad: body.idEspecialidad,
         strGrupo: body.strGrupo,
         chrTurno: body.chrTurno,
@@ -127,8 +128,8 @@ app.post('/registrar', async(req, res) => {
         if (err) {
             return res.status(400).json({
                 ok: false,
-                status: 400, 
-                msg: 'Ocurrio un error, la alerta no se pudo registrar', 
+                status: 400,
+                msg: 'Ocurrio un error, la alerta no se pudo registrar',
                 cnt: err
             });
         }
@@ -136,7 +137,7 @@ app.post('/registrar', async(req, res) => {
             ok: true,
             status: 200,
             msg: "Alerta registrada correctamente",
-            cont: alert.length, 
+            cont: alert.length,
             cnt: alert
         });
     });
@@ -161,7 +162,7 @@ app.put('/actualizar/:idAlert', [verificaToken], (req, res) => {
             Alert.findByIdAndUpdate(id, alertBody).then((resp) => {
                 return res.status(200).json({
                     ok: true,
-                    status: 200, 
+                    status: 200,
                     msg: 'Actualizada con éxito',
                     cont: resp.length,
                     cnt: resp
@@ -169,7 +170,7 @@ app.put('/actualizar/:idAlert', [verificaToken], (req, res) => {
             }).catch((err) => {
                 return res.status(400).json({
                     ok: false,
-                    status: 400, 
+                    status: 400,
                     msg: 'Error al actualizar',
                     cnt: err
                 });
@@ -178,7 +179,7 @@ app.put('/actualizar/:idAlert', [verificaToken], (req, res) => {
     }).catch((err) => {
         return res.status(400).json({
             ok: false,
-            status: 400, 
+            status: 400,
             msg: 'Error al actualizar',
             cnt: err
         });
@@ -210,7 +211,7 @@ app.delete('/eliminar/:idAlert', [verificaToken], (req, res) => {
             ok: true,
             status: 200,
             msg: 'Alerta eliminada correctamente',
-            cont: resp.length, 
+            cont: resp.length,
             cnt: resp
         });
     });
@@ -230,7 +231,7 @@ app.get('/obtenerAlertas/:idRol/:idUser', async(req, res) => {
     let idUser = req.params.idUser;
 
     if (idRol == idProfesor) {
-        Alert.find({ idUser: idUser }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }, { path: 'arrCrde' }]).then((resp) => {
+        Alert.find({ idUser: idUser }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }, { path: 'arrCrde' }]).then((resp) => {
 
             return res.status(200).json({
                 ok: true,
@@ -250,7 +251,7 @@ app.get('/obtenerAlertas/:idRol/:idUser', async(req, res) => {
         });
     } else if (idRol == idAdministrador) {
 
-        Alert.find().sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }, { path: 'arrCrde' }]).then((resp) => {
+        Alert.find().sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }, { path: 'arrCrde' }]).then((resp) => {
 
             return res.status(200).json({
                 ok: true,
@@ -286,7 +287,7 @@ app.get('/obtenerAlertas/:idRol/:idUser', async(req, res) => {
 
         for (const idEspecialidad of arrEspecialidad) {
             console.log(idEspecialidad);
-            await Alert.find({ idEspecialidad }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }, { path: 'arrCrde' }]).then(async(alertas) => {
+            await Alert.find({ idEspecialidad }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }, { path: 'arrCrde' }]).then(async(alertas) => {
 
                 console.log(alertas);
                 await arrAlertas.push(alertas);
