@@ -105,12 +105,12 @@ app.post('/registrar', async(req, res) => {
     let body = req.body;
     //para poder mandar los datos a la coleccion
     console.log(aJsnEvidencias);
-    let alert = new Alert({
+     let alert = new Alert({
         idUser: body.idUser,
         idEstatus: body.idEstatus,
         strMatricula: body.strMatricula,
         strNombreAlumno: body.strNombreAlumno,
-        idAsigantura: body.idAsigantura,
+        idAsignatura: body.idAsignatura,
         idCarrera: body.idCarrera,
         idEspecialidad: body.idEspecialidad,
         strGrupo: body.strGrupo,
@@ -118,9 +118,10 @@ app.post('/registrar', async(req, res) => {
         idModalidad: body.idModalidad,
         strDescripcion: body.strDescripcion,
         arrCrde: body.arrCrde,
-        blnStatus: body.blnStatus,
-        aJsnEvidencias
+        aJsnEvidencias, 
+        blnStatus: body.blnStatus
     });
+ 
 
     console.log(alert);
 

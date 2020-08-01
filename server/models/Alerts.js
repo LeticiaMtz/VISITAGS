@@ -10,7 +10,8 @@ let Schema = mongoose.Schema;
 // Creación de esquema de alertas
 const alerts = new Schema({
     idUser: {
-        type: String
+        type: Schema.Types.ObjectId, 
+        ref: 'User', 
    },
    idEstatus: {
        type: Schema.Types.ObjectId, 
@@ -26,15 +27,18 @@ const alerts = new Schema({
     },
     idAsignatura: {
         type: Schema.Types.ObjectId, 
-        ref: 'Asignatura'
+        ref: 'Asignatura',
+        required: [true, 'Porfavor ingresa la asignatura']
     },
     idCarrera: {
         type: Schema.Types.ObjectId, 
-        ref: 'Carrera'
+        ref: 'Carrera', 
+        required: [true, 'Porfavor ingresa la carrera']
     }, 
     idEspecialidad: {
         type: Schema.Types.ObjectId, 
-        ref: 'Especialidad'
+        ref: 'Especialidad', 
+        required: [true, 'Porfavor ingresa la especialidad']
     },
     strGrupo: {
         type: String, 
@@ -52,7 +56,11 @@ const alerts = new Schema({
        type:String, 
        required: [true, 'Porfavor ingresa alguna descripcion']
    }, 
- 
+   arrCrde: [{
+        type: Schema.Types.ObjectId, 
+        ref: 'Crde',
+        required: [true, 'Porfavor ingresa el motivo crde']
+   }],
    aJsnEvidencias: [Evidencias.schema], 
    aJsnSeguimiento: [Seguimiento.schema], 
    blnStatus:{
