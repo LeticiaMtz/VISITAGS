@@ -3,7 +3,7 @@ var mongoose = require('mongoose');
 const _ = require('underscore');
 const Carrera = require('../models/carreras');
 const { rolMenuUsuario } = require('../middlewares/permisosUsuarios');
-const {  } = require('../middlewares/autenticacion');
+const {} = require('../middlewares/autenticacion');
 const app = express();
 
 //|-----------------     Api GET de carreras             ----------------|
@@ -28,7 +28,6 @@ app.get('/obtener', (req, res) => {
                     cnt: err
                 });
             }
-            console.log(req.carrera);
             return res.status(200).json({
                 ok: true,
                 status: 200,
@@ -135,7 +134,6 @@ app.post('/registrar', [], async(req, res) => {
 //|----------------------------------------------------------------------|
 app.put('/actualizar/:idCarrera', [], (req, res) => {
     let id = req.params.idCarrera;
-    console.log(req.params.idCarrera)
     const carreraBody = _.pick(req.body, ['strCarrera', 'blnStatus']);
     Carrera.find({ _id: id }).then((resp) => {
         if (resp.length > 0) {

@@ -28,7 +28,6 @@ app.get('/obtener', [], (req, res) => {
                     cnt: err
                 });
             }
-            console.log(req.asignatura);
             return res.status(200).json({
                 ok: true,
                 status: 200,

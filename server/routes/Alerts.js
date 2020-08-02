@@ -34,7 +34,6 @@ app.get('/obtener', [], (req, res) => {
                     err
                 });
             }
-            console.log(req.alert);
             return res.status(200).json({
                 ok: true,
                 status: 200,
@@ -89,23 +88,20 @@ app.post('/registrar', async(req, res) => {
     let aJsnEvidencias = [];
     if (req.files) {
 
-        for (const archivo of aJsnEvidencias) {
+        for (const archivo of req.files.aJsnEvidencias) {
             let strNombreFile = await fileUpload.subirArchivo(archivo, 'evidencias');
             aJsnEvidencias.push({
                 strNombre: strNombreFile,
                 strFileEvidencia: `/envidencias/${strNombreFile}`,
                 blnActivo: true
-            })
+            });
         }
-
-        // console.log('Sí entró');
-        // console.log(req.files);
     }
 
     let body = req.body;
     //para poder mandar los datos a la coleccion
-    console.log(aJsnEvidencias);
-     let alert = new Alert({
+
+    let alert = new Alert({
         idUser: body.idUser,
         idEstatus: body.idEstatus,
         strMatricula: body.strMatricula,
@@ -118,13 +114,11 @@ app.post('/registrar', async(req, res) => {
         idModalidad: body.idModalidad,
         strDescripcion: body.strDescripcion,
         arrCrde: body.arrCrde,
-        aJsnEvidencias, 
+        aJsnEvidencias,
         blnStatus: body.blnStatus
     });
- 
 
-    console.log(alert);
-
+    // console.log(alert);
     alert.save((err, alert) => {
         if (err) {
             return res.status(400).json({
@@ -156,7 +150,6 @@ app.post('/registrar', async(req, res) => {
 //|----------------------------------------------------------------------|
 app.put('/actualizar/:idAlert', [verificaToken], (req, res) => {
     let id = req.params.idAlert;
-    console.log(req.params.idAlert)
     const alertBody = _.pick(req.body, ['idUser', 'idEstatus', 'strMatricula', 'strNombreAlumno', 'idAsigantura', 'idEspecialidad', 'strGrupo', 'chrTurno', 'idModalidad', 'strDescripcion', 'arrCrde', 'aJsnEvidencias', 'aJsnSeguimiento', 'blnStatus']);
     Alert.find({ _id: id }).then((resp) => {
         if (resp.length > 0) {
@@ -287,10 +280,8 @@ app.get('/obtenerAlertas/:idRol/:idUser', async(req, res) => {
         let arrAlertas = [];
 
         for (const idEspecialidad of arrEspecialidad) {
-            console.log(idEspecialidad);
             await Alert.find({ idEspecialidad }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }, { path: 'arrCrde' }]).then(async(alertas) => {
 
-                console.log(alertas);
                 await arrAlertas.push(alertas);
             })
         };

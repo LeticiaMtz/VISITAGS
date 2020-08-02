@@ -4,7 +4,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const app = express();
 const bodyParser = require('body-parser');
-const fileUpload = require('express-fileupload');
+const fileUpload = require('express-fileupload')
 
 app.use(fileUpload());
 

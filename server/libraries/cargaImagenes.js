@@ -5,7 +5,7 @@ const uniqid = require('uniqid');
 const path = require('path');
 const fs = require('fs');
 const app = express();
-const mv = require('move-file');
+// const mv = require('move-file');
 
 app.use(fileUpload());
 
@@ -20,7 +20,7 @@ const subirImagen = async(file, route) => {
     //     throw new Error('Error al tratar de subir el archivo al servidor');
     await file.mv(`uploads/${route}/${nameImg}`, (err) => { //Es todo el path de la imagen
         if (err) {
-            console.log(err)
+            console.log(err);
         }
     });
 
