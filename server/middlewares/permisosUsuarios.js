@@ -1,13 +1,13 @@
-const Role = require ('../models/Roles'); 
-const CategoriaApi = require ('../models/CategoriaApi');
+const Role = require('../models/Roles');
+const CategoriaApi = require('../models/CategoriaApi');
 
-const rolMenuUsuario  = async (req, res, next) => {
+const rolMenuUsuario = async(req, res, next) => {
     stUrl = req.originalUrl.split('/');
-    let url = String('/' + stUrl[1] + '/' + stUrl[2] + '/' + stUrl[3]); 
-    let role = req.user.idRole; 
-    let posiciones = stUrl.length - 1; 
-    let blnNext = false; 
-    req.user.stUrl = url; 
+    let url = String('/' + stUrl[1] + '/' + stUrl[2] + '/' + stUrl[3]);
+    let role = req.user.idRole;
+    let posiciones = stUrl.length - 1;
+    let blnNext = false;
+    req.user.stUrl = url;
 
     if (posiciones > 3) {
         for (let i = 0; i < (posiciones - 3); i++) {
@@ -15,8 +15,7 @@ const rolMenuUsuario  = async (req, res, next) => {
         }
     }
 
-    await Role.findOne({ '_id': role, 'blnStatus': true }).then(async (resp) => {
-        console.log(resp._id, role);
+    await Role.findOne({ '_id': role, 'blnStatus': true }).then(async(resp) => {
         if (resp == null) {
             res.status(404).send({
                 status: 400,
@@ -28,28 +27,26 @@ const rolMenuUsuario  = async (req, res, next) => {
             });
         } else {
             await CategoriaApi.find({
-                'aJsnRutas._id': {
-                    $in: resp.arrApi
-                }
+                    'aJsnRutas._id': {
+                        $in: resp.arrApi
+                    }
 
-            }).then(async (categorias) => {
-                console.log(categorias);
-                categorias.forEach(categoria => {
-                    blnCat = categoria.blnStatus;
-                    let rutas = categoria.aJsnRutas;
-                    rutas.forEach(element => {
-                        if (element.strRuta.toString() === url.toString() && blnCat === true && element.blnStatus === true) {
-                            resp.arrApi.forEach(api => {
-                                console.log(api._id , element._id);
-                                
-                                if (api._id.toString() === element._id.toString()) {
-                                    blnNext = true;
-                                }
-                            });
-                        }
+                }).then(async(categorias) => {
+                    categorias.forEach(categoria => {
+                        blnCat = categoria.blnStatus;
+                        let rutas = categoria.aJsnRutas;
+                        rutas.forEach(element => {
+                            if (element.strRuta.toString() === url.toString() && blnCat === true && element.blnStatus === true) {
+                                resp.arrApi.forEach(api => {
+
+                                    if (api._id.toString() === element._id.toString()) {
+                                        blnNext = true;
+                                    }
+                                });
+                            }
+                        });
                     });
-                });
-            })
+                })
                 .catch(err => {
                     return res.status(400).json({
                         ok: false,
@@ -88,4 +85,3 @@ const rolMenuUsuario  = async (req, res, next) => {
 module.exports = {
     rolMenuUsuario
 };
-

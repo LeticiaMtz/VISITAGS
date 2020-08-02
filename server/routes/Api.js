@@ -16,10 +16,7 @@ const { verificaToken } = require('../middlewares/autenticacion');
 //| Ruta: http://localhost:3000/api/api/registrar                        |
 //|----------------------------------------------------------------------|
 app.post('/registrar/:idCategoria', [verificaToken], (req, res) => {
-    if (process.log) {
-        console.log(' params ', req.params);
-        console.log(' body ', req.body);
-    }
+
     const api = new Api(req.body);
 
     let err = api.validateSync();
@@ -64,7 +61,7 @@ app.post('/registrar/:idCategoria', [verificaToken], (req, res) => {
                             ok: true,
                             resp: 200,
                             msg: 'Success: Informacion insertada correctamente.',
-                            cont: api.length, 
+                            cont: api.length,
                             cnt: {
                                 api
                             }
@@ -305,7 +302,7 @@ app.delete('/eliminar/:idCategoria/:idApi', [verificaToken], (req, res) => {
                 ok: true,
                 resp: 200,
                 msg: 'Success: Informacion insertada correctamente.',
-                cont: resp.length, 
+                cont: resp.length,
                 cnt: {
                     resp
                 }

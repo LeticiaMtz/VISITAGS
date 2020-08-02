@@ -102,7 +102,6 @@ app.post('/registrar/:idCarrera', [], (req, res) => {
 //| Ruta: http://localhost:3000/api/especialidad/obtener/idCarrera       |
 //|----------------------------------------------------------------------|
 app.get('/obtener/:idCarrera', [], (req, res) => {
-    console.log(req);
     if (process.log) {
         console.log(' params ', req.params);
     }

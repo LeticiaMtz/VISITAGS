@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
-const {  } = require('../middlewares/autenticacion');
+const {} = require('../middlewares/autenticacion');
 const User = require('../models/Users'); //subir nivel
 const { rolMenuUsuario } = require('../middlewares/permisosUsuarios')
 const app = express();
@@ -28,16 +28,15 @@ app.get('/obtener', [], (req, res) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    status: 400, 
+                    status: 400,
                     msg: 'No se pudo obtener la lista de usuarios',
                     cnt: err
                 });
             }
-            console.log(req.user);
             return res.status(200).json({
                 ok: true,
-                status: 200, 
-                msg: 'Lista de usuarios generada exitosamente', 
+                status: 200,
+                msg: 'Lista de usuarios generada exitosamente',
                 cont: users.length,
                 cnt: users
             });
@@ -178,7 +177,7 @@ app.post('/registro', async(req, res) => {
         strEmail: req.body.strEmail,
         strPassword: bcrypt.hashSync(body.strPassword, 10),
         idRole: req.body.idRole,
-        arrEspecialidadPermiso: req.body. arrEspecialidadPermiso,
+        arrEspecialidadPermiso: req.body.arrEspecialidadPermiso,
         blnStatus: req.body.blnStatus
 
     });
@@ -247,13 +246,13 @@ app.post('/registro', async(req, res) => {
 app.put('/actualizar/:idUser', [], (req, res) => {
     let id = req.params.idUser;
     console.log(req.params.idUser)
-    const userBody = _.pick(req.body, ['srtName', 'strLastName', 'strMotherLastName', 'strEmail', 'strPassword', 'idRole','arrEspecialidadPermiso', 'blnStatus']);
+    const userBody = _.pick(req.body, ['srtName', 'strLastName', 'strMotherLastName', 'strEmail', 'strPassword', 'idRole', 'arrEspecialidadPermiso', 'blnStatus']);
     User.find({ _id: id }).then((resp) => {
         if (resp.length > 0) {
             User.findByIdAndUpdate(id, userBody).then((resp) => {
                 return res.status(200).json({
                     ok: true,
-                    status: 200, 
+                    status: 200,
                     msg: 'Usuario actualizado con éxito',
                     cont: resp.length,
                     cnt: resp
@@ -270,7 +269,7 @@ app.put('/actualizar/:idUser', [], (req, res) => {
     }).catch((err) => {
         return res.status(400).json({
             ok: false,
-            status: 400, 
+            status: 400,
             msg: 'Error al actualizar',
             err: err
         });
@@ -368,7 +367,7 @@ app.post('/login', (req, res) => {
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-app.get('/forgot/:strEmail',  (req, res) => {
+app.get('/forgot/:strEmail', (req, res) => {
 
     const strEmail = req.params.strEmail;
     caducidadToken = '1hr';
@@ -387,7 +386,6 @@ app.get('/forgot/:strEmail',  (req, res) => {
 
     User.findOne({ strEmail }, { _id: 1, strName: 1, strLastName: 1 }).then(async(user) => {
 
-        //console.log(user.strName);
 
         if (!user) {
             return res.status(404).json({
@@ -437,7 +435,6 @@ app.get('/forgot/:strEmail',  (req, res) => {
 
     }).catch((err) => {
 
-        //console.log(err);
         return res.status(404).json({
             ok: false,
             resp: 404,
@@ -454,7 +451,7 @@ app.get('/forgot/:strEmail',  (req, res) => {
 // API DE RECUPERAR CONTRASEÑA 
 
 ////////////////////////////////////////////////////////////////////////////////////////
-app.put('/reset-password/:token',  async(req, res) => {
+app.put('/reset-password/:token', async(req, res) => {
     const token = req.params.token;
     let idUser = '';
 
@@ -462,8 +459,6 @@ app.put('/reset-password/:token',  async(req, res) => {
         first: req.body.strFPass,
         second: req.body.strSPass,
     };
-
-    console.log(passwords.first);
 
     if (!passwords.first || !passwords.second) {
         return res.status(400).json({
@@ -501,7 +496,6 @@ app.put('/reset-password/:token',  async(req, res) => {
             });
         }
 
-        console.log(dec);
         if (dec) {
             idUser = dec.idUser ? dec.idUser : '';
         }
@@ -509,7 +503,6 @@ app.put('/reset-password/:token',  async(req, res) => {
 
     User.findByIdAndUpdate(idUser, { strPassword: bcrypt.hashSync(passwords.first, 10) }).then(async(user) => { //Aqui
 
-        console.log(user);
 
         if (!user) {
             return res.status(404).json({
