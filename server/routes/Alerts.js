@@ -88,7 +88,16 @@ app.post('/registrar', async(req, res) => {
     let aJsnEvidencias = [];
     if (req.files) {
 
-        for (const archivo of req.files.aJsnEvidencias) {
+        if(Array.isArray(res.files.aJsnEvidencias)){
+            for (const archivo of req.files.aJsnEvidencias) {
+                let strNombreFile = await fileUpload.subirArchivo(archivo, 'evidencias');
+                aJsnEvidencias.push({
+                    strNombre: strNombreFile,
+                    strFileEvidencia: `/envidencias/${strNombreFile}`,
+                    blnActivo: true
+                });
+            }
+        } else {
             let strNombreFile = await fileUpload.subirArchivo(archivo, 'evidencias');
             aJsnEvidencias.push({
                 strNombre: strNombreFile,
