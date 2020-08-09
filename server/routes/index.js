@@ -18,5 +18,5 @@ app.use('/modalidad', require('./modalidad'));
 app.use('/evidencias', require('./evidencias'));
 app.use('/seguimiento', require('./seguimiento'));
 app.use('/fileEvidencias', require('./fileEvidencias'));
-
+app.use('/file', require('./file'));
 module.exports = app;

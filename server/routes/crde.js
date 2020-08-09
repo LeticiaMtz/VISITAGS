@@ -82,8 +82,7 @@ app.post('/registrar', [], async(req, res) => {
     //para poder mandar los datos a la coleccion
     let crde = new Crde({
         strCategoria: body.strCategoria,
-        aJsnMotivo: body.aJsnMotivo,
-        blnStatus: body.blnStatus,
+        blnStatus: body.blnStatus
 
     });
 

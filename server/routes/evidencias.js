@@ -8,7 +8,7 @@ const {} = require('../middlewares/autenticacion');
 
 // SUBIR LOS ARCHIVOS 
 const cargarImagenes = require('../libraries/cargaImagenes');
-const rutaImg = 'imgEvidencia';
+const rutaImg = 'evidencias';
 
 //|-----------------          Api POST de api            ----------------|
 //| Creada por: Leticia Moreno                                           |
@@ -21,6 +21,7 @@ const rutaImg = 'imgEvidencia';
 app.post('/registrar/:idAlert', [], async(req, res) => {
 
     let nombreImg;
+    let aJsnEvidencias = [];
 
     await Alerts.findOne({ 'strNombre': req.body.strNombre }).then(async(resp) => {
         if (resp) {
@@ -33,7 +34,7 @@ app.post('/registrar/:idAlert', [], async(req, res) => {
                 }
             });
         }
-
+        
         if (!req.files) {
             return res.status(400).json({
                 ok: false,
@@ -45,10 +46,12 @@ app.post('/registrar/:idAlert', [], async(req, res) => {
             });
         }
 
-        // console.log(req.files.strFileEvidencia, 'reqqq');
+        console.log(req.files.strFileEvidencia, 'reqqq');
         await cargarImagenes.subirImagen(req.files.strFileEvidencia, rutaImg).then((fileName) => {
 
             nombreImg = fileName;
+            aJsnEvidencias.push(nombreImg);
+
 
         }).catch((err) => {
             console.log(err);
