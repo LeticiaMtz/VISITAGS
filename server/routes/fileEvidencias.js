@@ -7,7 +7,7 @@ const app = express();
 
 // SUBIR LOS ARCHIVOS 
 const cargarImagenes = require('../libraries/cargaImagenes');
-const rutaImg = 'imgEvidencia';
+const rutaImg = 'evidencias';
 
 const Evidencias = require('../models/evidencias');
 const Alerts = require('../models/Alerts');

@@ -86,8 +86,7 @@ app.post('/registrar', [], async(req, res) => {
     //para poder mandar los datos a la coleccion
     let carrera = new Carrera({
         strCarrera: body.strCarrera,
-        blnStatus: body.blnStatus,
-        aJsnEspecialidad: body.aJsnEspecialidad
+        blnStatus: body.blnStatus
 
     });
 

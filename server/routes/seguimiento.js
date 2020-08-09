@@ -7,6 +7,9 @@ const Evidencias = require('../models/evidencias');
 const Alerts = require('../models/Alerts');
 const { verificaToken } = require('../middlewares/autenticacion');
 
+const cargarImagenes = require('../libraries/cargaImagenes');
+const { isArray } = require('underscore');
+const rutaImg = 'seguimiento';
 
 //|-----------------          Api POST de api            ----------------|
 //| Creada por: Leticia Moreno                                           |
@@ -16,7 +19,7 @@ const { verificaToken } = require('../middlewares/autenticacion');
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/api/registrar                        |
 //|----------------------------------------------------------------------|
-app.post('/registrar/:idAlert', [verificaToken], (req, res) => {
+app.post('/registrar/:idAlert', [], async(req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);
@@ -36,7 +39,79 @@ app.post('/registrar/:idAlert', [verificaToken], (req, res) => {
         });
     }
 
-                Alerts.findOneAndUpdate({
+    let nombreImg;
+    let aJsnEvidencias = [];
+        
+        if (!req.files) {
+            return res.status(400).json({
+                ok: false,
+                resp: '400',
+                msg: 'No se ha seleccionado ningún archivo',
+                cont: {
+                    file: req.files
+                }
+            });
+        }
+
+        let arrFiles = req.files.strFileEvidencia;
+        console.log(arrFiles)
+        if(isArray(arrFiles)){
+        for (const archivo of arrFiles) {
+            await cargarImagenes.subirImagen(archivo, rutaImg).then((fileName) => {
+
+                nombreImg = fileName;
+                aJsnEvidencias.push(nombreImg);
+    
+    
+            }).catch((err) => {
+                console.log(err);
+                return res.status(400).json({
+                    ok: false,
+                    resp: 400,
+                    msg: 'Error al procesar el archivo',
+                    cont: {
+                        err: err.message
+                    }
+                });
+            });
+    
+        }
+    }else{
+        await cargarImagenes.subirImagen(arrFiles, rutaImg).then((fileName) => {
+
+            nombreImg = fileName;
+            aJsnEvidencias.push(nombreImg);
+
+
+        }).catch((err) => {
+            console.log(err);
+            return res.status(400).json({
+                ok: false,
+                resp: 400,
+                msg: 'Error al procesar el archivo',
+                cont: {
+                    err: err.message
+                }
+            });
+        });
+
+           
+    }
+
+        
+        
+        const evidencias = new Evidencias({
+
+            strNombre: req.body.strNombre,
+            strFileEvidencia: nombreImg,
+            blnStatus: req.body.blnStatus
+
+        });
+        for (const iter of aJsnEvidencias) {
+            seguimiento.aJsnEvidencias.push(evidencias);
+            
+        }
+           Alerts.findOneAndUpdate({
                         '_id': req.params.idAlert
                     }, {
                         $push: {
@@ -64,7 +139,6 @@ app.post('/registrar/:idAlert', [verificaToken], (req, res) => {
                             }
                         });
                     });
-            })
         if((err) => {
             return res.status(500).json({
                 ok: false,
@@ -75,6 +149,10 @@ app.post('/registrar/:idAlert', [verificaToken], (req, res) => {
                 }
             });
         });
+    });
+             
+
+
 
 
 //|-----------------          Api POST de api            ----------------|

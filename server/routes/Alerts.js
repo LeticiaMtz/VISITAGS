@@ -7,7 +7,8 @@ const Alert = require('../models/Alerts'); //subir nivel
 const app = express();
 const fileUpload = require('../libraries/subirArchivo(1)');
 const User = require('../models/Users');
-const { select } = require('underscore');
+const { select, isArray } = require('underscore');
+const cargaImagenes = require('../libraries/cargaImagenes');
 
 const idProfesor = '5eeee0db16952756482d1868';
 const idDirector = '5eeee0db16952756482d1869';
@@ -82,22 +83,14 @@ app.get('/obtener/:idAlert', [], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/alerts/registrar                     |
 //|----------------------------------------------------------------------|
-//Agregar nueva alerta
 app.post('/registrar', async(req, res) => {
-
+ 
     let aJsnEvidencias = [];
     if (req.files) {
-
-        if(Array.isArray(res.files.aJsnEvidencias)){
-            for (const archivo of req.files.aJsnEvidencias) {
-                let strNombreFile = await fileUpload.subirArchivo(archivo, 'evidencias');
-                aJsnEvidencias.push({
-                    strNombre: strNombreFile,
-                    strFileEvidencia: `/envidencias/${strNombreFile}`,
-                    blnActivo: true
-                });
-            }
-        } else {
+        let arrFiles = req.files.strFileEvidencia;
+        console.log(arrFiles)
+        if(isArray(arrFiles)){
+        for (const archivo of arrFiles) {
             let strNombreFile = await fileUpload.subirArchivo(archivo, 'evidencias');
             aJsnEvidencias.push({
                 strNombre: strNombreFile,
@@ -105,11 +98,19 @@ app.post('/registrar', async(req, res) => {
                 blnActivo: true
             });
         }
+    }else{
+        let strNombreFile = await fileUpload.subirArchivo(arrFiles, 'evidencias');
+            aJsnEvidencias.push({
+                strNombre: strNombreFile,
+                strFileEvidencia: `/envidencias/${strNombreFile}`,
+                blnActivo: true
+            });
     }
-
+    }
+ 
     let body = req.body;
     //para poder mandar los datos a la coleccion
-
+ 
     let alert = new Alert({
         idUser: body.idUser,
         idEstatus: body.idEstatus,
@@ -126,7 +127,7 @@ app.post('/registrar', async(req, res) => {
         aJsnEvidencias,
         blnStatus: body.blnStatus
     });
-
+ 
     // console.log(alert);
     alert.save((err, alert) => {
         if (err) {
@@ -146,7 +147,6 @@ app.post('/registrar', async(req, res) => {
         });
     });
 });
-
 
 
 //|-----------------          Api PUT de alertas         ----------------|
