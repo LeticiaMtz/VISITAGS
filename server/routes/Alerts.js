@@ -55,7 +55,7 @@ app.get('/obtener', [], (req, res) => {
 //|----------------------------------------------------------------------|
 //Obtener por id
 app.get('/obtener/:idAlert', [], (req, res) => {
-    Alert.findById(req.params.id)
+    Alert.findById(req.params.idAlert)
         .exec((err, alerts) => {
             if (err) {
                 return res.status(400).json({
@@ -304,5 +304,39 @@ app.get('/obtenerAlertas/:idRol/:idUser', async(req, res) => {
     };
 
 });
+
+//|------------------- Api GET de alertas por usuario -------------------|
+//| Creada por: Martin Palacios                                          |
+//| Api que obtiene una alerta mediante un id                            |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/obtenerAlerta/:idAlerta              |
+//|----------------------------------------------------------------------|
+
+app.get('/obtenerAlerta/:idAlerta', async(req, res) => {
+    let idAlert = req.params.idAlerta;
+
+    Alert.find({ _id: idAlert }).populate([{ path: 'idUser' }, { path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }, { path: 'idAsignatura', select: 'strAsignatura' }, { path: 'arrCrde', select: 'strCategoria' }]).then((resp) => {
+
+        return res.status(200).json({
+            ok: true,
+            status: 200,
+            msg: 'Se han consultado correctamente la alerta',
+            cont: resp.length,
+            cnt: resp
+        });
+    }).catch((err) => {
+        return res.status(400).json({
+            ok: false,
+            status: 400,
+            msg: 'Ocurrio un error al consultar la alerta',
+            cnt: err
+        });
+    });
+});
+        
+
+
 
 module.exports = app;

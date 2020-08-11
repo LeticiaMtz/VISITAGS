@@ -234,7 +234,7 @@ app.post('/registrar/:idAlert/:idSeguimiento', [verificaToken], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/api/obtener                          |
 //|----------------------------------------------------------------------|
-app.get('/obtener/:idAlert', [verificaToken], (req, res) => {
+app.get('/obtener/:idAlert', [], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
     }
