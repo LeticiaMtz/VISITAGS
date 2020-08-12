@@ -73,14 +73,14 @@ app.get('/obtener/:id', [], (req, res) => {
 
 
 
-//|-----------------     Api POST de carreras            ----------------|
-//| Creada por: Leticia Moreno                                           |
-//| Api que registra una carrera                                         |
-//| modificada por:                                                      |
-//| Fecha de modificacion:                                               |
-//| cambios:                                                             |
-//| Ruta: http://localhost:3000/api/carreras/registrar                   |
-//|----------------------------------------------------------------------|
+//|-----------------     Api POST de carreras            -------------------|
+//| Creada por: Leticia Moreno                                              |
+//| Api que registra una carrera                                            |
+//| modificada por: Isabel Castillo                                         |
+//| Fecha de modificacion:   11-08-2020                                     |
+//| cambios: Se modifico el estatus 200 por un 400 en un mensaje de error   |
+//| Ruta: http://localhost:3000/api/carreras/registrar                      |
+//|-------------------------------------------------------------------------|
 app.post('/registrar', [], async(req, res) => {
     let body = req.body;
     //para poder mandar los datos a la coleccion
@@ -105,7 +105,7 @@ app.post('/registrar', [], async(req, res) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    status: 200,
+                    status: 400,
                     msg: 'Error al registrar la carrera',
                     err: err
                 });
