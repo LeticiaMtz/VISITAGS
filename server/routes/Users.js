@@ -154,14 +154,17 @@ app.post('/registrar', [], async(req, res) => {
 
 });
 
-//|-----------------Api POST de Usuarios     ----------------|
-//| Creada por: Leticia Moreno                               |
-//| Api que registra un usuario sin token                    |
-//| modificada por:                                          |
-//| Fecha de modificacion:                                   |
-//| cambios:                                                 |
-//| Ruta: http://localhost:3000/api/users/registrar          |
-//|----------------------------------------------------------|
+//|-----------------      Api POST de Usuarios  ---------------------------------|
+//| Creada por: Leticia Moreno                                                   |
+//| Api que registra un usuario sin token                                        |
+//| modificada por:  Isabel Castillo                                             |
+//| Fecha de modificacion: 11-08-20                                              |
+//| cambios: Se cambió el envió de datos por un json que ha su ves indica        |
+//|          el template a usar de la libreria de mails.                                               |
+//|          Se creó un template de bienvenida, el cual esta implementado        |
+//|          en el correo que se envia al registrar un usuario                   |
+//| Ruta: http://localhost:3000/api/users/registrar                              |
+//|------------------------------------------------------------------------------|
 //Registrar sin token 
 
 app.post('/registro', async(req, res) => {
@@ -183,7 +186,7 @@ app.post('/registro', async(req, res) => {
     });
 
 
-    // validar el correo que ya existe
+    // valida que el correo exista
     await User.findOne({ 'strEmail': req.body.strEmail }).then(async(encontrado) => {
         if (encontrado) {
             return res.status(400).json({
@@ -197,26 +200,26 @@ app.post('/registro', async(req, res) => {
             });
         }
 
+
+        jsnCorreo = {
+            strName: user.strName + ' ' + user.strLastName,
+            strEmail: user.strEmail,
+            strPassword: pass,
+            subject: 'Usuario registrado',
+            nmbEmail: 7
+        }
+
+        await mailer.sendEmail(jsnCorreo);
+
         await new User(user).save();
-        //Create access token
-        let mailOptions = {
-            from: 'notificaciones@utags.edu.mx',
-            to: user.strEmail,
-            subject: 'Esta es tu contraseña en caso de no recordarla...',
-            html: '<h1>¡Gracias por formar parte de Alertas académicas!</h1><br>' +
-                '<h3>Hola ' + user.strName + ' </h3>' + '<h3>Tu contraseña es: </h3>' +
-                pass,
-        };
-
-        mailer.sendMail(mailOptions);
-
         return res.status(200).json({
             ok: true,
-            status: 200,
-            msg: "Usuario registrado correctamente",
-            cont: user.length,
-            cnt: {
-                user
+            resp: 200,
+            msg: 'Correo enviado exitosamente',
+            cont: {
+                encontrado: {
+
+                }
             }
         });
 
@@ -360,12 +363,14 @@ app.post('/login', (req, res) => {
 });
 
 
-
-////////////////////////////////////////////////////////////////////////////////////////////////
-
-// API DE ENVIO DEL CORREO PARA RECUPERAR CONTRASEÑA 
-
-///////////////////////////////////////////////////////////////////////////////////////////////
+//|-------------------------     Api GET de envio de correo              -----------------------|
+//| Creada por: Isabel Castillo                                                                 |
+//| Api que envia un correo con una URL para cambiar la contraseña del usuario                  |
+//| modificada por:                                                                             |
+//| Fecha de modificacion:                                                                      |
+//| cambios:                                                                                    |
+//| Ruta: http://localhost:3000/api/users/forgot/:strEmail                                      |
+//|---------------------------------------------------------------------------------------------|
 
 app.get('/forgot/:strEmail', (req, res) => {
 
@@ -427,7 +432,7 @@ app.get('/forgot/:strEmail', (req, res) => {
         return res.status(200).json({
             ok: true,
             status: 200,
-            resp: 'Verificar tu correo electrónico.',
+            resp: 'Verifica tu correo electrónico.',
             cont: {
 
             }
@@ -446,11 +451,16 @@ app.get('/forgot/:strEmail', (req, res) => {
     })
 });
 
-/////////////////////////////////////////////////////////////////////////////////////////
 
-// API DE RECUPERAR CONTRASEÑA 
+//|-------------------------     Api PUT de recuperar contraseña         -----------------------|
+//| Creada por: Isabel Castillo                                                                 |
+//| Api que permite cambiar la contraseña del usuario                                           |
+//| modificada por:                                                                             |
+//| Fecha de modificacion:                                                                      |
+//| cambios:                                                                                    |
+//| Ruta: http://localhost:3000/api/users/reset-password/:token                                 |
+//|---------------------------------------------------------------------------------------------|
 
-////////////////////////////////////////////////////////////////////////////////////////
 app.put('/reset-password/:token', async(req, res) => {
     const token = req.params.token;
     let idUser = '';
@@ -551,5 +561,61 @@ app.put('/reset-password/:token', async(req, res) => {
 
     });
 })
+
+//|-------------------------     Api PUT de especialidad usuario         -----------------------|
+//| Creada por: Isabel Castillo                                                                 |
+//| Api que asigna especialidades a los usuarios                                                |
+//| modificada por:                                                                             |
+//| Fecha de modificacion:                                                                      |
+//| cambios:                                                                                    |
+//| Ruta: http://localhost:3000/api/users/asignar-especialidad/idUsuario                        |
+//|---------------------------------------------------------------------------------------------|
+
+app.put('/asignar-especialidad/:idUsuario', (req, res) => {
+
+    idUsuario = req.params.idUsuario;
+    user = new User(req.params);
+
+    // BUSCAR Y ACTUALIZAR EL USUARIO AL MISMO TIEMPO 
+    User.findOneAndUpdate({ '_id': idUsuario }, { '$set': { 'arrEspecialidadPermiso': req.body.aJsnEspecialidad } })
+        .then((usuario) => {
+            if (usuario !== undefined || usuario !== null) {
+
+                return res.status(200).json({
+                    ok: true,
+                    resp: 200,
+                    msg: 'Se ha asignado la especialidad correctamente',
+                    cont: {
+                        usuario
+                    }
+                });
+
+            } else {
+
+                return res.status(400).json({
+                    ok: false,
+                    resp: 400,
+                    msg: 'Error: No se actualizó la especialidad correctamente',
+                    cont: {
+                        err
+                    }
+                });
+
+            }
+        }).catch((err) => {
+            console.log(err);
+            return res.status(500).json({
+                ok: false,
+                resp: 500,
+                msg: 'Error al asignar la especialidad',
+                cont: {
+                    err
+                }
+            })
+        })
+
+});
+
+
 
 module.exports = app;

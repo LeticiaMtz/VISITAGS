@@ -65,6 +65,12 @@ class email {
             htmlF = compiledTemplate.render({ 'strName': jsnInfoEmail.strName, 'strPassword': jsnInfoEmail.strPassword, 'strLink': jsnInfoEmail.strLink, 'strEmail': jsnInfoEmail.strEmail }); //agregar parametros aqui
         }
 
+        if (jsnInfoEmail.nmbEmail === 7) { //con parametros
+            const template = fs.readFileSync(path.resolve(__dirname, `../assets/templates/correoBienvenida.html`), 'utf-8');
+            compiledTemplate = Hogan.compile(template);
+            htmlF = compiledTemplate.render(jsnInfoEmail); //agregar parametros aqui
+        }
+
         const emailBody = {
             from: mainEmail,
             to: jsnInfoEmail.strEmail,
