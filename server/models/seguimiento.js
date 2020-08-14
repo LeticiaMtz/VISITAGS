@@ -6,7 +6,9 @@ let Schema = mongoose.Schema;
 // Creación de esquema de alertas
 const seguimiento = new Schema({
     idUser: {
-        type: String   
+       type: Schema.Types.ObjectId, 
+       ref: 'User'
+      
    },
    idEstatus: {
        type: Schema.Types.ObjectId, 

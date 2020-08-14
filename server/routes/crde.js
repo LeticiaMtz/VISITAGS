@@ -80,8 +80,10 @@ app.get('/obtener/:id', [], (req, res) => {
 app.post('/registrar', [], async(req, res) => {
     let body = req.body;
     //para poder mandar los datos a la coleccion
+    let aJsnMotivo = [];
     let crde = new Crde({
         strCategoria: body.strCategoria,
+        aJsnMotivo, 
         blnStatus: body.blnStatus
 
     });
@@ -93,7 +95,7 @@ app.post('/registrar', [], async(req, res) => {
                 ok: false,
                 status: 400,
                 msg: 'El nombre de la categoria ya ha sido registrada',
-                cnt: err
+                cnt: encontrado
 
             });
         }
