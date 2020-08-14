@@ -54,8 +54,9 @@ app.get('/obtener', [], (req, res) => {
 //| Ruta: http://localhost:3000/api/alerts/obtener/idAlert               |
 //|----------------------------------------------------------------------|
 //Obtener por id
-app.get('/obtener/:idAlert', [], (req, res) => {
-    Alert.findById(req.params.idAlert)
+app.get('/obtener/:id', [], (req, res) => {
+    let id = req.params.id;
+    Alert.find({ _id: id })
         .exec((err, alerts) => {
             if (err) {
                 return res.status(400).json({
