@@ -5,10 +5,12 @@ const mongoose = require('mongoose');
 const Seguimiento = require('../models/seguimiento');
 const Evidencias = require('../models/evidencias');
 const Alerts = require('../models/Alerts');
+const User = require('../models/Users');
 const { verificaToken } = require('../middlewares/autenticacion');
 
 const cargarImagenes = require('../libraries/cargaImagenes');
 const { isArray } = require('underscore');
+const { path } = require('./crde');
 const rutaImg = 'seguimiento';
 
 //|-----------------          Api POST de api            ----------------|
@@ -39,20 +41,45 @@ app.post('/registrar/:idAlert', [], async(req, res) => {
         });
     }
 
-    let nombreImg;
-    let aJsnEvidencias = [];
+
+    
+    
         
         if (!req.files) {
-            return res.status(400).json({
-                ok: false,
-                resp: '400',
-                msg: 'No se ha seleccionado ningún archivo',
-                cont: {
-                    file: req.files
+            Alerts.findOneAndUpdate({
+                '_id': req.params.idAlert
+            }, {
+                $push: {
+                    aJsnSeguimiento: seguimiento
                 }
+            })
+            .then((seguimiento) => {
+                return res.status(200).json({
+                    ok: true,
+                    resp: 200,
+                    msg: 'Success: Informacion insertada correctamente.',
+                    cont: seguimiento.length, 
+                    cnt: {
+                        seguimiento
+                    }
+                });
+            })
+            .catch((err) => {
+                return res.status(500).json({
+                    ok: false,
+                    resp: 500,
+                    msg: 'Error: Error al registrar la evidencia',
+                    cont: {
+                        err: err.message
+                    }
+                });
             });
         }
 
+        if(req.files){
+
+        let aJsnEvidencias = [];
+        let nombreImg;
         let arrFiles = req.files.strFileEvidencia;
         console.log(arrFiles)
         if(isArray(arrFiles)){
@@ -139,6 +166,7 @@ app.post('/registrar/:idAlert', [], async(req, res) => {
                             }
                         });
                     });
+                }
         if((err) => {
             return res.status(500).json({
                 ok: false,
@@ -234,65 +262,29 @@ app.post('/registrar/:idAlert/:idSeguimiento', [verificaToken], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/api/obtener                          |
 //|----------------------------------------------------------------------|
-app.get('/obtener/:idAlert', [verificaToken], (req, res) => {
+app.get('/obtener/:idAlert', [], (req, res) => {
+    let idAlert = req.params.idAlert;
     if (process.log) {
         console.log(' params ', req.params);
     }
-    Alerts.aggregate([{
-                $unwind: '$aJsnSeguimiento'
-            },
-            {
-                $match: {
-                    '_id': mongoose.Types.ObjectId(req.params.idAlert),
-                    'blnStatus': true
-                }
-            },
-            {
-                $replaceRoot: {
-                    newRoot: '$aJsnSeguimiento'
-                }
-            }
-        ]).sort({ created_at: 'desc' })
-        .then((rutas) => {
-
-            if (rutas.length > 0) {
-
-                return res.status(200).json({
-                    ok: true,
-                    resp: 200,
-                    msg: 'Success: Informacion obtenida correctamente.',
-                    cont: rutas.length,
-                    cnt: {
-                        rutas
-                    }
-                });
-
-            } else {
-
-                return res.status(404).json({
-                    ok: true,
-                    resp: 404,
-                    msg: 'Error: La categoría no existe o no cuenta con rutas de apis',
-                    cont: {
-                        rutas
-                    }
-                });
-
-            }
-
-        })
-        .catch((err) => {
-
-            return res.status(500).json({
+    Alerts.findById(idAlert, { aJsnSeguimiento: 1}).populate([{path: 'aJsnSeguimiento.idUser', select: 'strName idRole strLastName strMotherLastName', populate: { path: 'idRole', select: 'strRole' }}]).sort({ created_at: 'desc' })
+    .exec((err, seguimiento) => {
+        if (err) {
+            return res.status(400).json({
                 ok: false,
-                resp: 500,
-                msg: "Error: Error al obtener las apis de la categoría.",
-                cont: {
-                    err: err.message
-                }
+                status: 400,
+                msg: 'Error al encontrar el seguimeinto de la alerta ',
+                cnt: err
             });
-
+        }
+        return res.status(200).json({
+            ok: true,
+            status: 200,
+            msg: 'Success: Informacion obtenida correctamente.',
+            cont: seguimiento.length,
+            cnt: seguimiento
         });
+    });
 
 });
 
