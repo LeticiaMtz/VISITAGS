@@ -22,11 +22,49 @@ const rutaImg = 'seguimiento';
 //| Ruta: http://localhost:3000/api/api/registrar                        |
 //|----------------------------------------------------------------------|
 app.post('/registrar/:idAlert', [], async(req, res) => {
+
+    let idAlert = req.params.idAlert;
+
+    let urlSeg = `http://localhost:4200/#/Tracking-alerts/${idAlert}`;
+
     if (process.log) {
         console.log(' params ', req.params);
         console.log(' body ', req.body);
     }
     const seguimiento = new Seguimiento(req.body);
+
+    let personas = await Alerts.aggregate()
+        .match({ _id: mongoose.Types.ObjectId(req.params.idAlert) })
+        .unwind('aJsnSeguimiento')
+        .replaceRoot('aJsnSeguimiento')
+        .project({ idUser: 1 })
+        .lookup({
+            from: 'users',
+            localField: 'idUser',
+            foreignField: '_id',
+            as: 'data'
+        });
+
+    console.log(seguimiento, 'Seguimiento');
+
+    for (const persona of personas) {
+        let strCorreo = persona.data[0].strEmail;
+        let strNombrePersona = persona.data[0].strName;
+        console.log(strCorreo);
+
+        mailOptions = {
+            nmbEmail: 9,
+            strEmail: strCorreo,
+            strComentario: seguimiento.strComentario,
+            strPersona: strNombrePersona,
+            urlSeg: urlSeg,
+            subject: '¡Nuevo Seguimiento!',
+            html: '<h1>¡Por favor, revisa el nuevo seguimiento de alertas!</h1><br>' +
+                `<h2>Esta es la liga del seguimiento: ${urlSeg}</h2>`
+        };
+
+        mailer.sendEmail(mailOptions);
+    }
 
     let err = seguimiento.validateSync();
 
@@ -40,13 +78,8 @@ app.post('/registrar/:idAlert', [], async(req, res) => {
             }
         });
     }
-
-
-    
-    
-        
-        if (!req.files) {
-            Alerts.findOneAndUpdate({
+    if (!req.files) {
+        Alerts.findOneAndUpdate({
                 '_id': req.params.idAlert
             }, {
                 $push: {
@@ -58,7 +91,7 @@ app.post('/registrar/:idAlert', [], async(req, res) => {
                     ok: true,
                     resp: 200,
                     msg: 'Success: Informacion insertada correctamente.',
-                    cont: seguimiento.length, 
+                    cont: seguimiento.length,
                     cnt: {
                         seguimiento
                     }
@@ -74,22 +107,42 @@ app.post('/registrar/:idAlert', [], async(req, res) => {
                     }
                 });
             });
-        }
+    }
 
-        if(req.files){
+    if (req.files) {
 
         let aJsnEvidencias = [];
         let nombreImg;
         let arrFiles = req.files.strFileEvidencia;
         console.log(arrFiles)
-        if(isArray(arrFiles)){
-        for (const archivo of arrFiles) {
-            await cargarImagenes.subirImagen(archivo, rutaImg).then((fileName) => {
+        if (isArray(arrFiles)) {
+            for (const archivo of arrFiles) {
+                await cargarImagenes.subirImagen(archivo, rutaImg).then((fileName) => {
+
+                    nombreImg = fileName;
+                    aJsnEvidencias.push(nombreImg);
+
+
+                }).catch((err) => {
+                    console.log(err);
+                    return res.status(400).json({
+                        ok: false,
+                        resp: 400,
+                        msg: 'Error al procesar el archivo',
+                        cont: {
+                            err: err.message
+                        }
+                    });
+                });
+
+            }
+        } else {
+            await cargarImagenes.subirImagen(arrFiles, rutaImg).then((fileName) => {
 
                 nombreImg = fileName;
                 aJsnEvidencias.push(nombreImg);
-    
-    
+
+
             }).catch((err) => {
                 console.log(err);
                 return res.status(400).json({
@@ -101,32 +154,8 @@ app.post('/registrar/:idAlert', [], async(req, res) => {
                     }
                 });
             });
-    
         }
-    }else{
-        await cargarImagenes.subirImagen(arrFiles, rutaImg).then((fileName) => {
 
-            nombreImg = fileName;
-            aJsnEvidencias.push(nombreImg);
-
-
-        }).catch((err) => {
-            console.log(err);
-            return res.status(400).json({
-                ok: false,
-                resp: 400,
-                msg: 'Error al procesar el archivo',
-                cont: {
-                    err: err.message
-                }
-            });
-        });
-
-           
-    }
-
-        
-        
         const evidencias = new Evidencias({
 
             strNombre: req.body.strNombre,
@@ -136,38 +165,38 @@ app.post('/registrar/:idAlert', [], async(req, res) => {
         });
         for (const iter of aJsnEvidencias) {
             seguimiento.aJsnEvidencias.push(evidencias);
-            
+
         }
-           Alerts.findOneAndUpdate({
-                        '_id': req.params.idAlert
-                    }, {
-                        $push: {
-                            aJsnSeguimiento: seguimiento
-                        }
-                    })
-                    .then((seguimiento) => {
-                        return res.status(200).json({
-                            ok: true,
-                            resp: 200,
-                            msg: 'Success: Informacion insertada correctamente.',
-                            cont: seguimiento.length, 
-                            cnt: {
-                                seguimiento
-                            }
-                        });
-                    })
-                    .catch((err) => {
-                        return res.status(500).json({
-                            ok: false,
-                            resp: 500,
-                            msg: 'Error: Error al registrar la evidencia',
-                            cont: {
-                                err: err.message
-                            }
-                        });
-                    });
+        Alerts.findOneAndUpdate({
+                '_id': req.params.idAlert
+            }, {
+                $push: {
+                    aJsnSeguimiento: seguimiento
                 }
-        if((err) => {
+            })
+            .then((seguimiento) => {
+                return res.status(200).json({
+                    ok: true,
+                    resp: 200,
+                    msg: 'Success: Informacion insertada correctamente.',
+                    cont: seguimiento.length,
+                    cnt: {
+                        seguimiento
+                    }
+                });
+            })
+            .catch((err) => {
+                return res.status(500).json({
+                    ok: false,
+                    resp: 500,
+                    msg: 'Error: Error al registrar la evidencia',
+                    cont: {
+                        err: err.message
+                    }
+                });
+            });
+    }
+    if ((err) => {
             return res.status(500).json({
                 ok: false,
                 resp: 500,
@@ -177,10 +206,7 @@ app.post('/registrar/:idAlert', [], async(req, res) => {
                 }
             });
         });
-    });
-             
-
-
+});
 
 
 //|-----------------          Api POST de api            ----------------|
@@ -212,46 +238,46 @@ app.post('/registrar/:idAlert/:idSeguimiento', [verificaToken], (req, res) => {
             }
         });
     }
-                    Alerts.findOneAndUpdate({
-                        '_id': req.params.idAlert, 
-                        'aJsnSeguimiento._id': req.params.idSeguimiento
-                    }, {
-                        $push: {
-                            'aJsnSeguimiento.$.aJsnEvidencias': evidencias
-                        }
-                    })
-                        .then((alert) => {
-                            return res.status(200).json({
-                                ok: true,
-                                resp: 200,
-                                msg: 'Success: Informacion insertada correctamente.',
-                                cont: evidencias.length,
-                                cnt: {
-                                    evidencias
-                                }
-                            });
-                        })
-                        .catch((err) => {
-                            return res.status(500).json({
-                                ok: false,
-                                resp: 500,
-                                msg: 'Error: Error al registrar el motivo',
-                                cont: {
-                                    err: err.message
-                                }
-                            });
-                        });
-                })
-        if ((err) => {
+    Alerts.findOneAndUpdate({
+            '_id': req.params.idAlert,
+            'aJsnSeguimiento._id': req.params.idSeguimiento
+        }, {
+            $push: {
+                'aJsnSeguimiento.$.aJsnEvidencias': evidencias
+            }
+        })
+        .then((alert) => {
+            return res.status(200).json({
+                ok: true,
+                resp: 200,
+                msg: 'Success: Informacion insertada correctamente.',
+                cont: evidencias.length,
+                cnt: {
+                    evidencias
+                }
+            });
+        })
+        .catch((err) => {
             return res.status(500).json({
                 ok: false,
                 resp: 500,
-                msg: 'Error: Error interno',
+                msg: 'Error: Error al registrar el motivo',
                 cont: {
                     err: err.message
                 }
             });
         });
+})
+if ((err) => {
+        return res.status(500).json({
+            ok: false,
+            resp: 500,
+            msg: 'Error: Error interno',
+            cont: {
+                err: err.message
+            }
+        });
+    });
 
 
 //|-----------------          Api GET de api            ----------------|
@@ -267,24 +293,24 @@ app.get('/obtener/:idAlert', [], (req, res) => {
     if (process.log) {
         console.log(' params ', req.params);
     }
-    Alerts.findById(idAlert, { aJsnSeguimiento: 1}).populate([{path: 'aJsnSeguimiento.idUser', select: 'strName idRole strLastName strMotherLastName', populate: { path: 'idRole', select: 'strRole' }}]).sort({ created_at: 'desc' })
-    .exec((err, seguimiento) => {
-        if (err) {
-            return res.status(400).json({
-                ok: false,
-                status: 400,
-                msg: 'Error al encontrar el seguimeinto de la alerta ',
-                cnt: err
+    Alerts.findById(idAlert, { aJsnSeguimiento: 1 }).populate([{ path: 'aJsnSeguimiento.idUser', select: 'strName idRole strLastName strMotherLastName', populate: { path: 'idRole', select: 'strRole' } }]).sort({ created_at: 'desc' })
+        .exec((err, seguimiento) => {
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    status: 400,
+                    msg: 'Error al encontrar el seguimeinto de la alerta ',
+                    cnt: err
+                });
+            }
+            return res.status(200).json({
+                ok: true,
+                status: 200,
+                msg: 'Success: Informacion obtenida correctamente.',
+                cont: seguimiento.length,
+                cnt: seguimiento
             });
-        }
-        return res.status(200).json({
-            ok: true,
-            status: 200,
-            msg: 'Success: Informacion obtenida correctamente.',
-            cont: seguimiento.length,
-            cnt: seguimiento
         });
-    });
 
 });
 
@@ -331,10 +357,10 @@ app.put('/actualizar/:idAlert/:idSeguimiento', [verificaToken], (req, res) => {
         {
             $match: {
                 'aJsnSeguimiento.blnStatus': true,
-                'aJsnSeguimineto.idUser': req.body.idUser, 
-                'aJsnSeguimiento.idEstatus': req.body.idEstatus, 
-                'aJsnSeguimiento.strComentario': req.body.strComentario, 
-                'aJsnSeguimiento.aJsnEvidencias': req.body.aJsnEvidencias, 
+                'aJsnSeguimineto.idUser': req.body.idUser,
+                'aJsnSeguimiento.idEstatus': req.body.idEstatus,
+                'aJsnSeguimiento.strComentario': req.body.strComentario,
+                'aJsnSeguimiento.aJsnEvidencias': req.body.aJsnEvidencias,
 
             }
         },
@@ -375,12 +401,12 @@ app.put('/actualizar/:idAlert/:idSeguimiento', [verificaToken], (req, res) => {
                 'aJsnSeguimiento._id': req.params.idSeguimiento
             }, {
                 $set: {
-                    
-                'aJsnSeguimineto.idUser': seguimiento.idUser, 
-                'aJsnSeguimiento.idEstatus': seguimiento.idEstatus, 
-                'aJsnSeguimiento.strComentario': seguimiento.strComentario, 
-                'aJsnSeguimiento.aJsnEvidencias': seguimiento.aJsnEvidencias, 
-                'aJsnSeguimiento.blnStatus': seguimiento.blnStatus
+
+                    'aJsnSeguimineto.idUser': seguimiento.idUser,
+                    'aJsnSeguimiento.idEstatus': seguimiento.idEstatus,
+                    'aJsnSeguimiento.strComentario': seguimiento.strComentario,
+                    'aJsnSeguimiento.aJsnEvidencias': seguimiento.aJsnEvidencias,
+                    'aJsnSeguimiento.blnStatus': seguimiento.blnStatus
 
                 }
             })

@@ -9,6 +9,7 @@ const fileUpload = require('../libraries/subirArchivo(1)');
 const User = require('../models/Users');
 const { select, isArray } = require('underscore');
 const cargaImagenes = require('../libraries/cargaImagenes');
+const email = require('../libraries/mails');
 
 const idProfesor = '5eeee0db16952756482d1868';
 const idDirector = '5eeee0db16952756482d1869';
@@ -85,33 +86,33 @@ app.get('/obtener/:id', [], (req, res) => {
 //| Ruta: http://localhost:3000/api/alerts/registrar                     |
 //|----------------------------------------------------------------------|
 app.post('/registrar', async(req, res) => {
- 
+    let strUrl = 'http://localhost:4200/#/dashbord';
     let aJsnEvidencias = [];
     if (req.files) {
-        let arrFiles = req.files.strFileEvidencia;
-        console.log(arrFiles)
-        if(isArray(arrFiles)){
-        for (const archivo of arrFiles) {
-            let strNombreFile = await fileUpload.subirArchivo(archivo, 'evidencias');
+        let arrFiles = req.files.strFileEvidencias;
+        // console.log(arrFiles, 'ArrFiles.strFileEvidencia');
+        if (isArray(arrFiles)) {
+            for (const archivo of arrFiles) {
+                let strNombreFile = await fileUpload.subirArchivo(archivo, 'evidencias');
+                aJsnEvidencias.push({
+                    strNombre: strNombreFile,
+                    strFileEvidencia: `/envidencias/${strNombreFile}`,
+                    blnActivo: true
+                });
+            }
+        } else {
+            let strNombreFile = await fileUpload.subirArchivo(arrFiles, 'evidencias');
             aJsnEvidencias.push({
                 strNombre: strNombreFile,
                 strFileEvidencia: `/envidencias/${strNombreFile}`,
                 blnActivo: true
             });
         }
-    }else{
-        let strNombreFile = await fileUpload.subirArchivo(arrFiles, 'evidencias');
-            aJsnEvidencias.push({
-                strNombre: strNombreFile,
-                strFileEvidencia: `/envidencias/${strNombreFile}`,
-                blnActivo: true
-            });
     }
-    }
- 
+
     let body = req.body;
     //para poder mandar los datos a la coleccion
- 
+
     let alert = new Alert({
         idUser: body.idUser,
         idEstatus: body.idEstatus,
@@ -128,7 +129,7 @@ app.post('/registrar', async(req, res) => {
         aJsnEvidencias,
         blnStatus: body.blnStatus
     });
- 
+
     // console.log(alert);
     alert.save((err, alert) => {
         if (err) {
@@ -139,12 +140,48 @@ app.post('/registrar', async(req, res) => {
                 cnt: err
             });
         }
-        return res.status(200).json({
-            ok: true,
-            status: 200,
-            msg: "Alerta registrada correctamente",
-            cont: alert.length,
-            cnt: alert
+
+        User.find({ arrEspecialidadPermiso: { $in: [body.idEspecialidad] } }).then((personas) => {
+
+            console.log(personas);
+
+            for (const persona of personas) {
+                emailBody = {
+                    nmbEmail: 10,
+                    strNombreProf: persona.strName,
+                    strEmail: persona.strEmail,
+                    subject: '¡Se ha creado una nueva alerta!',
+                    strNombreAlumno: alert.strNombreAlumno,
+                    strDescripcion: alert.strDescripcion,
+                    strLink: `${strUrl}`,
+                    html: '<h1>Tu solicitud de registro esta siendo revisada.</h1><br>' +
+                        '<h3>En un maximo de 24hrs. tu solicitud tendrá que estar resuelta.</h3>'
+                };
+                email.sendEmail(emailBody, (err) => {
+                    if (process.log) { console.log('[Enviando Correo]'.yellow); }
+
+                    if (err) {
+                        return console.log(err.message);
+                    }
+                });
+            }
+
+
+            return res.status(200).json({
+                ok: true,
+                status: 200,
+                msg: "Alerta registrada correctamente",
+                cont: alert.length,
+                cnt: alert
+            });
+
+        }).catch((err) => {
+            return res.status(400).json({
+                ok: false,
+                status: 400,
+                msg: 'No se encontró al profesor',
+                cnt: err
+            });
         });
     });
 });

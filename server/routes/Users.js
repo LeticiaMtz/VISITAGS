@@ -111,24 +111,48 @@ app.post('/registrar', [], async(req, res) => {
                 resp: 400,
                 msg: 'El correo ya ha sido registrado',
                 cont: {
-                    user
+                    encontrado
                 }
 
             });
         }
 
-        await new User(user).save();
+        await user.save();
+
         //Create access token
         mailOptions = {
-            from: 'notificaciones@utags.edu.mx',
-            to: user.strEmail,
-            subject: 'Esta es tu contraseña en caso de no recordarla...',
-            html: '<h1>¡Gracias por formar parte de Alertas académicas!</h1><br>' +
-                '<h3>Hola ' + user.strName + ' </h3>' + '<h3>Tu contraseña es: </h3>' +
-                pass,
+            nmbEmail: 7,
+            strEmail: user.strEmail,
+            subject: '¡Bienvenido al sistema de Alertas Academicas!',
+            html: '<h1>Tu solicitud de registro esta siendo revisada.</h1><br>' +
+                '<h3>En un maximo de 24hrs. tu solicitud tendrá que estar resuelta.</h3>'
         };
 
-        mailer.sendMail(mailOptions);
+        await mailer.sendEmail(mailOptions);
+
+        User.find({ idRole: '5f1e2419ad1ebd0b08edab74' }).then((data) => {
+
+
+            // console.log('Usuarios con rol de admin');
+            // console.log(data, 'dataa');
+
+            for (const admin of data) {
+                console.log(admin, 'For of');
+
+                mailOptions = {
+                    nmbEmail: 8,
+                    strEmail: admin.strEmail,
+                    subject: '¡Nuevo Registro!',
+                    html: '<h1>¡Por favor, revisa las solicitudes de registro!</h1><br>'
+                };
+
+                mailer.sendEmail(mailOptions);
+            }
+
+        }).catch((err) => {
+            console.log('Error');
+            console.log(err);
+        });
 
         return res.status(200).json({
             ok: true,
@@ -196,7 +220,6 @@ app.post('/registro', async(req, res) => {
                 cont: {
                     user
                 }
-
             });
         }
 
@@ -207,7 +230,7 @@ app.post('/registro', async(req, res) => {
             strPassword: pass,
             subject: 'Usuario registrado',
             nmbEmail: 7
-        }
+        };
 
         await mailer.sendEmail(jsnCorreo);
 
