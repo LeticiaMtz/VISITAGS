@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 let htmlF = '';
 
-const mainEmail = '"Alertas Academicas" <notificaciones@utags.edu.mx>';
+const mainEmail = '"Alertas Academicas" <orientacion.vocacional@utags.edu.mx>';
 
 class email {
     constructor() {
@@ -15,13 +15,13 @@ class email {
             service: 'outlook',
             port: 587,
             secure: false,
-            auth: { user: 'notificaciones@utags.edu.mx', pass: 'Cac07974' },
+            auth: { user: 'orientacion.vocacional@utags.edu.mx', pass: 'Noc099998' },
             tls: {
                 rejectUnauthorized: false
             }
         });
         this.mailOptions = {
-            from: '"Alertas Academicas" <notificaciones@utags.edu.mx>'
+            from: '"Alertas Academicas" <orientacion.vocacional@utags.edu.mx>'
         };
     }
 
@@ -67,6 +67,24 @@ class email {
 
         if (jsnInfoEmail.nmbEmail === 7) { //con parametros
             const template = fs.readFileSync(path.resolve(__dirname, `../assets/templates/correoBienvenida.html`), 'utf-8');
+            compiledTemplate = Hogan.compile(template);
+            htmlF = compiledTemplate.render(jsnInfoEmail); //agregar parametros aqui
+        }
+
+        if (jsnInfoEmail.nmbEmail === 8) { //con parametros
+            const template = fs.readFileSync(path.resolve(__dirname, `../assets/templates/correoNuevoUsuario.html`), 'utf-8');
+            compiledTemplate = Hogan.compile(template);
+            htmlF = compiledTemplate.render(jsnInfoEmail); //agregar parametros aqui
+        }
+
+        if (jsnInfoEmail.nmbEmail === 9) { //con parametros
+            const template = fs.readFileSync(path.resolve(__dirname, `../assets/templates/correoNuevoSeguimiento.html`), 'utf-8');
+            compiledTemplate = Hogan.compile(template);
+            htmlF = compiledTemplate.render(jsnInfoEmail); //agregar parametros aqui
+        }
+
+        if (jsnInfoEmail.nmbEmail === 10) { //con parametros
+            const template = fs.readFileSync(path.resolve(__dirname, `../assets/templates/correoNuevaAlerta.html`), 'utf-8');
             compiledTemplate = Hogan.compile(template);
             htmlF = compiledTemplate.render(jsnInfoEmail); //agregar parametros aqui
         }
