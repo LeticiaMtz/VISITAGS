@@ -14,11 +14,8 @@ const {} = require('../middlewares/autenticacion');
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/especialidad/registrar/idCarrera     |
 //|----------------------------------------------------------------------|
-app.post('/registrar/:idCarrera', [], (req, res) => {
-    if (process.log) {
-        console.log(' params ', req.params);
-        console.log(' body ', req.body);
-    }
+app.post('/registrar/:idCarrera', (req, res) => {
+
     const especialidad = new Especialidad(req.body);
 
     let err = especialidad.validateSync();
@@ -58,7 +55,7 @@ app.post('/registrar/:idCarrera', [], (req, res) => {
                             aJsnEspecialidad: especialidad
                         }
                     })
-                    .then((carrera) => {
+                    .then((especialidad) => {
                         return res.status(200).json({
                             ok: true,
                             resp: 200,
@@ -92,6 +89,8 @@ app.post('/registrar/:idCarrera', [], (req, res) => {
             });
         });
 });
+
+
 
 //|-----------------     Api GET de Especialidad         ----------------|
 //| Creada por: Leticia Moreno                                           |
