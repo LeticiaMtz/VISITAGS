@@ -24,7 +24,7 @@ app.post('/registrar/:idCarrera', (req, res) => {
         return res.status(500).json({
             ok: false,
             resp: 500,
-            msg: 'Error: Error al registrar la api',
+            msg: 'Error: Error al registrar la especialidad',
             cnt: {
                 err
             }

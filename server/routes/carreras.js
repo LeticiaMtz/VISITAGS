@@ -142,14 +142,14 @@ app.post('/registrar', (req, res) => {
             return res.status(400).json({
                 ok: false,
                 status: 400,
-                msg: 'Error al registrar los datos generales',
+                msg: 'Error al registrar la carrera',
                 cnt: err
             });
         }
         return res.status(200).json({
             ok: true,
             resp: 200,
-            msg: 'Se ha registrado correctamente la categoriaApi',
+            msg: 'Se ha registrado correctamente la carrera',
             cont: carDB.length, 
             cnt: {
                 carDB
