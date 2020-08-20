@@ -3,7 +3,7 @@ const _ = require('underscore');
 const Role = require('../models/Roles'); //subir nivel
 const app = express();
 const { verificaToken } = require('../middlewares/autenticacion');
-const {rolMenuUsuario} = require('../middlewares/permisosUsuarios')
+const { rolMenuUsuario } = require('../middlewares/permisosUsuarios')
 
 //|-----------------  Api GET de Roles       ----------------|
 //| Creada por: Leticia Moreno                               |
@@ -13,14 +13,14 @@ const {rolMenuUsuario} = require('../middlewares/permisosUsuarios')
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/roles/obtener            |
 //|----------------------------------------------------------|
-app.get('/obtener', [verificaToken], (req, res) => {
+app.get('/obtener', (req, res) => {
     Role.find({ blnStatus: true }) //select * from usuario where estado=true
         //solo aceptan valores numericos
         .exec((err, roles) => { //ejecuta la funcion
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    status: 400, 
+                    status: 400,
                     msg: 'Error al generar la lista',
                     err
                 });
@@ -28,7 +28,7 @@ app.get('/obtener', [verificaToken], (req, res) => {
             console.log(req.role);
             return res.status(200).json({
                 ok: true,
-                status: 200, 
+                status: 200,
                 msg: 'Lista de commentarios generada exitosamente',
                 cont: roles.length,
                 cnt: roles
@@ -45,7 +45,7 @@ app.get('/obtener', [verificaToken], (req, res) => {
 //| Ruta: http://localhost:3000/api/roles/obtener/idRole     |
 //|----------------------------------------------------------|
 //Obtener por id
-app.get('/obtener/:id',  (req, res) => {
+app.get('/obtener/:id', (req, res) => {
     let id = req.params.id;
     Role.find({ _id: id })
         .exec((err, roles) => {
@@ -83,23 +83,23 @@ app.post('/registrar', [verificaToken], (req, res) => {
         strDescripcion: body.strDescripcion,
         blnStatus: body.blnStatus,
         arrApi: body.arrApi,
-      
+
     });
 
     role.save((err, rolDB) => {
         if (err) {
             return res.status(400).json({
                 ok: false,
-                status: 400, 
+                status: 400,
                 msg: 'Error al registrar rol',
                 err
             });
         }
         return res.status(200).json({
             ok: true,
-            status: 200, 
-            msg: 'Se registro el rol correctamente', 
-            cont: rolDB.length, 
+            status: 200,
+            msg: 'Se registro el rol correctamente',
+            cont: rolDB.length,
             cnt: rolDB
         });
     });
@@ -123,7 +123,7 @@ app.put('/actualizar/:idRole', [verificaToken], (req, res) => {
             Role.findByIdAndUpdate(id, roleBody).then((resp) => {
                 return res.status(200).json({
                     ok: true,
-                    status: 200, 
+                    status: 200,
                     msg: 'Rol actualizado con éxito',
                     cont: resp.length,
                     cnt: resp
@@ -140,7 +140,7 @@ app.put('/actualizar/:idRole', [verificaToken], (req, res) => {
     }).catch((err) => {
         return res.status(400).json({
             ok: false,
-            status: 400, 
+            status: 400,
             msg: 'Error al actualizar el rol',
             err: err
         });
@@ -163,16 +163,16 @@ app.delete('/eliminar/:idRole', [verificaToken], (req, res) => {
         if (err) {
             return res.status(400).json({
                 ok: false,
-                status: 400, 
+                status: 400,
                 msg: 'Error al eliminar rol',
                 err
             });
         }
         return res.status(200).json({
             ok: true,
-            status: 200, 
+            status: 200,
             msg: 'Rol eliminado correctamente',
-            cont: resp.length, 
+            cont: resp.length,
             cnt: resp
         });
     });
