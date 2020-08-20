@@ -81,45 +81,83 @@ app.get('/obtener/:id', [], (req, res) => {
 //| cambios: Se modifico el estatus 200 por un 400 en un mensaje de error   |
 //| Ruta: http://localhost:3000/api/carreras/registrar                      |
 //|-------------------------------------------------------------------------|
-app.post('/registrar', [], async(req, res) => {
+// app.post('/registrar', [], async(req, res) => {
+//     let body = req.body;
+//     let carrera = new Carrera({
+//         strCarrera: body.strCarrera,
+//         blnStatus: body.blnStatus, 
+//         aJsn
+
+//     });
+
+
+//     Carrera.findOne({ 'strCarrera': body.strCarrera }).then((encontrado) => {
+//         if (encontrado) {
+//             return res.status(400).json({
+//                 ok: false,
+//                 status: 400,
+//                 msg: 'La carrera ya ha sido registrada',
+//                 cnt: encontrado
+
+//             });
+//         }
+//         carrera.save((err, carrera) => {
+//             if (err) {
+//                 return res.status(400).json({
+//                     ok: false,
+//                     status: 400,
+//                     msg: 'Error al registrar la carrera',
+//                     err: err
+//                 });
+//             }
+//             return res.status(200).json({
+//                 ok: true,
+//                 status: 200,
+//                 msg: "Carrera registrada exitosamente",
+//                 cont: carrera.length,
+//                 cnt: carrera
+//             });
+//         });
+//     });
+
+// });
+
+app.post('/registrar', (req, res) => {
     let body = req.body;
-    //para poder mandar los datos a la coleccion
     let carrera = new Carrera({
-        strCarrera: body.strCarrera,
-        blnStatus: body.blnStatus
-
+        strCarrera: body.strCarrera
     });
-
-
     Carrera.findOne({ 'strCarrera': body.strCarrera }).then((encontrado) => {
-        if (encontrado) {
+                if (encontrado) {
+                    return res.status(400).json({
+                        ok: false,
+                        status: 400,
+                        msg: 'La carrera ya ha sido registrada',
+                        cnt: encontrado
+        
+                    });
+                }
+    new Carrera(carrera).save((err, carDB) => {
+        if (err) {
             return res.status(400).json({
                 ok: false,
                 status: 400,
-                msg: 'La carrera ya ha sido registrada',
-                cnt: encontrado
-
+                msg: 'Error al registrar la carrera',
+                cnt: err
             });
         }
-        carrera.save((err, carrera) => {
-            if (err) {
-                return res.status(400).json({
-                    ok: false,
-                    status: 400,
-                    msg: 'Error al registrar la carrera',
-                    err: err
-                });
+        return res.status(200).json({
+            ok: true,
+            resp: 200,
+            msg: 'Se ha registrado correctamente la carrera',
+            cont: carDB.length, 
+            cnt: {
+                carDB
             }
-            return res.status(200).json({
-                ok: true,
-                status: 200,
-                msg: "Carrera registrada exitosamente",
-                cont: carrera.length,
-                cnt: carrera
-            });
         });
-    });
 
+    });
+});
 });
 
 

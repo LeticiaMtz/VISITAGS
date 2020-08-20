@@ -7,11 +7,10 @@ const Evidencias = require('../models/evidencias');
 const Alerts = require('../models/Alerts');
 const User = require('../models/Users');
 const { verificaToken } = require('../middlewares/autenticacion');
-
 const cargarImagenes = require('../libraries/cargaImagenes');
 const { isArray } = require('underscore');
-const { path } = require('./crde');
 const rutaImg = 'seguimiento';
+const mailer = require('../libraries/mails');
 
 //|-----------------          Api POST de api            ----------------|
 //| Creada por: Leticia Moreno                                           |
@@ -45,13 +44,16 @@ app.post('/registrar/:idAlert', [], async(req, res) => {
             as: 'data'
         });
 
-    console.log(seguimiento, 'Seguimiento');
+    let arrIdPersonas = [];
+    for (const persona of personas)
+        if (persona.data[0]) arrIdPersonas.push(persona.data[0]._id);
 
-    for (const persona of personas) {
-        let strCorreo = persona.data[0].strEmail;
-        let strNombrePersona = persona.data[0].strName;
-        console.log(strCorreo);
+    let pers = await User.find({ _id: { $in: arrIdPersonas } }, { _id: 1, strEmail: 1, strName: 1 });
 
+    for (const persona of pers) {
+        console.log(persona);
+        let strCorreo = persona.strEmail;
+        let strNombrePersona = persona.strName;
         mailOptions = {
             nmbEmail: 9,
             strEmail: strCorreo,
@@ -64,6 +66,7 @@ app.post('/registrar/:idAlert', [], async(req, res) => {
         };
 
         mailer.sendEmail(mailOptions);
+
     }
 
     let err = seguimiento.validateSync();
@@ -208,7 +211,6 @@ app.post('/registrar/:idAlert', [], async(req, res) => {
         });
 });
 
-
 //|-----------------          Api POST de api            ----------------|
 //| Creada por: Leticia Moreno                                           |
 //| Api que registra una api                                             |
@@ -232,7 +234,7 @@ app.post('/registrar/:idAlert/:idSeguimiento', [verificaToken], (req, res) => {
         return res.status(500).json({
             ok: false,
             resp: 500,
-            msg: 'Error: Error al registrar el motivo',
+            msg: 'Error: Error al registrar el seguimiento',
             cont: {
                 err
             }
