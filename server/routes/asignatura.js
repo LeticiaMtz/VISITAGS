@@ -219,6 +219,46 @@ app.delete('/eliminar/:idAsignatura', (req, res) => {
     });
 });
 
+
+
+
+//|-------------------Api ACTivo de Asignatura---------------------------|
+//| Creada por: Martin Palacios                                       |
+//| Api que elimina (desactiva) la asignatura                         |
+//| modificada por:                                                   |
+//| Fecha de modificacion:                                            |
+//| cambios:                                                          |
+//| Ruta: http://localhost:3000/api/asignatura/activo/idModalidad   |
+//|-------------------------------------------------------------------|
+
+app.delete('/activo/:idAsignatura', (req, res) => {
+    let id = req.params.idAsignatura;
+
+    Asignatura.findByIdAndUpdate(id, { blnStatus: true }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {
+
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                status: 400,
+                msg: 'Error al actualizar la asignatura',
+                cnt: err
+            });
+        }
+        return res.status(200).json({
+            ok: true,
+            status: 200,
+            msg: 'Asignatura actualizada exitosamente',
+            cont: resp.length,
+            cnt: resp
+        });
+    });
+});
+
+
+
+
+
+
 //|---------------METODO de carga masiva de Asignatura----------------|
 //| Creado por: Martin Palacios                                       |
 //| Descripción: El metodo va procesando y guardando cada uno de los  |

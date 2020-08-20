@@ -3,7 +3,7 @@ var mongoose = require('mongoose');
 const _ = require('underscore');
 const Crde = require('../models/crde');
 const { rolMenuUsuario } = require('../middlewares/permisosUsuarios');
-const {  } = require('../middlewares/autenticacion');
+const {} = require('../middlewares/autenticacion');
 const app = express();
 //|-----------------     Api GET de categoria crde       ----------------|
 //| Creada por: Leticia Moreno                                           |
@@ -22,7 +22,7 @@ app.get('/obtener', [], (req, res) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    status: 400, 
+                    status: 400,
                     msg: 'error al generar la lista',
                     cnt: err
                 });
@@ -30,7 +30,7 @@ app.get('/obtener', [], (req, res) => {
             console.log(req.crde);
             return res.status(200).json({
                 ok: true,
-                status: 200, 
+                status: 200,
                 msg: 'Lista generada exiosamente',
                 count: crde.length,
                 cnt: crde
@@ -83,7 +83,7 @@ app.post('/registrar', [], async(req, res) => {
     let aJsnMotivo = [];
     let crde = new Crde({
         strCategoria: body.strCategoria,
-        aJsnMotivo, 
+        aJsnMotivo,
         blnStatus: body.blnStatus
 
     });
@@ -103,7 +103,7 @@ app.post('/registrar', [], async(req, res) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    status: 400, 
+                    status: 400,
                     mg: 'No se pudo guardar la nueva categoria',
                     cnt: err
                 });
@@ -112,7 +112,7 @@ app.post('/registrar', [], async(req, res) => {
                 ok: true,
                 status: 200,
                 msg: "Categoria de crde registrada correctamente",
-                cont: crde.length, 
+                cont: crde.length,
                 cnt: {
                     crde
                 }
@@ -139,7 +139,7 @@ app.put('/actualizar/:idCrde', [], (req, res) => {
             Crde.findByIdAndUpdate(id, crdeBody).then((resp) => {
                 return res.status(200).json({
                     ok: true,
-                    status: 400, 
+                    status: 400,
                     msg: 'Actualizada con éxito',
                     cont: resp.length,
                     cnt: resp
@@ -147,7 +147,7 @@ app.put('/actualizar/:idCrde', [], (req, res) => {
             }).catch((err) => {
                 return res.status(400).json({
                     ok: false,
-                    status: 400, 
+                    status: 400,
                     msg: 'Error al actualizar',
                     cnt: err
                 });
@@ -156,7 +156,7 @@ app.put('/actualizar/:idCrde', [], (req, res) => {
     }).catch((err) => {
         return res.status(400).json({
             ok: false,
-            status: 400, 
+            status: 400,
             msg: 'Error al actualizar',
             cnt: err
         });
@@ -188,7 +188,7 @@ app.delete('/eliminar/:idCrde', [], (req, res) => {
             ok: true,
             status: 200,
             msg: 'Se ha eliminado correctamente la categoria crde',
-            cont: resp.length, 
+            cont: resp.length,
             cnt: resp
         });
     });

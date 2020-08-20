@@ -22,7 +22,7 @@ const crypto = require('crypto'); //23
 
 app.get('/obtener', [], (req, res) => {
 
-    User.find({ blnStatus: true }) //select * from usuario where estado=true
+    User.find() //select * from usuario where estado=true
         //solo aceptan valores numericos
         .exec((err, users) => { //ejecuta la funcion
             if (err) {
@@ -43,6 +43,37 @@ app.get('/obtener', [], (req, res) => {
         });
 });
 
+
+//si me di a
+app.get('/obtenerEspecialidad/:id', [], (req, res) => {
+    let id = req.params.id;
+    User.find({ _id: id })
+        .populate('arrEspecialidadPermiso._id', 'strNombre')
+        .populate('arrEspecialidadPermiso.strEspecialidad')
+        .exec((err, users) => {
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    status: 400,
+                    msg: 'Ocurrio un error al consultar el usuario',
+                    cnt: err
+                });
+            }
+            return res.status(200).json({
+                ok: true,
+                status: 200,
+                msg: 'Se han consultado correctamente el usuario',
+                cont: users.length,
+                cnt: users
+            });
+        });
+});
+
+
+
+
+
+
 //|-----------------Api GET Listado Usuario Id --------------|
 //| Creada por: Leticia Moreno                               |
 //| Api que retorna un listado de usuario por id             |
@@ -56,6 +87,7 @@ app.get('/obtener', [], (req, res) => {
 app.get('/obtener/:id', [], (req, res) => {
     let id = req.params.id;
     User.find({ _id: id })
+        .populate('idRole', 'strRole')
         .exec((err, users) => {
             if (err) {
                 return res.status(400).json({

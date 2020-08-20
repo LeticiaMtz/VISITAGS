@@ -202,6 +202,36 @@ app.put('/actualizar/:idCarrera', [], (req, res) => {
 });
 
 
+
+
+//----------------------------------------  Carreras Obetener ----------------------------------->
+
+app.get('/obtenerCarreras', (req, res) => {
+
+    Carrera.find().populate([{ path: 'aJsnEspecialidad._id', select: 'strEspecialidad' }]) //select * from usuario where estado=true
+        //solo aceptan valores numericos
+        .exec((err, carrera) => { //ejecuta la funcion
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    status: 400,
+                    msg: 'Error al consultar las carreras',
+                    cnt: err
+                });
+            }
+            return res.status(200).json({
+                ok: true,
+                status: 200,
+                msg: 'Carreras consultadas exitosamente',
+                cont: carrera.length,
+                cnt: carrera
+            });
+        });
+});
+
+
+
+
 //|-----------------     Api DELETE de carreras          ----------------|
 //| Creada por: Leticia Moreno                                           |
 //| Api que elimina una carrera                                          |
@@ -227,7 +257,6 @@ app.delete('/eliminar/:idCarrera', [], (req, res) => {
             ok: true,
             status: 200,
             msg: 'Se ha eliminado correctamente la carrera',
-            cont: resp.length,
             cnt: resp
         });
     });
