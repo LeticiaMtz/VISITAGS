@@ -219,7 +219,6 @@ app.delete('/eliminar/:idCarrera', [], (req, res) => {
             ok: true,
             status: 200,
             msg: 'Se ha eliminado correctamente la carrera',
-            cont: resp.length,
             cnt: resp
         });
     });
