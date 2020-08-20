@@ -227,6 +227,45 @@ app.put('/actualizar/:idAlert', [verificaToken], (req, res) => {
     });
 });
 
+
+
+//|-------------------Api ACTivo de Asignatura---------------------------|
+//| Creada por: Martin Palacios                                       |
+//| Api que elimina (desactiva) la asignatura                         |
+//| modificada por:                                                   |
+//| Fecha de modificacion:                                            |
+//| cambios:                                                          |
+//| Ruta: http://localhost:3000/api/asignatura/activo/idModalidad   |
+//|-------------------------------------------------------------------|
+
+app.delete('/activo/:idAlert', (req, res) => {
+    let id = req.params.idAsignatura;
+
+    Asignatura.findByIdAndUpdate(id, { blnStatus: true }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {
+
+        if (err) {
+            return res.status(400).json({
+                ok: false,
+                status: 400,
+                msg: 'Error al actualizar la alerta',
+                cnt: err
+            });
+        }
+        return res.status(200).json({
+            ok: true,
+            status: 200,
+            msg: 'Alerta actualizada exitosamente',
+            cont: resp.length,
+            cnt: resp
+        });
+    });
+});
+
+
+
+
+
+
 //|-----------------          Api DELETE de alertas      ----------------|
 //| Creada por: Leticia Moreno                                           |
 //| Api que elimina una alerta                                           |
@@ -235,7 +274,7 @@ app.put('/actualizar/:idAlert', [verificaToken], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/alerts/eliminar/idAlert              |
 //|----------------------------------------------------------------------|
-app.delete('/eliminar/:idAlert', [verificaToken], (req, res) => {
+app.delete('/eliminar/:idAlert', (req, res) => {
     let id = req.params.id;
 
     //update from - set 
@@ -373,7 +412,7 @@ app.get('/obtenerAlerta/:idAlerta', async(req, res) => {
         });
     });
 });
-        
+
 
 
 
