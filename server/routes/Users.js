@@ -379,31 +379,41 @@ app.post('/login', (req, res) => {
         if (err) {
             return res.status(400).json({
                 ok: false,
-                status: 400,
+                status: 400, 
                 msg: 'Algo salio mal',
                 err
             });
         }
 
         if (!usrDB) {
+            
             return res.status(400).json({
                 ok: false,
                 status: 400,
-                err: {
-                    message: 'Usuario y/o contraseña incorrecta'
-                }
+                msg: 'Usuario y/o contraseña incorrecta',
             });
-        }
+
+    }
 
         if (!bcrypt.compareSync(body.strPassword, usrDB.strPassword)) {
+            
             return res.status(400).json({
                 ok: false,
                 status: 400,
-                err: {
-                    message: 'Usuario y/o *contraseña incorrecta'
-                }
+                msg: 'Usuario y/o *contraseña incorrecta',
             });
+        
         }
+        if (bcrypt.compareSync(body.strPassword, usrDB.strPassword ) &&  body.blnStatus == false, usrDB.blnStatus == false ) {
+            
+            return res.status(400).json({
+                ok: false,
+                status: 400,
+                msg: 'Usuario y/o *contraseña incorrecta o usuario inactivo',
+            });
+        
+        }else{
+
 
         let token = jwt.sign({
             user: usrDB
@@ -411,11 +421,15 @@ app.post('/login', (req, res) => {
 
         return res.status(200).json({
             ok: true,
-            user: usrDB,
+            status: 200, 
+            msg: 'Usuario logeado correctamente',
+            cnt: usrDB,
             token
         });
+    }
     });
 });
+
 
 
 //|-------------------------     Api GET de envio de correo              -----------------------|

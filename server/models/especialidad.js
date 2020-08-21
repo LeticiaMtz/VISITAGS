@@ -4,8 +4,7 @@ let Schema = mongoose.Schema;
 const especialidad = new Schema({
     strEspecialidad: { 
         type: String,
-        required: [true, 'Porfavor ingresa el nombre de la especialidad'], 
-        unique: true
+        required: [true, 'Porfavor ingresa el nombre de la especialidad']
     }, 
     blnStatus:{
         type: Boolean, 

@@ -19,7 +19,6 @@ const users = new Schema({
     },
     strEmail: {
         type: String,
-        unique: true,
         required: [true, 'Favor de ingresar el correo ']
     },
     strPassword: {
@@ -38,7 +37,7 @@ const users = new Schema({
     }],
     blnStatus: {
         type: Boolean,
-        default: true
+        default: false
     }
 }, {
     timestamps: true
