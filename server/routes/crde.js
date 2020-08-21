@@ -134,13 +134,13 @@ app.put('/actualizar/:idCrde', [], (req, res) => {
     let numParam  = Object.keys(req.body).length;
 
     let crdeBody;
-    if(numParam == 6) {
+    if(numParam == 7) {
         crdeBody =  _.pick(req.body,['strCategoria', 'blnStatus']);
     } 
     if(numParam == 1) {
         crdeBody =  _.pick(req.body,['blnStatus']);
     }
-    if(numParam !== 6 && numParam !== 1){
+    if(numParam !== 7 && numParam !== 1){
         return res.status(400).json({
             ok: false,
             status: 400,
@@ -176,6 +176,7 @@ app.put('/actualizar/:idCrde', [], (req, res) => {
             cnt: err
         });
     });
+  
 });
 
 
@@ -220,8 +221,8 @@ app.put('/actualizar/:idCrde', [], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/crde/eliminar/idCrde                 |
 //|----------------------------------------------------------------------|
-app.delete('/eliminar/:idCrde', [], (req, res) => {
-    let id = req.params.id;
+app.delete('/eliminar/:idCrde',  (req, res) => {
+    let id = req.params.idCrde;
 
     Crde.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {
 
@@ -229,14 +230,14 @@ app.delete('/eliminar/:idCrde', [], (req, res) => {
             return res.status(400).json({
                 ok: false,
                 status: 400,
-                msg: 'Ha ocurrido un error al eliminar la categoria de crde',
+                msg: 'Ha ocurrido un error al eliminar el crde',
                 cnt: err
             });
         }
         return res.status(200).json({
             ok: true,
             status: 200,
-            msg: 'Se ha eliminado correctamente la categoria crde',
+            msg: 'Se ha eliminado correctamente el crde',
             cont: resp.length,
             cnt: resp
         });

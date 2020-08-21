@@ -128,13 +128,13 @@ app.put('/actualizar/:idEstatus', [], (req, res) => {
     let numParam  = Object.keys(req.body).length;
 
     let statusBody;
-    if(numParam == 6) {
+    if(numParam == 7) {
         statusBody =  _.pick(req.body,['strNombre', 'strDescripcion', 'blnActivo']);
     } 
     if(numParam == 1) {
         statusBody =  _.pick(req.body,['blnActivo']);
     }
-    if(numParam !== 6 && numParam !== 1){
+    if(numParam !== 7 && numParam !== 1){
         return res.status(400).json({
             ok: false,
             status: 400,
@@ -174,6 +174,7 @@ app.put('/actualizar/:idEstatus', [], (req, res) => {
         });
 
     });
+
 });
 
 // app.put('/actualizar/:idEstatus', [], (req, res) => {
@@ -225,8 +226,8 @@ app.put('/actualizar/:idEstatus', [], (req, res) => {
 //| Ruta: http://localhost:3000/api/estatus/eliminar/:id     |
 //|----------------------------------------------------------|
 
-app.delete('/eliminar/:idEstatus', [], (req, res) => {
-    let id = req.params.id;
+app.delete('/eliminar/:idEstatus',  (req, res) => {
+    let id = req.params.idEstatus;
 
     Estatus.findByIdAndUpdate(id, { blnActivo: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {
 
@@ -245,7 +246,6 @@ app.delete('/eliminar/:idEstatus', [], (req, res) => {
             cont: resp.length,
             cnt: resp
         });
-
     });
 });
 
