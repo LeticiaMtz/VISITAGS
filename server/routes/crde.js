@@ -80,10 +80,8 @@ app.get('/obtener/:id', [], (req, res) => {
 app.post('/registrar', [], async(req, res) => {
     let body = req.body;
     //para poder mandar los datos a la coleccion
-    let aJsnMotivo = [];
     let crde = new Crde({
         strCategoria: body.strCategoria,
-        aJsnMotivo,
         blnStatus: body.blnStatus
 
     });
@@ -104,7 +102,7 @@ app.post('/registrar', [], async(req, res) => {
                 return res.status(400).json({
                     ok: false,
                     status: 400,
-                    mg: 'No se pudo guardar la nueva categoria',
+                    msg: 'No se pudo guardar la nueva categoria',
                     cnt: err
                 });
             }

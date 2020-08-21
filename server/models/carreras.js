@@ -5,8 +5,7 @@ const Especialidad = require('./especialidad');
 const carreras = new Schema({
     strCarrera: {
          type: String, 
-         required: [true, 'Porfavor ingresa el nombre de la carrera'],
-         unique: true
+         required: [true, 'Porfavor ingresa el nombre de la carrera']
     },
     
     blnStatus: {
