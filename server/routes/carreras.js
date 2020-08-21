@@ -169,9 +169,26 @@ app.post('/registrar', (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/carreras/actualizar/idCarrera        |
 //|----------------------------------------------------------------------|
-app.put('/actualizar/:idCarrera', [], (req, res) => {
+    app.put('/actualizar/:idCarrera', [], (req, res) => {
     let id = req.params.idCarrera;
-    const carreraBody = _.pick(req.body, ['strCarrera', 'blnStatus']);
+    let numParam  = Object.keys(req.body).length;
+
+    let careerBody;
+    if(numParam == 6) {
+        careerBody =  _.pick(req.body,['strCarrera', 'blnStatus']);
+    } 
+    if(numParam == 1) {
+        careerBody =  _.pick(req.body,['blnStatus']);
+    }
+    if(numParam !== 6 && numParam !== 1){
+        return res.status(400).json({
+            ok: false,
+            status: 400,
+            msg: 'Error al actualizar la carrera',
+            err: 'El número de parametros enviados no concuerdan con los que requiere la API'
+        });
+    } 
+
     Carrera.find({ _id: id }).then((resp) => {
         if (resp.length > 0) {
             Carrera.findByIdAndUpdate(id, carreraBody).then((resp) => {
@@ -200,6 +217,38 @@ app.put('/actualizar/:idCarrera', [], (req, res) => {
         });
     });
 });
+
+// app.put('/actualizar/:idCarrera', [], (req, res) => {
+//     let id = req.params.idCarrera;
+//     const carreraBody = _.pick(req.body, ['strCarrera', 'blnStatus']);
+//     Carrera.find({ _id: id }).then((resp) => {
+//         if (resp.length > 0) {
+//             Carrera.findByIdAndUpdate(id, carreraBody).then((resp) => {
+//                 return res.status(200).json({
+//                     ok: true,
+//                     status: 200,
+//                     msg: 'Carrera actualizada exitosamente',
+//                     cont: resp.length,
+//                     cnt: resp
+//                 });
+//             }).catch((err) => {
+//                 return res.status(400).json({
+//                     ok: false,
+//                     status: 400,
+//                     msg: 'Error al actualizar la carrera',
+//                     err: err
+//                 });
+//             });
+//         }
+//     }).catch((err) => {
+//         return res.status(400).json({
+//             ok: false,
+//             status: 400,
+//             msg: 'Error al actualizar',
+//             err: err
+//         });
+//     });
+// });
 
 
 

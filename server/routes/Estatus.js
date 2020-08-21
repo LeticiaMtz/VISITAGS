@@ -125,13 +125,28 @@ app.post('/registrar', [], async(req, res) => {
 
 app.put('/actualizar/:idEstatus', [], (req, res) => {
     let id = req.params.idEstatus;
-    console.log(req.params.idEstatus);
-    const estatusBody = _.pick(req.body, ['strNombre', 'blnActivo', 'strDescripcion']);
+    let numParam  = Object.keys(req.body).length;
+
+    let statusBody;
+    if(numParam == 6) {
+        statusBody =  _.pick(req.body,['strNombre', 'strDescripcion', 'blnActivo']);
+    } 
+    if(numParam == 1) {
+        statusBody =  _.pick(req.body,['blnActivo']);
+    }
+    if(numParam !== 6 && numParam !== 1){
+        return res.status(400).json({
+            ok: false,
+            status: 400,
+            msg: 'Error al actualizar la modalidad',
+            err: 'El número de parametros enviados no concuerdan con los que requiere la API'
+        });
+    } 
 
     Estatus.find({ _id: id }).then((resp) => {
 
         if (resp.length > 0) {
-            Estatus.findByIdAndUpdate(id, estatusBody).then((resp) => {
+            Estatus.findByIdAndUpdate(id, statusBody).then((resp) => {
                 return res.status(200).json({
                     ok: true,
                     status: 200,
@@ -160,6 +175,44 @@ app.put('/actualizar/:idEstatus', [], (req, res) => {
 
     });
 });
+
+// app.put('/actualizar/:idEstatus', [], (req, res) => {
+//     let id = req.params.idEstatus;
+//     console.log(req.params.idEstatus);
+//     const estatusBody = _.pick(req.body, ['strNombre', 'blnActivo', 'strDescripcion']);
+
+//     Estatus.find({ _id: id }).then((resp) => {
+
+//         if (resp.length > 0) {
+//             Estatus.findByIdAndUpdate(id, estatusBody).then((resp) => {
+//                 return res.status(200).json({
+//                     ok: true,
+//                     status: 200,
+//                     msg: 'Actualizado con éxito',
+//                     cont: resp.length,
+//                     cnt: resp
+//                 });
+//             }).catch((err) => {
+//                 return res.status(400).json({
+//                     ok: false,
+//                     status: 400,
+//                     msg: 'Error al actualizar',
+//                     err: err
+//                 });
+//             });
+//         }
+
+//     }).catch((err) => {
+
+//         return res.status(400).json({
+//             ok: false,
+//             status: 400,
+//             msg: 'Error al actualizar',
+//             err: err
+//         });
+
+//     });
+// });
 
 
 //|------------------Api DELETE de Estatus-------------------|

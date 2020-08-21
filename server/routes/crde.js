@@ -128,10 +128,27 @@ app.post('/registrar', [], async(req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/crde/actualizar/idCrde               |
 //|----------------------------------------------------------------------|
+
 app.put('/actualizar/:idCrde', [], (req, res) => {
     let id = req.params.idCrde;
-    console.log(req.params.idCrde)
-    const crdeBody = _.pick(req.body, ['strCategoria', 'blnStatus']);
+    let numParam  = Object.keys(req.body).length;
+
+    let crdeBody;
+    if(numParam == 6) {
+        crdeBody =  _.pick(req.body,['strCategoria', 'blnStatus']);
+    } 
+    if(numParam == 1) {
+        crdeBody =  _.pick(req.body,['blnStatus']);
+    }
+    if(numParam !== 6 && numParam !== 1){
+        return res.status(400).json({
+            ok: false,
+            status: 400,
+            msg: 'Error al actualizar CRDE',
+            err: 'El número de parametros enviados no concuerdan con los que requiere la API'
+        });
+    } 
+
     Crde.find({ _id: id }).then((resp) => {
         if (resp.length > 0) {
             Crde.findByIdAndUpdate(id, crdeBody).then((resp) => {
@@ -160,6 +177,40 @@ app.put('/actualizar/:idCrde', [], (req, res) => {
         });
     });
 });
+
+
+// app.put('/actualizar/:idCrde', [], (req, res) => {
+//     let id = req.params.idCrde;
+//     console.log(req.params.idCrde)
+//     const crdeBody = _.pick(req.body, ['strCategoria', 'blnStatus']);
+//     Crde.find({ _id: id }).then((resp) => {
+//         if (resp.length > 0) {
+//             Crde.findByIdAndUpdate(id, crdeBody).then((resp) => {
+//                 return res.status(200).json({
+//                     ok: true,
+//                     status: 400,
+//                     msg: 'Actualizada con éxito',
+//                     cont: resp.length,
+//                     cnt: resp
+//                 });
+//             }).catch((err) => {
+//                 return res.status(400).json({
+//                     ok: false,
+//                     status: 400,
+//                     msg: 'Error al actualizar',
+//                     cnt: err
+//                 });
+//             });
+//         }
+//     }).catch((err) => {
+//         return res.status(400).json({
+//             ok: false,
+//             status: 400,
+//             msg: 'Error al actualizar',
+//             cnt: err
+//         });
+//     });
+// });
 
 //|-----------------     Api DELETE de categoria crde    ----------------|
 //| Creada por: Leticia Moreno                                           |
