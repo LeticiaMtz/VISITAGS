@@ -3,8 +3,21 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
     <title></title>
     <style type="text/css">
+        .btn-contrasena {
+            text-decoration: none;
+            color: white;
+            padding: 10px;
+            margin: 10px;
+            font-weight: 600;
+            font-size: 15px;
+            border-radius: 6px;
+            border: 2px solid green;
+        }
+        
         body {
             padding-top: 0 !important;
             padding-bottom: 0 !important;
@@ -214,6 +227,7 @@
         { "name":"Default", "bgBody":"F6F6F6", "link":"62A9D2", "color":"999999", "bgItem":"ffffff", "title":"555555" }
     </script>
 
+
 </head>
 
 <body paddingwidth="0" paddingheight="0" style="padding-top: 0; padding-bottom: 0; padding-top: 0; padding-bottom: 0; background-repeat: repeat; width: 100% !important; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; -webkit-font-smoothing: antialiased;"
@@ -244,7 +258,7 @@
                                     </table>
                                 </td>
                                 <td valign="top" width="600">
-                                    <table width="600" border="0" cellspacing="0" cellpadding="0" align="center" class="MainContainer" bgcolor="#ffffff">
+                                    <table width="600" border="0" cellspacing="0" cellpadding="0" align="center" class="MainContainer" bgcolor="black">
                                         <tbody>
                                             <!--  =========================== The body ===========================  -->
                                             <tr>
@@ -256,7 +270,7 @@
                                                             <tr>
                                                                 <td height='20'></td>
                                                             </tr>
-                                                            <div class="contentEditableContainer" style="margin-top: 15px; margin-left: 30px;">
+                                                            <div class="contentEditableContainer" style="margin-top: 15px; margin-left: 30px; margin-bottom: 20px;">
                                                                 <img src="https://i.postimg.cc/mkk1SWTC/uta-logo-light.png" alt='facebook' data-default="placeholder" data-customIcon="true" data-max-width='' width='150' height='50'>
                                                             </div>
                                                         </table>
@@ -407,7 +421,7 @@
                               <tr>
                                 <td align='center' valign='top'>
                                   <div class="contentEditableContainer contentTextEditable" >
-                                   <div class="contentEditable" style='color:#555555;font-size:21px;font-weight:normal;'>
+                                   <div class="contentEditable" style='color:white;font-size:21px;font-weight:normal;'>
                                     <h2 class='big'>Solicitud de cambio de Contraseña</h2>
                                   </div>
                                 </div>
@@ -428,8 +442,12 @@
                           <tr>
                             <td align='center' valign='top' style='padding-bottom:8px;'>
                               <div class="contentEditableContainer contentTextEditable" >
-                               <div class="contentEditable" >
-                                <a target='_blank' class='link2' href="{{strUrl}}" style='padding:8px;background:#62A9D2;font-size:13px;color:#ffffff;text-decoration:none;font-weight:bold;'>Cambiar Contraseña</a>
+                               <div class="contentEditable" style='color:#999999;font-size:13px;line-height:19px;'>
+
+                                <a class="btn-contrasena" href="{{strUrl}}">Cambiar Contraseña</a>
+                                 
+                                                            
+                                
                               </div>
                             </div>
                           </td>
@@ -441,20 +459,7 @@
                   <tr><td colspan='3' height='16'>&nbsp;</td></tr>
                 </table>
             </div>
-            <div class="movableContent" style="border: 0px; padding-top: 0px; position: relative;">
-            	<table width="100%" border="0" cellspacing="0" cellpadding="0" align="center" valign='top' class='bgBody' >
-                  <tr><td height='54' style='border-bottom:1px solid #DAE0E4'>&nbsp;</td></tr>
-
-                  <tr><td height='28'></td></tr>
-
-                  <tr>
-                    
-                    <tr><td height='28'></td></tr>
-                    <tr><td height='28'></td></tr>
-                    <tr><td height='28'></td></tr>
-                  </tr>
-              </table>
-            </div>
+            
       </td>
     </tr>
   </tbody>

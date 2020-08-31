@@ -86,7 +86,7 @@ app.get('/obtener/:id', [], (req, res) => {
 //| Ruta: http://localhost:3000/api/alerts/registrar                     |
 //|----------------------------------------------------------------------|
 app.post('/registrar', async(req, res) => {
-    let strUrl = 'http://localhost:4200/#/dashbord';
+    let strUrl = 'http://localhost:4200/#/Tracking-alerts';
     let aJsnEvidencias = [];
     if (req.files) {
         let arrFiles = req.files.strFileEvidencias;
@@ -143,8 +143,6 @@ app.post('/registrar', async(req, res) => {
 
         User.find({ arrEspecialidadPermiso: { $in: [body.idEspecialidad] } }).then((personas) => {
 
-            console.log(personas);
-
             for (const persona of personas) {
                 emailBody = {
                     nmbEmail: 10,
@@ -153,7 +151,7 @@ app.post('/registrar', async(req, res) => {
                     subject: '¡Se ha creado una nueva alerta!',
                     strNombreAlumno: alert.strNombreAlumno,
                     strDescripcion: alert.strDescripcion,
-                    strLink: `${strUrl}`,
+                    strLink: `${strUrl}/${alert._id}`,
                     html: '<h1>Tu solicitud de registro esta siendo revisada.</h1><br>' +
                         '<h3>En un maximo de 24hrs. tu solicitud tendrá que estar resuelta.</h3>'
                 };
@@ -272,7 +270,12 @@ app.get('/obtenerAlertas/:idRol/:idUser', async(req, res) => {
     let idUser = req.params.idUser;
 
     if (idRol == idProfesor) {
-        Alert.find({ idUser: idUser }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }, { path: 'arrCrde' }]).then((resp) => {
+        Alert.find({ idUser: idUser }).sort({ updatedAt: 'desc' }).limit(5).
+        populate([{ path: 'idEstatus', select: 'strNombre' },
+            { path: 'idCarrera', select: 'strCarrera' },
+            { path: 'idEspecialidad', select: 'strEspecialidad' },
+            { path: 'idModalidad', select: 'strModalidad' }, { path: 'arrCrde' }
+        ]).then((resp) => {
 
             return res.status(200).json({
                 ok: true,
@@ -327,9 +330,18 @@ app.get('/obtenerAlertas/:idRol/:idUser', async(req, res) => {
         let arrAlertas = [];
 
         for (const idEspecialidad of arrEspecialidad) {
-            await Alert.find({ idEspecialidad }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }, { path: 'arrCrde' }]).then(async(alertas) => {
-
-                await arrAlertas.push(alertas);
+            await Alert.find({ idEspecialidad }).sort({ updatedAt: 'desc' }).limit(5).
+            populate([{ path: 'idEstatus', select: 'strNombre' },
+                { path: 'idCarrera', select: 'strCarrera' },
+                { path: 'idEspecialidad', select: 'strEspecialidad' },
+                { path: 'idModalidad', select: 'strModalidad' }, { path: 'arrCrde' }
+            ]).then(async(alertas) => {
+                for (const i of alertas) {
+                    if (i.blnStatus != undefined) {
+                        console.log(alertas, "Alerta");
+                        await arrAlertas.push(i);
+                    }
+                }
             })
         };
         return res.status(200).json({
@@ -373,7 +385,7 @@ app.get('/obtenerAlerta/:idAlerta', async(req, res) => {
         });
     });
 });
-        
+
 
 
 

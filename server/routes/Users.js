@@ -379,54 +379,54 @@ app.post('/login', (req, res) => {
         if (err) {
             return res.status(400).json({
                 ok: false,
-                status: 400, 
+                status: 400,
                 msg: 'Algo salio mal',
                 err
             });
         }
 
         if (!usrDB) {
-            
+
             return res.status(400).json({
                 ok: false,
                 status: 400,
                 msg: 'Usuario y/o contraseña incorrecta',
             });
 
-    }
+        }
 
         if (!bcrypt.compareSync(body.strPassword, usrDB.strPassword)) {
-            
+
             return res.status(400).json({
                 ok: false,
                 status: 400,
                 msg: 'Usuario y/o *contraseña incorrecta',
             });
-        
+
         }
-        if (bcrypt.compareSync(body.strPassword, usrDB.strPassword ) &&  body.blnStatus == false, usrDB.blnStatus == false ) {
-            
+        if (usrDB.blnStatus == false) {
+
             return res.status(400).json({
                 ok: false,
                 status: 400,
-                msg: 'Usuario y/o *contraseña incorrecta o usuario inactivo',
+                msg: 'Usuario inactivo, comunícate con la orientadora educativa de tu dirección.',
             });
-        
-        }else{
+
+        } else {
 
 
-        let token = jwt.sign({
-            user: usrDB
-        }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN });
+            let token = jwt.sign({
+                user: usrDB
+            }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN });
 
-        return res.status(200).json({
-            ok: true,
-            status: 200, 
-            msg: 'Usuario logeado correctamente',
-            cnt: usrDB,
-            token
-        });
-    }
+            return res.status(200).json({
+                ok: true,
+                status: 200,
+                msg: 'Usuario logeado correctamente',
+                cnt: usrDB,
+                token
+            });
+        }
     });
 });
 
