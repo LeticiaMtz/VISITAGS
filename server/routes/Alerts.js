@@ -386,6 +386,47 @@ app.get('/obtenerAlerta/:idAlerta', async(req, res) => {
     });
 });
 
+//Actualizar el estatus de la alerta 
+//|-----------------          Api PUT de alertas         ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que actualiza una alerta                                         |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/alerts/actualizar/idAlert            |
+//|----------------------------------------------------------------------|
+app.put('/actualizarEstatus/:idAlert', (req, res) => {
+    let id = req.params.idAlert;
+    const alertBody = _.pick(req.body, ['idEstatus']);
+    Alert.find({ _id: id }).then((resp) => {
+        if (resp.length > 0) {
+            Alert.findByIdAndUpdate(id, alertBody).then((resp) => {
+                return res.status(200).json({
+                    ok: true,
+                    status: 200,
+                    msg: 'Estatus actualizado con éxito',
+                    cont: resp.length,
+                    cnt: resp
+                });
+            }).catch((err) => {
+                return res.status(400).json({
+                    ok: false,
+                    status: 400,
+                    msg: 'Error al actualizar el estatus',
+                    cnt: err
+                });
+            });
+        }
+    }).catch((err) => {
+        return res.status(400).json({
+            ok: false,
+            status: 400,
+            msg: 'Error al actualizar el estatus',
+            cnt: err
+        });
+    });
+});
+
 
 
 
