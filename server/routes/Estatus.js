@@ -6,7 +6,7 @@ const { rolMenuUsuario } = require('../middlewares/permisosUsuarios');
 const Estatus = require('../models/Estatus'); //subir nivel
 const app = express();
 
-
+const idCoordinador = '5eeee0db16952756482d186a';
 
 //|-----------------Api GET Listado Estatus------------------|
 //| Creada por: Abraham Carranza                             |
@@ -61,6 +61,58 @@ app.get('/obtener/:id', [], (req, res) => {
     });
 });
 
+//|-----------------Api GET Listado Estatus------------------|
+//| Creada por: Martin Palacios                              |
+//| Fecha: 01/09/2020                                        |
+//| Api que retorna un listado de estatus dependiendo del rol|
+//| modificada por:                                          |
+//| Fecha de modificacion:                                   |
+//| cambios:                                                 |
+//| Ruta: http://localhost:3000/api/estatus/obtenerE          |
+//|----------------------------------------------------------|
+
+app.get('/obtenerEstatus/:idRol', [], (req, res) => {
+
+    if(idCoordinador == req.params.idRol){
+        Estatus.find().exec((err, estatus) => { //ejecuta la funcion
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    status: 200,
+                    msg: 'Error al generar la lista',
+                    cnt: err
+                });
+            }
+            console.log(req.estatus);
+            return res.status(200).json({
+                ok: true,
+                status: 200,
+                msg: 'Lista generada exiosamente',
+                cont: estatus.length,
+                cnt: estatus
+            });
+        });
+    }else{
+        Estatus.find({ strNombre: { $ne: "Cancelada" } }).exec((err, estatus) => { //ejecuta la funcion
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    status: 200,
+                    msg: 'Error al generar la lista',
+                    cnt: err
+                });
+            }
+            console.log(req.estatus);
+            return res.status(200).json({
+                ok: true,
+                status: 200,
+                msg: 'Lista generada exiosamente',
+                cont: estatus.length,
+                cnt: estatus
+            });
+        });
+    }
+});
 
 //|--------------------Api POST de Estatus-------------------|
 //| Creada por: Abraham Carranza                             |
