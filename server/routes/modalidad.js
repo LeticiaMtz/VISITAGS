@@ -15,23 +15,23 @@ const app = express();
 //|--------------------------------------------------------------|
 app.get('/obtener', (req, res) => {
     Modalidad.find()
-    .exec((err, modalidad) => {
-        if (err) {
-            return res.status(400).json({
-                ok: false,
-                status: 400,
-                msg: 'Error al consultar las modalidades',
-                err
+        .exec((err, modalidad) => {
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    status: 400,
+                    msg: 'Error al consultar las modalidades',
+                    err
+                });
+            }
+            return res.status(200).json({
+                ok: true,
+                status: 200,
+                msg: 'Modalidades consultadas exitosamente',
+                cont: modalidad.length,
+                cnt: modalidad
             });
-        }
-        return res.status(200).json({
-            ok: true,
-            status: 200,
-            msg: 'Modalidades consultadas exitosamente',
-            cont: modalidad.length,
-            cnt: modalidad
         });
-    });
 });
 
 //|----------------- Api GET by id de Modalidad -----------------|
@@ -65,24 +65,36 @@ app.get('/obtener/:id', (req, res) => {
         });
 });
 
-//|----------------- Api POST de Modalidad-- --------------------|
-//| Creada por: Martin Palacios                                  |
-//| Api que registra tipos de modalidad                          |
-//| modificada por:                                              |
-//| Fecha de modificacion:                                       |
-//| cambios:                                                     |
-//| Ruta: http://localhost:3000/api/modalidad/registrar          |
-//|--------------------------------------------------------------|
-app.post('/registrar', async (req, res) => {
+//|----------------- Api POST de Modalidad-- -----------------------------------------------------------|
+//| Creada por: Martin Palacios                                                                         |
+//| Api que registra tipos de modalidad                                                                 |
+//| modificada por: Isabel Castillo                                                                     |
+//| Fecha de modificacion: 02/09/20                                                                     |
+//| cambios: Se agrego una validación para que la primera letra de la primera palabra sea mayúscula     |
+//| Ruta: http://localhost:3000/api/modalidad/registrar                                                 |
+//|-----------------------------------------------------------------------------------------------------|
+
+app.post('/registrar', async(req, res) => {
     let body = req.body;
+
+    let strModalidad = '';
+    let modali = body.strModalidad.toLowerCase();
+    for (let i = 0; i < modali.length; i++) {
+        if (i == 0) {
+            strModalidad += modali[i].charAt(0).toUpperCase();
+        } else {
+            strModalidad += modali[i];
+        }
+    }
+
     //para poder mandar los datos a la coleccion
     let modalidad = new Modalidad({
-        strModalidad: body.strModalidad,
+        strModalidad: strModalidad,
         blnStatus: body.blnStatus
     });
-    
 
-    Modalidad.findOne({ 'strModalidad': body.strModalidad }).then((encontrado) => {
+
+    Modalidad.findOne({ 'strModalidad': strModalidad }).then((encontrado) => {
         if (encontrado) {
             return res.status(400).json({
                 ok: false,
@@ -92,11 +104,11 @@ app.post('/registrar', async (req, res) => {
             });
         }
         modalidad.save((err, modalidad) => {
-            if(err){
+            if (err) {
                 return res.status(400).json({
                     ok: false,
                     status: 400,
-                    msg: 'Error al registrar la modalidad', 
+                    msg: 'Error al registrar la modalidad',
                     cnt: err
                 });
             }
@@ -121,38 +133,38 @@ app.post('/registrar', async (req, res) => {
 //|-------------------------------------------------------------------|
 app.put('/actualizar/:idModalidad', (req, res) => {
     let id = req.params.idModalidad;
-    let numParam  = Object.keys(req.body).length;
+    let numParam = Object.keys(req.body).length;
 
     let modalidadBody;
-    if(numParam == 6) {
-        modalidadBody =  _.pick(req.body,['strModalidad', 'blnStatus']);
-    } 
-    if(numParam == 1) {
-        modalidadBody =  _.pick(req.body,['blnStatus']);
+    if (numParam == 6) {
+        modalidadBody = _.pick(req.body, ['strModalidad', 'blnStatus']);
     }
-    if(numParam !== 6 && numParam !== 1){
+    if (numParam == 1) {
+        modalidadBody = _.pick(req.body, ['blnStatus']);
+    }
+    if (numParam !== 6 && numParam !== 1) {
         return res.status(400).json({
             ok: false,
             status: 400,
             msg: 'Error al actualizar la modalidad',
             err: 'El número de parametros enviados no concuerdan con los que requiere la API'
         });
-    } 
+    }
 
-    Modalidad.find({_id: id}).then((resp) => {
-        if(resp.length > 0){
+    Modalidad.find({ _id: id }).then((resp) => {
+        if (resp.length > 0) {
             Modalidad.findByIdAndUpdate(id, modalidadBody).then((resp) => {
                 return res.status(200).json({
                     ok: true,
-                    status:200,
+                    status: 200,
                     msg: 'Modalidad actualizada exitosamente',
                     cont: resp.length,
                     cnt: resp
                 });
-            }).catch((err) =>{
+            }).catch((err) => {
                 return res.status(400).json({
                     ok: false,
-                    status:400,
+                    status: 400,
                     msg: 'Error al actualizar la modalidad',
                     cnt: err
                 });
@@ -161,7 +173,7 @@ app.put('/actualizar/:idModalidad', (req, res) => {
     }).catch((err) => {
         return res.status(400).json({
             ok: false,
-            status:400,
+            status: 400,
             msg: 'Error al actualizar la modalidad',
             cnt: err
         });
@@ -176,7 +188,7 @@ app.put('/actualizar/:idModalidad', (req, res) => {
 //| cambios:                                                          |
 //| Ruta: http://localhost:3000/api/modalidad/eliminar/idModalidad    |
 //|-------------------------------------------------------------------|
-app.delete('/eliminar/:idModalidad',  (req, res) => {
+app.delete('/eliminar/:idModalidad', (req, res) => {
     let id = req.params.idModalidad;
 
     Modalidad.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {
