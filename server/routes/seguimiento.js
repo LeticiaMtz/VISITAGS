@@ -488,4 +488,41 @@ app.delete('/eliminar/:idAlert/:idSeguimeinto', [verificaToken], (req, res) => {
 });
 
 
+
+//|-----------------          Api GET de api            ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que obtiene el listado de apis registradas                       |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/api/obtener                          |
+//|----------------------------------------------------------------------|
+app.get('/obtenerA/:idAlert', [], (req, res) => {
+    let idAlert = req.params.idAlert;
+    if (process.log) {
+        console.log(' params ', req.params);
+    }
+    Alerts.findById(idAlert, { aJsnSeguimiento: 1 }).populate({path: 'aJsnSeguimiento.idEstatus', select: 'strNombre'})
+        .exec((err, seguimiento) => {
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    status: 400,
+                    msg: 'Error al encontrar el seguimeinto de la alerta ',
+                    cnt: err
+                });
+            }
+            return res.status(200).json({
+                ok: true,
+                status: 200,
+                msg: 'Success: Informacion obtenida correctamente.',
+                cont: seguimiento.length,
+                cnt: seguimiento
+            });
+        });
+
+});
+
+
+
 module.exports = app;

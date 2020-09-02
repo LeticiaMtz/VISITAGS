@@ -10,6 +10,7 @@ const User = require('../models/Users');
 const { select, isArray } = require('underscore');
 const cargaImagenes = require('../libraries/cargaImagenes');
 const email = require('../libraries/mails');
+const Seguimiento = require('../models/seguimiento');
 
 const idProfesor = '5eeee0db16952756482d1868';
 const idDirector = '5eeee0db16952756482d1869';
@@ -398,6 +399,7 @@ app.get('/obtenerAlerta/:idAlerta', async(req, res) => {
 app.put('/actualizarEstatus/:idAlert', (req, res) => {
     let id = req.params.idAlert;
     const alertBody = _.pick(req.body, ['idEstatus']);
+    console.log(req.body, 'aaaaaa');
     Alert.find({ _id: id }).then((resp) => {
         if (resp.length > 0) {
             Alert.findByIdAndUpdate(id, alertBody).then((resp) => {
@@ -426,6 +428,28 @@ app.put('/actualizarEstatus/:idAlert', (req, res) => {
         });
     });
 });
+
+// app.get('/obtenerA/:idAlert', [], (req, res) => {
+//     let idAlert = req.params.idAlert;
+//     Alert.find({ _id: idAlert }).populate({path: 'aJsnSeguimiento.idEstatus', select: 'strNombre'})
+//         .exec((err, alerts) => {
+//             if (err) {
+//                 return res.status(400).json({
+//                     ok: false,
+//                     status: 400,
+//                     msg: 'Error al encontrar la alerta ',
+//                     cnt: err
+//                 });
+//             }
+//             return res.status(200).json({
+//                 ok: true,
+//                 status: 200,
+//                 msg: 'Alerta encontrada',
+//                 cont: alerts.length,
+//                 cnt: alerts
+//             });
+//         });
+// });
 
 
 
