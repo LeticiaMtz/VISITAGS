@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
-const {  } = require('../middlewares/autenticacion');
+const {} = require('../middlewares/autenticacion');
 const { rolMenuUsuario } = require('../middlewares/permisosUsuarios');
 const Estatus = require('../models/Estatus'); //subir nivel
 const app = express();
@@ -114,26 +114,37 @@ app.get('/obtenerEstatus/:idRol', [], (req, res) => {
     }
 });
 
-//|--------------------Api POST de Estatus-------------------|
-//| Creada por: Abraham Carranza                             |
-//| Fecha: 7/07/2020                                         |
-//| Api que registra un estatus                              |
-//| modificada por:                                          |
-//| Fecha de modificacion:                                   |
-//| cambios:                                                 |
-//| Ruta: http://localhost:3000/api/estatus/registrar        |
-//|----------------------------------------------------------|
+//|--------------------Api POST de Estatus----------------------------------------------------------|
+//| Creada por: Abraham Carranza                                                                    |
+//| Fecha: 7/07/2020                                                                                |
+//| Api que registra un estatus                                                                     |
+//| modificada por:  Isabel Castillo                                                                |
+//| Fecha de modificacion: 02/09/20                                                                 |
+//| cambios: Se agrego una validación para que la primera letra de la primera palabra sea mayúscula |
+//| Ruta: http://localhost:3000/api/estatus/registrar                                               |
+//|-------------------------------------------------------------------------------------------------|
+
 
 app.post('/registrar', [], async(req, res) => {
     let body = req.body;
 
+    let strNombre = '';
+    let nombre = body.strNombre.toLowerCase();
+    for (let i = 0; i < nombre.length; i++) {
+        if (i == 0) {
+            strNombre += nombre[i].charAt(0).toUpperCase();
+        } else {
+            strNombre += nombre[i];
+        }
+    }
+
     let estatus = new Estatus({
-        strNombre: body.strNombre,
+        strNombre: strNombre,
         strDescripcion: body.strDescripcion,
         blnActivo: body.blnActivo,
     });
 
-    Estatus.findOne({ 'strNombre': body.strNombre }).then((encontrado) => {
+    Estatus.findOne({ 'strNombre': strNombre }).then((encontrado) => {
         if (encontrado) {
             return res.status(400).json({
                 ok: false,
@@ -175,25 +186,26 @@ app.post('/registrar', [], async(req, res) => {
 //| Ruta: http://localhost:3000/api/estatus/actualizar/:id   |
 //|----------------------------------------------------------|
 
+
 app.put('/actualizar/:idEstatus', [], (req, res) => {
     let id = req.params.idEstatus;
-    let numParam  = Object.keys(req.body).length;
+    let numParam = Object.keys(req.body).length;
 
     let statusBody;
-    if(numParam == 7) {
-        statusBody =  _.pick(req.body,['strNombre', 'strDescripcion', 'blnActivo']);
-    } 
-    if(numParam == 1) {
-        statusBody =  _.pick(req.body,['blnActivo']);
+    if (numParam == 7) {
+        statusBody = _.pick(req.body, ['strNombre', 'strDescripcion', 'blnActivo']);
     }
-    if(numParam !== 7 && numParam !== 1){
+    if (numParam == 1) {
+        statusBody = _.pick(req.body, ['blnActivo']);
+    }
+    if (numParam !== 7 && numParam !== 1) {
         return res.status(400).json({
             ok: false,
             status: 400,
             msg: 'Error al actualizar la modalidad',
             err: 'El número de parametros enviados no concuerdan con los que requiere la API'
         });
-    } 
+    }
 
     Estatus.find({ _id: id }).then((resp) => {
 
@@ -278,7 +290,7 @@ app.put('/actualizar/:idEstatus', [], (req, res) => {
 //| Ruta: http://localhost:3000/api/estatus/eliminar/:id     |
 //|----------------------------------------------------------|
 
-app.delete('/eliminar/:idEstatus',  (req, res) => {
+app.delete('/eliminar/:idEstatus', (req, res) => {
     let id = req.params.idEstatus;
 
     Estatus.findByIdAndUpdate(id, { blnActivo: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {

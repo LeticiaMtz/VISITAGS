@@ -69,25 +69,37 @@ app.get('/obtener/:id', (req, res) => {
         });
 });
 
-//|----------------- Api POST de Asignatura-- -------------------|
-//| Creada por: Martin Palacios                                  |
-//| Api que registra la asignatura                               |
-//| modificada por:                                              |
-//| Fecha de modificacion:                                       |
-//| cambios:                                                     |
-//| Ruta: http://localhost:3000/api/asignatura/registrar         |
-//|--------------------------------------------------------------|
+//|----------------- Api POST de Asignatura-- -------------------------------------------------------|
+//| Creada por: Martin Palacios                                                                      |
+//| Api que registra la asignatura                                                                   |
+//| modificada por: Isabel Castillo                                                                  |
+//| Fecha de modificacion: 02/09/20                                                                  |
+//| cambios: Se agrego una validación para que la primera letra de la primera palabra sea mayúscula  |
+//| Ruta: http://localhost:3000/api/asignatura/registrar                                             |
+//|--------------------------------------------------------------------------------------------------|
+
 app.post('/registrar', async(req, res) => {
     let body = req.body;
+
+    let strAsignatura = '';
+    let asignatu = body.strAsignatura.toLowerCase();
+    for (let i = 0; i < asignatu.length; i++) {
+        if (i == 0) {
+            strAsignatura += asignatu[i].charAt(0).toUpperCase();
+        } else {
+            strAsignatura += asignatu[i];
+        }
+    }
+
     //para poder mandar los datos a la coleccion
     let asignatura = new Asignatura({
-        strAsignatura: body.strAsignatura,
+        strAsignatura: strAsignatura,
         strSiglas: body.strSiglas,
         blnStatus: body.blnStatus
     });
 
 
-    Asignatura.findOne({ 'strAsignatura': body.strAsignatura }).then((encontrado) => {
+    Asignatura.findOne({ 'strAsignatura': strAsignatura }).then((encontrado) => {
         if (encontrado) {
             return res.status(400).json({
                 ok: false,
