@@ -68,26 +68,38 @@ app.get('/obtener/:id', [], (req, res) => {
         });
 });
 
-//|-----------------     Api POST de categoria crde      ----------------|
-//| Creada por: Leticia Moreno                                           |
-//| Api que registra una categoria de crde                               |
-//| modificada por:                                                      |
-//| Fecha de modificacion:                                               |
-//| cambios:                                                             |
-//| Ruta: http://localhost:3000/api/crde/registrar                       |
-//|----------------------------------------------------------------------|
+//|-----------------     Api POST de categoria crde      --------------------------------------------|
+//| Creada por: Leticia Moreno                                                                       |
+//| Api que registra una categoria de crde                                                           |
+//| modificada por: Isabel Castillo                                                                  |
+//| Fecha de modificacion: 03/09/20                                                                  |
+//| cambios: Se agrego una validación para que la primera letra de la primera palabra sea mayúscula  |
+//| Ruta: http://localhost:3000/api/crde/registrar                                                   |
+//|--------------------------------------------------------------------------------------------------|
+
 // Registrar una categoria de crde
 app.post('/registrar', [], async(req, res) => {
     let body = req.body;
+
+    let strCategoria = '';
+    let crd = body.strCategoria.toLowerCase();
+    for (let i = 0; i < crd.length; i++) {
+        if (i == 0) {
+            strCategoria += crd[i].charAt(0).toUpperCase();
+        } else {
+            strCategoria += crd[i];
+        }
+    }
+
     //para poder mandar los datos a la coleccion
     let crde = new Crde({
-        strCategoria: body.strCategoria,
+        strCategoria: strCategoria,
         blnStatus: body.blnStatus
 
     });
 
 
-    Crde.findOne({ 'strCategoria': body.strCategoria }).then((encontrado) => {
+    Crde.findOne({ 'strCategoria': strCategoria }).then((encontrado) => {
         if (encontrado) {
             return res.status(400).json({
                 ok: false,
@@ -131,23 +143,23 @@ app.post('/registrar', [], async(req, res) => {
 
 app.put('/actualizar/:idCrde', [], (req, res) => {
     let id = req.params.idCrde;
-    let numParam  = Object.keys(req.body).length;
+    let numParam = Object.keys(req.body).length;
 
     let crdeBody;
-    if(numParam == 7) {
-        crdeBody =  _.pick(req.body,['strCategoria', 'blnStatus']);
-    } 
-    if(numParam == 1) {
-        crdeBody =  _.pick(req.body,['blnStatus']);
+    if (numParam == 7) {
+        crdeBody = _.pick(req.body, ['strCategoria', 'blnStatus']);
     }
-    if(numParam !== 7 && numParam !== 1){
+    if (numParam == 1) {
+        crdeBody = _.pick(req.body, ['blnStatus']);
+    }
+    if (numParam !== 7 && numParam !== 1) {
         return res.status(400).json({
             ok: false,
             status: 400,
             msg: 'Error al actualizar CRDE',
             err: 'El número de parametros enviados no concuerdan con los que requiere la API'
         });
-    } 
+    }
 
     Crde.find({ _id: id }).then((resp) => {
         if (resp.length > 0) {
@@ -176,7 +188,7 @@ app.put('/actualizar/:idCrde', [], (req, res) => {
             cnt: err
         });
     });
-  
+
 });
 
 
@@ -221,7 +233,7 @@ app.put('/actualizar/:idCrde', [], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/crde/eliminar/idCrde                 |
 //|----------------------------------------------------------------------|
-app.delete('/eliminar/:idCrde',  (req, res) => {
+app.delete('/eliminar/:idCrde', (req, res) => {
     let id = req.params.idCrde;
 
     Crde.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {

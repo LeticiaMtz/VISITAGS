@@ -73,14 +73,17 @@ app.get('/obtener/:id', [], (req, res) => {
 
 
 
-//|-----------------     Api POST de carreras            -------------------|
-//| Creada por: Leticia Moreno                                              |
-//| Api que registra una carrera                                            |
-//| modificada por: Isabel Castillo                                         |
-//| Fecha de modificacion:   11-08-2020                                     |
-//| cambios: Se modifico el estatus 200 por un 400 en un mensaje de error   |
-//| Ruta: http://localhost:3000/api/carreras/registrar                      |
-//|-------------------------------------------------------------------------|
+//|------------------------------------     Api POST de carreras            ----------------------------|
+//| Creada por: Leticia Moreno                                                                          |
+//| Api que registra una carrera                                                                        |
+//| modificada por: Isabel Castillo                                                                     |
+//| Fecha de modificacion:   1) 11-08-2020                                                              |
+//|                          2) 03-09-2020                                                              |
+//| cambios: 1) Se modifico el estatus 200 por un 400 en un mensaje de error                            |
+//|          2) Se agrego una validación para que la primera letra de la primera palabra sea mayúscula  |
+//| Ruta: http://localhost:3000/api/carreras/registrar                                                  |
+//|-----------------------------------------------------------------------------------------------------|
+
 // app.post('/registrar', [], async(req, res) => {
 //     let body = req.body;
 //     let carrera = new Carrera({
@@ -124,40 +127,51 @@ app.get('/obtener/:id', [], (req, res) => {
 
 app.post('/registrar', (req, res) => {
     let body = req.body;
+
+    let strCarrera = '';
+    let carrer = body.strCarrera.toLowerCase();
+    for (let i = 0; i < carrer.length; i++) {
+        if (i == 0) {
+            strCarrera += carrer[i].charAt(0).toUpperCase();
+        } else {
+            strCarrera += carrer[i];
+        }
+    }
+
     let carrera = new Carrera({
-        strCarrera: body.strCarrera
+        strCarrera: strCarrera
     });
-    Carrera.findOne({ 'strCarrera': body.strCarrera }).then((encontrado) => {
-                if (encontrado) {
-                    return res.status(400).json({
-                        ok: false,
-                        status: 400,
-                        msg: 'La carrera ya ha sido registrada',
-                        cnt: encontrado
-        
-                    });
-                }
-    new Carrera(carrera).save((err, carDB) => {
-        if (err) {
+    Carrera.findOne({ 'strCarrera': strCarrera }).then((encontrado) => {
+        if (encontrado) {
             return res.status(400).json({
                 ok: false,
                 status: 400,
-                msg: 'Error al registrar la carrera',
-                cnt: err
+                msg: 'La carrera ya ha sido registrada',
+                cnt: encontrado
+
             });
         }
-        return res.status(200).json({
-            ok: true,
-            resp: 200,
-            msg: 'Se ha registrado correctamente la carrera',
-            cont: carDB.length, 
-            cnt: {
-                carDB
+        new Carrera(carrera).save((err, carDB) => {
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    status: 400,
+                    msg: 'Error al registrar la carrera',
+                    cnt: err
+                });
             }
-        });
+            return res.status(200).json({
+                ok: true,
+                resp: 200,
+                msg: 'Se ha registrado correctamente la carrera',
+                cont: carDB.length,
+                cnt: {
+                    carDB
+                }
+            });
 
+        });
     });
-});
 });
 
 
@@ -169,29 +183,29 @@ app.post('/registrar', (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/carreras/actualizar/idCarrera        |
 //|----------------------------------------------------------------------|
-    app.put('/actualizar/:idCarrera', [], (req, res) => {
+app.put('/actualizar/:idCarrera', [], (req, res) => {
     let id = req.params.idCarrera;
-    let numParam  = Object.keys(req.body).length;
+    let numParam = Object.keys(req.body).length;
 
     let careerBody;
-    if(numParam == 7) {
-        careerBody =  _.pick(req.body,['strCarrera', 'blnStatus']);
-    } 
-    if(numParam == 2) {
-        careerBody =  _.pick(req.body,['blnStatus']);
+    if (numParam == 7) {
+        careerBody = _.pick(req.body, ['strCarrera', 'blnStatus']);
     }
-    if(numParam !== 7 && numParam !== 2){
+    if (numParam == 2) {
+        careerBody = _.pick(req.body, ['blnStatus']);
+    }
+    if (numParam !== 7 && numParam !== 2) {
         return res.status(400).json({
             ok: false,
             status: 400,
             msg: 'Error al actualizar la carrera',
             err: 'El número de parametros enviados no concuerdan con los que requiere la API'
         });
-    } 
+    }
 
     Carrera.find({ _id: id }).then((resp) => {
         if (resp.length > 0) {
-            Carrera.findByIdAndUpdate(id, careerBody ).then((resp) => {
+            Carrera.findByIdAndUpdate(id, careerBody).then((resp) => {
                 return res.status(200).json({
                     ok: true,
                     status: 200,
@@ -217,7 +231,7 @@ app.post('/registrar', (req, res) => {
         });
     });
 
-  
+
 });
 
 // app.put('/actualizar/:idCarrera', [], (req, res) => {
@@ -312,7 +326,7 @@ app.get('/obtenerCarreras', (req, res) => {
 //         });
 //     });
 // });
-app.delete('/eliminar/:idCarrera',  (req, res) => {
+app.delete('/eliminar/:idCarrera', (req, res) => {
     let id = req.params.idCarrera;
 
     Carrera.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {

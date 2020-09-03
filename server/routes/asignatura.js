@@ -93,7 +93,7 @@ app.post('/registrar', async(req, res) => {
 
     //para poder mandar los datos a la coleccion
     let asignatura = new Asignatura({
-        strAsignatura: body.strAsignatura,
+        strAsignatura: strAsignatura,
         strSiglas: body.strSiglas,
         blnStatus: body.blnStatus
     });

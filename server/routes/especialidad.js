@@ -6,19 +6,34 @@ const Especialidad = require('../models/especialidad');
 const Carrera = require('../models/carreras');
 const {} = require('../middlewares/autenticacion');
 
-//|-----------------     Api POST de Especialidad        ----------------|
-//| Creada por: Leticia Moreno                                           |
-//| Api que registra una especialidad                                    |
-//| modificada por:                                                      |
-//| Fecha de modificacion:                                               |
-//| cambios:                                                             |
-//| Ruta: http://localhost:3000/api/especialidad/registrar/idCarrera     |
-//|----------------------------------------------------------------------|
+//|--------------------------------     Api POST de Especialidad        -------------------------------|
+//| Creada por: Leticia Moreno                                                                         |
+//| Api que registra una especialidad                                                                  |
+//| modificada por: Isabel Castillo                                                                    |
+//| Fecha de modificacion:  03-09-20                                                                   |
+//| cambios:   Se agrego una validación para que la primera letra de la primera palabra sea mayúscula  |
+//| Ruta: http://localhost:3000/api/especialidad/registrar/idCarrera                                   |
+//|----------------------------------------------------------------------------------------------------|
+
 app.post('/registrar/:idCarrera', (req, res) => {
 
-    const especialidad = new Especialidad(req.body);
 
+    //especialidad.strNombre = strNombre;
+
+    let strEspecialidad = '';
+    let esp = req.body.strEspecialidad.toLowerCase();
+    for (let i = 0; i < esp.length; i++) {
+        if (i == 0) {
+            strEspecialidad += esp[i].charAt(0).toUpperCase();
+        } else {
+            strEspecialidad += esp[i];
+        }
+    }
+
+    const especialidad = new Especialidad(req.body);
+    especialidad.strEspecialidad = strEspecialidad;
     let err = especialidad.validateSync();
+
 
     if (err) {
         return res.status(500).json({
