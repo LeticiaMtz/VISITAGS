@@ -89,6 +89,7 @@ app.get('/obtener/:id', [], (req, res) => {
 app.post('/registrar', async(req, res) => {
     let strUrl = 'http://localhost:4200/#/Tracking-alerts';
     let aJsnEvidencias = [];
+    let aJsnMotivo = [];
     if (req.files) {
         let arrFiles = req.files.strFileEvidencias;
         // console.log(arrFiles, 'ArrFiles.strFileEvidencia');
@@ -127,6 +128,7 @@ app.post('/registrar', async(req, res) => {
         idModalidad: body.idModalidad,
         strDescripcion: body.strDescripcion,
         arrCrde: body.arrCrde,
+        arrMotivo: body.arrMotivo,
         aJsnEvidencias,
         blnStatus: body.blnStatus
     });
