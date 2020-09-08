@@ -11,6 +11,7 @@ const { select, isArray } = require('underscore');
 const cargaImagenes = require('../libraries/cargaImagenes');
 const email = require('../libraries/mails');
 const Seguimiento = require('../models/seguimiento');
+const Crde = require('../models/crde');
 
 const idProfesor = '5eeee0db16952756482d1868';
 const idDirector = '5eeee0db16952756482d1869';
@@ -273,19 +274,24 @@ app.get('/obtenerAlertas/:idRol/:idUser', async(req, res) => {
     let idUser = req.params.idUser;
 
     if (idRol == idProfesor) {
-        Alert.find({ idUser: idUser }).sort({ updatedAt: 'desc' }).limit(5).
-        populate([{ path: 'idEstatus', select: 'strNombre' },
-            { path: 'idCarrera', select: 'strCarrera' },
-            { path: 'idEspecialidad', select: 'strEspecialidad' },
-            { path: 'idModalidad', select: 'strModalidad' }, { path: 'arrCrde' }
-        ]).then((resp) => {
+        Alert.find({ idUser: idUser }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }]).then(async(resp) => {
+
+            let alertas = resp.map(alert => alert.toObject());
+            const motivos = await Crde.aggregate().unwind('aJsnMotivo').replaceRoot('aJsnMotivo');
+
+            for (const alerta of alertas) {
+                for (const index of alerta.arrCrde.keys()) {
+                    let crde = motivos.find(motivo => motivo._id.toString() === alerta.arrCrde[index].toString());
+                    if (crde) alerta.arrCrde[index] = crde;
+                }
+            }
 
             return res.status(200).json({
                 ok: true,
                 status: 200,
                 msg: 'Se han consultado correctamente las alertas',
-                cont: resp.length,
-                cnt: resp
+                cont: alertas.length,
+                cnt: alertas
             });
         }).catch((err) => {
             console.log(err);
@@ -298,24 +304,36 @@ app.get('/obtenerAlertas/:idRol/:idUser', async(req, res) => {
         });
     } else if (idRol == idAdministrador) {
 
-        Alert.find().sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }, { path: 'arrCrde' }]).then((resp) => {
+        Alert.find().sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }])
+            .then(async(resp) => {
 
-            return res.status(200).json({
-                ok: true,
-                status: 200,
-                msg: 'Se han consultado correctamente',
-                cont: resp.length,
-                cnt: resp
+                let alertas = resp.map(alert => alert.toObject());
+                const motivos = await Crde.aggregate().unwind('aJsnMotivo').replaceRoot('aJsnMotivo');
+
+                for (const alerta of alertas) {
+                    for (const index of alerta.arrCrde.keys()) {
+                        let crde = motivos.find(motivo => motivo._id.toString() === alerta.arrCrde[index].toString());
+                        if (crde) alerta.arrCrde[index] = crde;
+                    }
+                }
+
+                return res.status(200).json({
+                    ok: true,
+                    status: 200,
+                    msg: 'Se han consultado correctamente',
+                    cont: alertas.length,
+                    cnt: alertas
+                });
+
+            }).catch((err) => {
+                console.log(err);
+                return res.status(400).json({
+                    ok: false,
+                    status: 400,
+                    msg: 'Ocurrio un error al consultar el rol',
+                    cnt: err
+                });
             });
-        }).catch((err) => {
-            console.log(err);
-            return res.status(400).json({
-                ok: false,
-                status: 400,
-                msg: 'Ocurrio un error al consultar el rol',
-                cnt: err
-            });
-        });
     } else if (idRol == idCoordinador || idRol == idDirector) {
 
         let usuario = await User.findById(idUser);
@@ -333,12 +351,7 @@ app.get('/obtenerAlertas/:idRol/:idUser', async(req, res) => {
         let arrAlertas = [];
 
         for (const idEspecialidad of arrEspecialidad) {
-            await Alert.find({ idEspecialidad }).sort({ updatedAt: 'desc' }).limit(5).
-            populate([{ path: 'idEstatus', select: 'strNombre' },
-                { path: 'idCarrera', select: 'strCarrera' },
-                { path: 'idEspecialidad', select: 'strEspecialidad' },
-                { path: 'idModalidad', select: 'strModalidad' }, { path: 'arrCrde' }
-            ]).then(async(alertas) => {
+            await Alert.find({ idEspecialidad }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }]).then(async(alertas) => {
                 for (const i of alertas) {
                     if (i.blnStatus != undefined) {
                         console.log(alertas, "Alerta");
