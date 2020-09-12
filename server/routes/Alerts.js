@@ -12,6 +12,7 @@ const cargaImagenes = require('../libraries/cargaImagenes');
 const email = require('../libraries/mails');
 const Seguimiento = require('../models/seguimiento');
 const Crde = require('../models/crde');
+const moment = require('moment');
 
 const idProfesor = '5eeee0db16952756482d1868';
 const idDirector = '5eeee0db16952756482d1869';
@@ -456,29 +457,62 @@ app.put('/actualizarEstatus/:idAlert', (req, res) => {
     });
 });
 
-// app.get('/obtenerA/:idAlert', [], (req, res) => {
-//     let idAlert = req.params.idAlert;
-//     Alert.find({ _id: idAlert }).populate({path: 'aJsnSeguimiento.idEstatus', select: 'strNombre'})
-//         .exec((err, alerts) => {
-//             if (err) {
-//                 return res.status(400).json({
-//                     ok: false,
-//                     status: 400,
-//                     msg: 'Error al encontrar la alerta ',
-//                     cnt: err
-//                 });
-//             }
-//             return res.status(200).json({
-//                 ok: true,
-//                 status: 200,
-//                 msg: 'Alerta encontrada',
-//                 cont: alerts.length,
-//                 cnt: alerts
-//             });
-//         });
-// });
+
+app.get('/obtenerAlertas/:idCarrrera/:idEspecialidad/:idUser/:idAsignatura/:idEstatus/:created_at', (req, res) => {
+    idCarrera = req.params.idCarrera;
+    idEspecialidad = req.params.idEspecialidad;
+    idUser = req.params.idUser;
+    idAsignatura = req.params.idAsignatura;
+    idEstatus = req.params.idEstatus;
+    created_at = req.params.created_at;
+    let query = {};
+
+  
+    if (idEspecialidad != 'undefined') {
+        query.idEspecialidad = idEspecialidad;
+    }
+    if (idUser != 'undefined') {
+        query.idUser = idUser;
+    }
+    if (idAsignatura != 'undefined') {
+        query.idAsignatura = idAsignatura;
+    }
+    if (idEstatus != 'undefined') {
+        query.idUser = idEstatus;
+    }
+    if (created_at != 'undefined') {
+        query.created_at = created_at;
+    }
+
+    Alert.find(query)
+        .populate([{ path: 'idCarrera', select: 'strCarrera' },
+        { path: 'idCarrera', select: 'aJsnEspecialidad.strEspecialidad' },
+        { path: 'idAsignatura', select: 'strAsignatura' },
+        { path: 'idUser', select: 'strName strLastName strMotherLastName' },
+        { path: 'idEstatus', select: 'strNombre' }
+    ]).exec((err, alerts) => { //ejecuta la funcion
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    status: 400,
+                    msg: 'Error al generar la lista',
+                    err
+                });
+            }
+            console.log(alerts)
+            return res.status(200).json({
+                ok: true,
+                status: 200,
+                msg: 'Lista de alertas generada exitosamente',
+                cont: alerts.length,
+                cnt: alerts
+            });
+        });
+});
+
+///AAA
 
 
-
+// app.get('/obtenerPorFecha/show', {moment:moment})
 
 module.exports = app;
