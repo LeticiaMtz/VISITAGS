@@ -203,25 +203,34 @@ app.put('/actualizar/:idCarrera', [], (req, res) => {
         });
     }
 
-    Carrera.find({ _id: id }).then((resp) => {
-        if (resp.length > 0) {
-            Carrera.findByIdAndUpdate(id, careerBody).then((resp) => {
-                return res.status(200).json({
-                    ok: true,
-                    status: 200,
-                    msg: 'Carrera actualizada exitosamente',
-                    cont: resp.length,
-                    cnt: resp
-                });
-            }).catch((err) => {
-                return res.status(400).json({
-                    ok: false,
-                    status: 400,
-                    msg: 'Error al actualizar la carrera',
-                    err: err
-                });
+    Carrera.findOne({ _id: { $ne: [id] }, strCarrera: { $regex: `^${careerBody.strCarrera}$`, $options: 'i' } }).then((resp) => {
+
+        console.log(resp);
+        if (resp) {
+            return res.status(400).json({
+                ok: false,
+                status: 400,
+                msg: `La carrera ${careerBody.strCarrera} ya existe `,
+                err: resp
             });
         }
+        Carrera.findByIdAndUpdate(id, careerBody).then((resp) => {
+            return res.status(200).json({
+                ok: true,
+                status: 200,
+                msg: 'Carrera actualizada exitosamente',
+                cont: resp.length,
+                cnt: resp
+            });
+        }).catch((err) => {
+            return res.status(400).json({
+                ok: false,
+                status: 400,
+                msg: 'Error al actualizar la carrera',
+                err: err
+            });
+        });
+        //}
     }).catch((err) => {
         return res.status(400).json({
             ok: false,

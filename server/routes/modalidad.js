@@ -151,25 +151,36 @@ app.put('/actualizar/:idModalidad', (req, res) => {
         });
     }
 
-    Modalidad.find({ _id: id }).then((resp) => {
-        if (resp.length > 0) {
-            Modalidad.findByIdAndUpdate(id, modalidadBody).then((resp) => {
-                return res.status(200).json({
-                    ok: true,
-                    status: 200,
-                    msg: 'Modalidad actualizada exitosamente',
-                    cont: resp.length,
-                    cnt: resp
-                });
-            }).catch((err) => {
-                return res.status(400).json({
-                    ok: false,
-                    status: 400,
-                    msg: 'Error al actualizar la modalidad',
-                    cnt: err
-                });
+    Modalidad.findOne({ _id: { $ne: [id] }, strModalidad: { $regex: `^${modalidadBody.strModalidad}$`, $options: 'i' } }).then((resp) => {
+
+        console.log(resp);
+        if (resp) {
+            return res.status(400).json({
+                ok: false,
+                status: 400,
+                msg: `La modalidad ${modalidadBody.strModalidad} ya existe `,
+                err: resp
             });
         }
+
+        // if (resp.length > 0) {
+        Modalidad.findByIdAndUpdate(id, modalidadBody).then((resp) => {
+            //console.log(resp);
+            return res.status(200).json({
+                ok: true,
+                status: 200,
+                msg: 'Modalidad actualizada exitosamente',
+                cont: resp.length,
+            });
+        }).catch((err) => {
+            return res.status(400).json({
+                ok: false,
+                status: 400,
+                msg: 'Error al actualizar la modalidad',
+                cnt: err
+            });
+        });
+        // }
     }).catch((err) => {
         return res.status(400).json({
             ok: false,
