@@ -269,7 +269,7 @@ app.put('/actualizar/:idCrde/:idMotivo', [], (req, res) => {
             return res.status(400).json({
                 ok: false,
                 resp: 400,
-                msg: 'Error: La especialidad ya se encuentra registrada',
+                msg: 'Error: El motivo CRDE ya se encuentra registrado',
                 cnt: {
                     resp
                 }
