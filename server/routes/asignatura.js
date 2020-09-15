@@ -171,33 +171,45 @@ app.put('/actualizar/:idAsignatura', (req, res) => {
     let id = req.params.idAsignatura;
 
     const asignaturaBody = _.pick(req.body, ['strAsignatura', 'strSiglas', 'blnStatus']);
-    Asignatura.find({ _id: id }).then((resp) => {
-        if (resp.length > 0) {
-            Asignatura.findByIdAndUpdate(id, asignaturaBody).then((resp) => {
-                return res.status(200).json({
-                    ok: true,
-                    status: 200,
-                    msg: 'Asignatura actualizada exitosamente',
-                    cont: resp.length,
-                    cnt: resp
-                });
-            }).catch((err) => {
-                return res.status(400).json({
-                    ok: false,
-                    status: 400,
-                    msg: 'Error al actualizar asignatura',
-                    err: err
-                });
+    Asignatura.findOne({ _id: { $ne: [id] }, strAsignatura: { $regex: `^${asignaturaBody.strAsignatura}$`, $options: 'i' } }).then((resp) => {
+
+        console.log(resp);
+        if (resp) {
+            return res.status(400).json({
+                ok: false,
+                status: 400,
+                msg: `La asignatura ${asignaturaBody.strAsignatura} ya existe `,
+                err: resp
             });
         }
+
+        Asignatura.findByIdAndUpdate(id, asignaturaBody).then((resp) => {
+
+            return res.status(200).json({
+                ok: true,
+                status: 200,
+                msg: 'Asignatura actualizada exitosamente',
+                cont: resp.length,
+                cnt: resp
+            });
+        }).catch((err) => {
+            return res.status(400).json({
+                ok: false,
+                status: 400,
+                msg: 'Error al actualizar asignatura',
+                err: Object.keys(err).length === 0 ? err.message : err
+            });
+        });
     }).catch((err) => {
         return res.status(400).json({
             ok: false,
             status: 400,
             msg: 'Error al actualizar',
-            err: err
+            err: Object.keys(err).length === 0 ? err.message : err
         });
     });
+
+
 });
 
 //|-------------------Api DELETE de Asignatura---------------------------|
