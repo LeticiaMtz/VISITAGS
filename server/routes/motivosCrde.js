@@ -86,7 +86,7 @@ app.post('/registrar/:idCrde', [], (req, res) => {
                                     aJsnMotivo: motivo
                                 }
                             })
-                            .then((crde) => {
+                            .then((motivo) => {
                                 return res.status(200).json({
                                     ok: true,
                                     resp: 200,
@@ -214,8 +214,6 @@ app.put('/actualizar/:idCrde/:idMotivo', [], (req, res) => {
         blnStatus: req.body.blnStatus
     });
 
-    console.log(motivo);
-
     let err = motivo.validateSync();
 
     if (err) {
@@ -247,12 +245,6 @@ app.put('/actualizar/:idCrde/:idMotivo', [], (req, res) => {
             }
         }
     ], (err, resp) => {
-
-        console.log(motivo);
-        console.log('dddd ' + resp + ' eee');
-
-        console.log(resp);
-
 
         if (err) {
             return res.status(500).json({
