@@ -458,35 +458,54 @@ app.put('/actualizarEstatus/:idAlert', (req, res) => {
 });
 
 
-app.get('/obtenerAlertas/:idCarrrera/:idEspecialidad/:idUser/:idAsignatura/:idEstatus/:created_at', (req, res) => {
+app.get('/obtenerAlertas/:idCarrera/:idEspecialidad/:idUser/:idAsignatura/:idEstatus/:dteFechaInicio/:dteFechaFin', (req, res) => {
     idCarrera = req.params.idCarrera;
     idEspecialidad = req.params.idEspecialidad;
     idUser = req.params.idUser;
     idAsignatura = req.params.idAsignatura;
     idEstatus = req.params.idEstatus;
-    created_at = req.params.created_at;
+    dteFechaInicio = req.params.dteFechaInicio;
+    dteFechaFin = req.params.dteFechaFin;
     let query = {};
 
-  
+    if (idCarrera != 'undefined') {
+        query.idCarrera = idCarrera;
+    }
     if (idEspecialidad != 'undefined') {
         query.idEspecialidad = idEspecialidad;
     }
     if (idUser != 'undefined') {
         query.idUser = idUser;
     }
+    
     if (idAsignatura != 'undefined') {
         query.idAsignatura = idAsignatura;
     }
     if (idEstatus != 'undefined') {
-        query.idUser = idEstatus;
-    }
-    if (created_at != 'undefined') {
-        query.created_at = created_at;
+        query.idEstatus = idEstatus;
     }
 
+    if (dteFechaInicio != 'undefined') {
+        query.createdAt =  {"$gte": new Date(dteFechaInicio), "$lt": new Date(dteFechaFin).setDate(new Date(dteFechaFin).getDate()+1)};
+    }
+    // if (dteFechaFin != 'undefined') {
+    //     query.updatedAt =  {"$gte": new Date(dteFechaInicio), "$lt": new Date(dteFechaFin)};
+    // }
+
+    if (!dteFechaInicio) {
+        return res.status(400).json({
+            ok: false,
+            resp: 400,
+            msg: 'No se recibió una fecha válida.',
+            cont: {
+                dteFechaInicio,
+                // dteFechaFin
+            }
+        });
+    }
     Alert.find(query)
-        .populate([{ path: 'idCarrera', select: 'strCarrera' },
-        { path: 'idCarrera', select: 'aJsnEspecialidad.strEspecialidad' },
+        .populate([{ path: 'idCarrera', select: 'strCarrera',
+         populate: { path: 'aJsnEspecialidad', select: 'strEspecialidad' } },
         { path: 'idAsignatura', select: 'strAsignatura' },
         { path: 'idUser', select: 'strName strLastName strMotherLastName' },
         { path: 'idEstatus', select: 'strNombre' }
@@ -500,6 +519,7 @@ app.get('/obtenerAlertas/:idCarrrera/:idEspecialidad/:idUser/:idAsignatura/:idEs
                 });
             }
             console.log(alerts)
+
             return res.status(200).json({
                 ok: true,
                 status: 200,
@@ -510,9 +530,6 @@ app.get('/obtenerAlertas/:idCarrrera/:idEspecialidad/:idUser/:idAsignatura/:idEs
         });
 });
 
-///AAA
-
-
-// app.get('/obtenerPorFecha/show', {moment:moment})
+        
 
 module.exports = app;
