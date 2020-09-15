@@ -86,7 +86,7 @@ app.post('/registrar/:idCrde', [], (req, res) => {
                                     aJsnMotivo: motivo
                                 }
                             })
-                            .then((crde) => {
+                            .then((motivo) => {
                                 return res.status(200).json({
                                     ok: true,
                                     resp: 200,

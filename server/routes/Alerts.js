@@ -486,7 +486,12 @@ app.get('/obtenerAlertas/:idCarrera/:idEspecialidad/:idUser/:idAsignatura/:idEst
     }
 
     if (dteFechaInicio != 'undefined') {
+        if(dteFechaFin  != 'undefined'){
         query.createdAt =  {"$gte": new Date(dteFechaInicio), "$lt": new Date(dteFechaFin).setDate(new Date(dteFechaFin).getDate()+1)};
+        } else {
+        query.createdAt =  {"$gte": new Date(dteFechaInicio)};
+
+        }
     }
     // if (dteFechaFin != 'undefined') {
     //     query.updatedAt =  {"$gte": new Date(dteFechaInicio), "$lt": new Date(dteFechaFin)};
