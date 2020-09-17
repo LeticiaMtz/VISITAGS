@@ -91,9 +91,11 @@ app.post('/registrar', async(req, res) => {
     let strUrl = 'http://localhost:4200/#/Tracking-alerts';
     let aJsnEvidencias = [];
     let aJsnMotivo = [];
-    if (req.files) {
-        let arrFiles = req.files.strFileEvidencias;
-        // console.log(arrFiles, 'ArrFiles.strFileEvidencia');
+    if (req.files || req.body.strFileEvidencia) {
+        let arrFiles = req.files
+        ? req.files.strFileEvidencia
+        : req.body.strFileEvidencia;
+
         if (isArray(arrFiles)) {
             for (const archivo of arrFiles) {
                 let strNombreFile = await fileUpload.subirArchivo(archivo, 'evidencias');
@@ -115,7 +117,6 @@ app.post('/registrar', async(req, res) => {
 
     let body = req.body;
     //para poder mandar los datos a la coleccion
-
     let alert = new Alert({
         idUser: body.idUser,
         idEstatus: body.idEstatus,
