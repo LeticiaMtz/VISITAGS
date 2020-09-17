@@ -159,25 +159,34 @@ app.put('/actualizar/:idCrde', [], (req, res) => {
         });
     }
 
-    Crde.find({ _id: id }).then((resp) => {
-        if (resp.length > 0) {
-            Crde.findByIdAndUpdate(id, crdeBody).then((resp) => {
-                return res.status(200).json({
-                    ok: true,
-                    status: 400,
-                    msg: 'Actualizada con éxito',
-                    cont: resp.length,
-                    cnt: resp
-                });
-            }).catch((err) => {
-                return res.status(400).json({
-                    ok: false,
-                    status: 400,
-                    msg: 'Error al actualizar',
-                    cnt: err
-                });
+    Crde.findOne({ _id: { $ne: [id] }, strCategoria: { $regex: `^${crdeBody.strCategoria}$`, $options: 'i' } }).then((resp) => {
+
+        console.log(resp);
+        if (resp) {
+            return res.status(400).json({
+                ok: false,
+                status: 400,
+                msg: `La categoria ${crdeBody.strCategoria} ya existe `,
+                err: resp
             });
         }
+        Crde.findByIdAndUpdate(id, crdeBody).then((resp) => {
+            return res.status(200).json({
+                ok: true,
+                status: 400,
+                msg: 'Actualizada con éxito',
+                cont: resp.length,
+                cnt: resp
+            });
+        }).catch((err) => {
+            return res.status(400).json({
+                ok: false,
+                status: 400,
+                msg: 'Error al actualizar',
+                cnt: err
+            });
+        });
+        // }
     }).catch((err) => {
         return res.status(400).json({
             ok: false,

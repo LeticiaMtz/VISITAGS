@@ -74,7 +74,7 @@ app.get('/obtener/:id', [], (req, res) => {
 app.get('/obtenerEstatus/:idRol', [], (req, res) => {
 
     if (idCoordinador == req.params.idRol) {
-        Estatus.find({ strNombre: { $in: ['En Proceso', 'Finalizado', 'Cancelada'] } }).exec((err, estatus) => { //ejecuta la funcion
+        Estatus.find({ strNombre: { $nin: 'Nueva' } }).exec((err, estatus) => { //ejecuta la funcion
             if (err) {
                 return res.status(400).json({
                     ok: false,
@@ -93,7 +93,7 @@ app.get('/obtenerEstatus/:idRol', [], (req, res) => {
             });
         });
     } else {
-        Estatus.find({ strNombre: { $in: ['En Proceso', 'Cancelada'] } }).exec((err, estatus) => { //ejecuta la funcion
+        Estatus.find({ strNombre: { $nin: ['Nueva', 'Finalizado'] } }).exec((err, estatus) => { //ejecuta la funcion
             if (err) {
                 return res.status(400).json({
                     ok: false,
@@ -209,8 +209,21 @@ app.put('/actualizar/:idEstatus', [], (req, res) => {
 
     Estatus.find({ _id: id }).then((resp) => {
 
+        let strNombre = '';
+        let nombre = req.body.strNombre.toLowerCase();
+        for (let i = 0; i < nombre.length; i++) {
+            if (i == 0) {
+                strNombre += nombre[i].charAt(0).toUpperCase();
+            } else {
+                strNombre += nombre[i];
+            }
+        }
+        statusBody.strNombre = strNombre
+        console.log(statusBody);
+
         if (resp.length > 0) {
             Estatus.findByIdAndUpdate(id, statusBody).then((resp) => {
+                console.log(resp);
                 return res.status(200).json({
                     ok: true,
                     status: 200,
@@ -222,7 +235,7 @@ app.put('/actualizar/:idEstatus', [], (req, res) => {
                 return res.status(400).json({
                     ok: false,
                     status: 400,
-                    msg: 'Error al actualizar',
+                    msg: `El estatus ${strNombre} ya existe `,
                     err: err
                 });
             });

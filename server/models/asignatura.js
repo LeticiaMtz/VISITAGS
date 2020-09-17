@@ -2,8 +2,9 @@ const mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 
 let asignaturaSchema = new Schema({
-    strAsignatura:{
+    strAsignatura: {
         type: String,
+        unique: true,
         required: [true, 'Ingrese el nombre de la asignatura']
     },
     strSiglas: {
@@ -14,10 +15,8 @@ let asignaturaSchema = new Schema({
         type: Boolean,
         default: true
     }
-},
-{
+}, {
     timestamps: true
 });
 
 module.exports = mongoose.model('Asignatura', asignaturaSchema);
-
