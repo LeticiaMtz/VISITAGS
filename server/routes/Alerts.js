@@ -478,7 +478,7 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
     dteFechaInicio = req.params.dteFechaInicio;
     dteFechaFin = req.params.dteFechaFin;
     let query = {};
-
+ 
     if (idCarrera != 'undefined') {
         query.idCarrera = idCarrera;
     }
@@ -495,19 +495,19 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
     if (idEstatus != 'undefined') {
         query.idEstatus = idEstatus;
     }
-
+ 
     if (dteFechaInicio != 'undefined') {
         if(dteFechaFin  != 'undefined'){
         query.createdAt =  {"$gte": new Date(dteFechaInicio), "$lt": new Date(dteFechaFin).setDate(new Date(dteFechaFin).getDate()+1)};
         } else {
         query.createdAt =  {"$gte": new Date(dteFechaInicio)};
-
+ 
         }
     }
     if (dteFechaFin != 'undefined') {
         query.createdAt =  {"$lt": new Date(dteFechaFin)};
     }
-
+ 
     if (!dteFechaInicio) {
         return res.status(400).json({
             ok: false,
@@ -543,7 +543,7 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
                 });
             }
             console.log(alerts)
-
+ 
             return res.status(200).json({
                 ok: true,
                 status: 200,
