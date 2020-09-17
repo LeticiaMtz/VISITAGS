@@ -458,7 +458,7 @@ app.put('/actualizarEstatus/:idAlert', (req, res) => {
 });
 
 
-app.get('/obtenerAlertas/:idCarrera/:idEspecialidad/:idUser/:idAsignatura/:idEstatus/:dteFechaInicio/:dteFechaFin', (req, res) => {
+app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura/:idEstatus/:dteFechaInicio/:dteFechaFin', (req, res) => {
     idCarrera = req.params.idCarrera;
     idEspecialidad = req.params.idEspecialidad;
     idUser = req.params.idUser;
