@@ -123,6 +123,7 @@ app.post("/registrar/:idAlert", [], async (req, res) => {
     let arrFiles = req.files
       ? req.files.strFileEvidencia
       : req.body.strFileEvidencia;
+      console.log(isArray(arrFiles, "ArrFiles"));
     if (isArray(arrFiles)) {
       for (const archivo of arrFiles) {
         await cargarImagenes
