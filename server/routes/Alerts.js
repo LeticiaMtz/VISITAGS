@@ -493,9 +493,9 @@ app.get('/obtenerAlertas/:idCarrera/:idEspecialidad/:idUser/:idAsignatura/:idEst
 
         }
     }
-    // if (dteFechaFin != 'undefined') {
-    //     query.updatedAt =  {"$gte": new Date(dteFechaInicio), "$lt": new Date(dteFechaFin)};
-    // }
+    if (dteFechaFin != 'undefined') {
+        query.createdAt =  {"$lt": new Date(dteFechaFin)};
+    }
 
     if (!dteFechaInicio) {
         return res.status(400).json({
@@ -520,6 +520,14 @@ app.get('/obtenerAlertas/:idCarrera/:idEspecialidad/:idUser/:idAsignatura/:idEst
                     ok: false,
                     status: 400,
                     msg: 'Error al generar la lista',
+                    err
+                });
+            }
+            else if(alerts.length == 0){
+                return res.status(400).json({
+                    ok: false,
+                    status: 400,
+                    msg: 'No se encuentran registros en la base de datos',
                     err
                 });
             }
