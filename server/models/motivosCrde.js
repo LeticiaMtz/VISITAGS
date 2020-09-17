@@ -1,12 +1,14 @@
 const mongoose = require('mongoose');
+const uniqueValidator = require('mongoose-unique-validator');
 let Schema = mongoose.Schema;
- 
+
 const motivosCrde = new Schema({
-    strNombre:{
+    strNombre: {
         type: String,
+        unique: true,
         required: [true, 'Ingrese el nombre del motivo']
     },
-    strClave:{
+    strClave: {
         type: String,
         required: [true, 'Ingrese la clave del motivo']
     },
@@ -14,9 +16,12 @@ const motivosCrde = new Schema({
         type: Boolean,
         default: true
     }
-},  
-{
+}, {
     timestamps: true
 });
- 
+
+motivosCrde.plugin(uniqueValidator, {
+    message: 'El {PATH} debe ser unico.'
+});
+
 module.exports = mongoose.model('motivosCrde', motivosCrde);

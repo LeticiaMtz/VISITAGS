@@ -30,10 +30,6 @@ app.use(bodyParser.json());
 //Archivo agrupador de rutas
 app.use('/api', require('./routes/index'));
 
-// app.use(require('./routes/usuario'));
-// app.use(require('./routes/categoria'));
-// app.use(require('./routes/producto'));
-
 //useNewUrlParser 
 //Conexión a la BD
 mongoose.connect(process.env.URLDB, {
@@ -50,5 +46,5 @@ mongoose.connect(process.env.URLDB, {
 
 //Puerto de escucha de la aplicación
 app.listen(process.env.PORT, () => {
-    console.log('Escuchando por el puerto 3000', process.env.PORT);
+    console.log('Escuchando por el puerto ', process.env.PORT);
 });

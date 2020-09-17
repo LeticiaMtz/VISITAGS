@@ -86,7 +86,7 @@ app.post('/registrar/:idCrde', [], (req, res) => {
                                     aJsnMotivo: motivo
                                 }
                             })
-                            .then((crde) => {
+                            .then((motivo) => {
                                 return res.status(200).json({
                                     ok: true,
                                     resp: 200,
@@ -206,6 +206,7 @@ app.put('/actualizar/:idCrde/:idMotivo', [], (req, res) => {
         console.log(' params ', req.params);
         console.log(' body ', req.body);
     }
+
     let motivo = new Motivo({
         _id: req.params.idMotivo,
         strNombre: req.body.strNombre,
@@ -228,14 +229,14 @@ app.put('/actualizar/:idCrde/:idMotivo', [], (req, res) => {
 
     }
 
+
     Crde.aggregate([{
             $unwind: '$aJsnMotivo'
         },
         {
             $match: {
-                'aJsnMotivo.blnStatus': true,
-                'aJsnMotivo.strNombre': req.body.strNombre,
-                'aJsnMotivo.strClave': req.body.strClave
+                _id: { $ne: [mongoose.Types.ObjectId(req.params.idMotivo)] },
+                'aJsnMotivo.strNombre': { $regex: `^${req.body.strNombre}$`, $options: 'i' }
             }
         },
         {
@@ -250,23 +251,21 @@ app.put('/actualizar/:idCrde/:idMotivo', [], (req, res) => {
                 ok: false,
                 resp: 500,
                 msg: 'Error: Error del servidor',
-                cont: {
+                cnt: {
                     err
                 }
             });
         }
 
         if (resp.length > 0) {
-            if (req.params.idMotivo != resp[0]._id) {
-                return res.status(400).json({
-                    ok: false,
-                    resp: 400,
-                    msg: 'Error: El motivo ya se encuentra registrado',
-                    cont: {
-                        resp
-                    }
-                });
-            }
+            return res.status(400).json({
+                ok: false,
+                resp: 400,
+                msg: 'Error: El motivo CRDE ya se encuentra registrado',
+                cnt: {
+                    resp
+                }
+            });
         }
 
 

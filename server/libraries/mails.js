@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 let htmlF = '';
 
-const mainEmail = '"Alertas Academicas" <orientacion.vocacional@utags.edu.mx>';
+const mainEmail = '"Alertas Academicas" <notificaciones@utags.edu.mx>';
 
 class email {
     constructor() {
@@ -15,13 +15,13 @@ class email {
             service: 'outlook',
             port: 587,
             secure: false,
-            auth: { user: 'orientacion.vocacional@utags.edu.mx', pass: 'Noc099998' },
+            auth: { user: 'notificaciones@utags.edu.mx', pass: 'Dab61759' },
             tls: {
                 rejectUnauthorized: false
             }
         });
         this.mailOptions = {
-            from: '"Alertas Academicas" <orientacion.vocacional@utags.edu.mx>'
+            from: '"Alertas Academicas" <notificaciones@utags.edu.mx>'
         };
     }
 

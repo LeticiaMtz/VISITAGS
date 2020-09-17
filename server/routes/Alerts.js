@@ -395,14 +395,24 @@ app.get('/obtenerAlertas/:idRol/:idUser', async(req, res) => {
 app.get('/obtenerAlerta/:idAlerta', async(req, res) => {
     let idAlert = req.params.idAlerta;
 
-    Alert.find({ _id: idAlert }).populate([{ path: 'idUser' }, { path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }, { path: 'idAsignatura', select: 'strAsignatura' }, { path: 'arrCrde', select: 'strCategoria' }]).then((resp) => {
+    Alert.find({ _id: idAlert }).populate([{ path: 'idUser' }, { path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }, { path: 'idAsignatura', select: 'strAsignatura' }]).then(async(resp) => {
+
+        let alertas = resp.map(alert => alert.toObject());
+        const motivos = await Crde.aggregate().unwind('aJsnMotivo').replaceRoot('aJsnMotivo');
+
+        for (const alerta of alertas) {
+            for (const index of alerta.arrCrde.keys()) {
+                let crde = motivos.find(motivo => motivo._id.toString() === alerta.arrCrde[index].toString());
+                if (crde) alerta.arrCrde[index] = crde;
+            }
+        }
 
         return res.status(200).json({
             ok: true,
             status: 200,
             msg: 'Se han consultado correctamente la alerta',
-            cont: resp.length,
-            cnt: resp
+            cont: alertas.length,
+            cnt: alertas
         });
     }).catch((err) => {
         return res.status(400).json({
