@@ -198,19 +198,7 @@ app.put('/actualizar/:idEstatus', [], (req, res) => {
         });
     }
 
-    Estatus.find({ _id: id }).then((resp) => {
-
-        let strNombre = '';
-        let nombre = req.body.strNombre.toLowerCase();
-        for (let i = 0; i < nombre.length; i++) {
-            if (i == 0) {
-                strNombre += nombre[i].charAt(0).toUpperCase();
-            } else {
-                strNombre += nombre[i];
-            }
-        }
-        statusBody.strNombre = strNombre
-        console.log(statusBody);
+    Estatus.findOne({ _id: { $ne: [mongoose.Types.ObjectId(req.params.idEstatus)] }, strNombre: { $regex: `^${statusBody.strNombre}$`, $options: 'i' } }).then((resp) => {
 
         if (resp.length > 0) {
             Estatus.findByIdAndUpdate(id, statusBody).then((resp) => {
