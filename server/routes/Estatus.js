@@ -75,7 +75,7 @@ app.get('/obtener/:id', [], (req, res) => {
 app.get('/obtenerEstatus/:idRol', [], (req, res) => {
 
     if (idCoordinador == req.params.idRol) {
-        Estatus.find({ strNombre: { $in: ['En Proceso', 'Finalizado', 'Cancelada'] } }).exec((err, estatus) => { //ejecuta la funcion
+        Estatus.find({ strNombre: { $nin: 'Nueva' } }).exec((err, estatus) => { //ejecuta la funcion
             if (err) {
                 return res.status(400).json({
                     ok: false,
@@ -94,7 +94,7 @@ app.get('/obtenerEstatus/:idRol', [], (req, res) => {
             });
         });
     } else {
-        Estatus.find({ strNombre: { $in: ['En Proceso', 'Cancelada'] } }).exec((err, estatus) => { //ejecuta la funcion
+        Estatus.find({ strNombre: { $nin: ['Nueva', 'Finalizado'] } }).exec((err, estatus) => { //ejecuta la funcion
             if (err) {
                 return res.status(400).json({
                     ok: false,
