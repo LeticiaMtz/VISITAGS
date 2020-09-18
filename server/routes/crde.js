@@ -93,11 +93,9 @@ app.post('/registrar', [], async(req, res) => {
 
     //para poder mandar los datos a la coleccion
     let crde = new Crde({
-        strCategoria: strCategoria,
-        blnStatus: body.blnStatus
+        strCategoria: strCategoria
 
     });
-
 
     Crde.findOne({ 'strCategoria': strCategoria }).then((encontrado) => {
         if (encontrado) {
