@@ -5,6 +5,7 @@ const {} = require('../middlewares/autenticacion');
 const { rolMenuUsuario } = require('../middlewares/permisosUsuarios');
 const Estatus = require('../models/Estatus'); //subir nivel
 const app = express();
+const mongoose = require('mongoose');
 
 const idCoordinador = '5eeee0db16952756482d186a';
 
@@ -128,23 +129,24 @@ app.get('/obtenerEstatus/:idRol', [], (req, res) => {
 app.post('/registrar', [], async(req, res) => {
     let body = req.body;
 
-    let strNombre = '';
-    let nombre = body.strNombre.toLowerCase();
-    for (let i = 0; i < nombre.length; i++) {
-        if (i == 0) {
-            strNombre += nombre[i].charAt(0).toUpperCase();
-        } else {
-            strNombre += nombre[i];
-        }
-    }
+    // let strNombre = '';
+    // let nombre = body.strNombre.toLowerCase();
+    // for (let i = 0; i < nombre.length; i++) {
+    //     if (i == 0) {
+    //         strNombre += nombre[i].charAt(0).toUpperCase();
+    //     } else {
+    //         strNombre += nombre[i];
+    //     }
+    // }
+
 
     let estatus = new Estatus({
-        strNombre: strNombre,
+        strNombre: body.strNombre,
         strDescripcion: body.strDescripcion,
         blnActivo: body.blnActivo,
     });
 
-    Estatus.findOne({ 'strNombre': strNombre }).then((encontrado) => {
+    Estatus.findOne({ _id: { $ne: [mongoose.Types.ObjectId(req.params.idEstatus)] }, strNombre: { $regex: `^${estatus.strNombre}$`, $options: 'i' } }).then((encontrado) => {
         if (encontrado) {
             return res.status(400).json({
                 ok: false,
