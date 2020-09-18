@@ -81,25 +81,15 @@ app.get('/obtener/:id', (req, res) => {
 app.post('/registrar', async(req, res) => {
     let body = req.body;
 
-    let strAsignatura = '';
-    let asignatu = body.strAsignatura.toLowerCase();
-    for (let i = 0; i < asignatu.length; i++) {
-        if (i == 0) {
-            strAsignatura += asignatu[i].charAt(0).toUpperCase();
-        } else {
-            strAsignatura += asignatu[i];
-        }
-    }
-
     //para poder mandar los datos a la coleccion
     let asignatura = new Asignatura({
-        strAsignatura: strAsignatura,
+        strAsignatura: body.strAsignatura,
         strSiglas: body.strSiglas,
         blnStatus: body.blnStatus
     });
 
 
-    Asignatura.findOne({ 'strAsignatura': strAsignatura }).then((encontrado) => {
+    Asignatura.findOne({ _id: { $ne: [mongoose.Types.ObjectId(req.params.idAsignatura)] }, strAsignatura: { $regex: `^${asignatura.strAsignatura}$`, $options: 'i' } }).then((encontrado) => {
         if (encontrado) {
             return res.status(400).json({
                 ok: false,

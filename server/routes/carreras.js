@@ -128,20 +128,10 @@ app.get('/obtener/:id', [], (req, res) => {
 app.post('/registrar', (req, res) => {
     let body = req.body;
 
-    let strCarrera = '';
-    let carrer = body.strCarrera.toLowerCase();
-    for (let i = 0; i < carrer.length; i++) {
-        if (i == 0) {
-            strCarrera += carrer[i].charAt(0).toUpperCase();
-        } else {
-            strCarrera += carrer[i];
-        }
-    }
-
     let carrera = new Carrera({
-        strCarrera: strCarrera
+        strCarrera: body.strCarrera
     });
-    Carrera.findOne({ 'strCarrera': strCarrera }).then((encontrado) => {
+    Carrera.findOne({ _id: { $ne: [mongoose.Types.ObjectId(req.params.idCarrera)] }, strCarrera: { $regex: `^${carrera.strCarrera}$`, $options: 'i' } }).then((encontrado) => {
         if (encontrado) {
             return res.status(400).json({
                 ok: false,

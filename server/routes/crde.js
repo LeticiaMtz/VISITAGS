@@ -81,23 +81,15 @@ app.get('/obtener/:id', [], (req, res) => {
 app.post('/registrar', [], async(req, res) => {
     let body = req.body;
 
-    let strCategoria = '';
-    let crd = body.strCategoria.toLowerCase();
-    for (let i = 0; i < crd.length; i++) {
-        if (i == 0) {
-            strCategoria += crd[i].charAt(0).toUpperCase();
-        } else {
-            strCategoria += crd[i];
-        }
-    }
-
     //para poder mandar los datos a la coleccion
     let crde = new Crde({
-        strCategoria: strCategoria
+        strCategoria: body.strCategoria,
+        blnStatus: body.blnStatus
 
     });
 
-    Crde.findOne({ 'strCategoria': strCategoria }).then((encontrado) => {
+    Crde.findOne({ _id: { $ne: [mongoose.Types.ObjectId(req.params.idCrde)] }, strCategoria: { $regex: `^${body.strCategoria}$`, $options: 'i' } }).then((encontrado) => {
+        console.log(encontrado);
         if (encontrado) {
             return res.status(400).json({
                 ok: false,

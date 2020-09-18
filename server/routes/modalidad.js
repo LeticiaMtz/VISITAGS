@@ -77,24 +77,14 @@ app.get('/obtener/:id', (req, res) => {
 app.post('/registrar', async(req, res) => {
     let body = req.body;
 
-    let strModalidad = '';
-    let modali = body.strModalidad.toLowerCase();
-    for (let i = 0; i < modali.length; i++) {
-        if (i == 0) {
-            strModalidad += modali[i].charAt(0).toUpperCase();
-        } else {
-            strModalidad += modali[i];
-        }
-    }
-
     //para poder mandar los datos a la coleccion
     let modalidad = new Modalidad({
-        strModalidad: strModalidad,
+        strModalidad: body.strModalidad,
         blnStatus: body.blnStatus
     });
 
 
-    Modalidad.findOne({ 'strModalidad': strModalidad }).then((encontrado) => {
+    Modalidad.findOne({ _id: { $ne: [mongoose.Types.ObjectId(req.params.idModalidada)] }, strModalidad: { $regex: `^${modalidad.strModalidad}$`, $options: 'i' } }).then((encontrado) => {
         if (encontrado) {
             return res.status(400).json({
                 ok: false,

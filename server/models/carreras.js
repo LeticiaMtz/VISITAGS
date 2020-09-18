@@ -4,19 +4,20 @@ const Especialidad = require('./especialidad');
 // Creación de esquema de alertas
 const carreras = new Schema({
     strCarrera: {
-         type: String, 
-         required: [true, 'Porfavor ingresa el nombre de la carrera']
+        type: String,
+        required: [true, 'Porfavor ingresa el nombre de la carrera'],
+        trim: true
     },
-    
+
     blnStatus: {
-         type: Boolean,
-         default: true
+        type: Boolean,
+        default: true
     },
     aJsnEspecialidad: [Especialidad.schema]
-  
-},{
-     timestamps: true
- });
+
+}, {
+    timestamps: true
+});
 
 
 
