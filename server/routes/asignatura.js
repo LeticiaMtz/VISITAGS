@@ -81,16 +81,6 @@ app.get('/obtener/:id', (req, res) => {
 app.post('/registrar', async(req, res) => {
     let body = req.body;
 
-    // let strAsignatura = '';
-    // let asignatu = body.strAsignatura.toLowerCase();
-    // for (let i = 0; i < asignatu.length; i++) {
-    //     if (i == 0) {
-    //         strAsignatura += asignatu[i].charAt(0).toUpperCase();
-    //     } else {
-    //         strAsignatura += asignatu[i];
-    //     }
-    // }
-
     //para poder mandar los datos a la coleccion
     let asignatura = new Asignatura({
         strAsignatura: body.strAsignatura,

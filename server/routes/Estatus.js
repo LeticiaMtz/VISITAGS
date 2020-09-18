@@ -129,17 +129,6 @@ app.get('/obtenerEstatus/:idRol', [], (req, res) => {
 app.post('/registrar', [], async(req, res) => {
     let body = req.body;
 
-    // let strNombre = '';
-    // let nombre = body.strNombre.toLowerCase();
-    // for (let i = 0; i < nombre.length; i++) {
-    //     if (i == 0) {
-    //         strNombre += nombre[i].charAt(0).toUpperCase();
-    //     } else {
-    //         strNombre += nombre[i];
-    //     }
-    // }
-
-
     let estatus = new Estatus({
         strNombre: body.strNombre,
         strDescripcion: body.strDescripcion,

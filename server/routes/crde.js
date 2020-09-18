@@ -81,16 +81,6 @@ app.get('/obtener/:id', [], (req, res) => {
 app.post('/registrar', [], async(req, res) => {
     let body = req.body;
 
-    // let strCategoria = '';
-    // let crd = body.strCategoria.toLowerCase();
-    // for (let i = 0; i < crd.length; i++) {
-    //     if (i == 0) {
-    //         strCategoria += crd[i].charAt(0).toUpperCase();
-    //     } else {
-    //         strCategoria += crd[i];
-    //     }
-    // }
-
     //para poder mandar los datos a la coleccion
     let crde = new Crde({
         strCategoria: body.strCategoria,

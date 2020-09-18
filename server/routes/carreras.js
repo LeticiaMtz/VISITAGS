@@ -128,16 +128,6 @@ app.get('/obtener/:id', [], (req, res) => {
 app.post('/registrar', (req, res) => {
     let body = req.body;
 
-    // let strCarrera = '';
-    // let carrer = body.strCarrera.toLowerCase();
-    // for (let i = 0; i < carrer.length; i++) {
-    //     if (i == 0) {
-    //         strCarrera += carrer[i].charAt(0).toUpperCase();
-    //     } else {
-    //         strCarrera += carrer[i];
-    //     }
-    // }
-
     let carrera = new Carrera({
         strCarrera: body.strCarrera
     });
