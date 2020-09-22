@@ -93,9 +93,9 @@ app.post('/registrar', async(req, res) => {
     let aJsnEvidencias = [];
     let aJsnMotivo = [];
     if (req.files || req.body.strFileEvidencia) {
-        let arrFiles = req.files
-        ? req.files.strFileEvidencia
-        : req.body.strFileEvidencia;
+        let arrFiles = req.files ?
+            req.files.strFileEvidencia :
+            req.body.strFileEvidencia;
 
         if (isArray(arrFiles)) {
             for (const archivo of arrFiles) {
@@ -478,7 +478,7 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
     dteFechaInicio = req.params.dteFechaInicio;
     dteFechaFin = req.params.dteFechaFin;
     let query = {};
- 
+
     if (idCarrera != 'undefined') {
         query.idCarrera = idCarrera;
     }
@@ -488,26 +488,26 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
     if (idUser != 'undefined') {
         query.idUser = idUser;
     }
-    
+
     if (idAsignatura != 'undefined') {
         query.idAsignatura = idAsignatura;
     }
     if (idEstatus != 'undefined') {
         query.idEstatus = idEstatus;
     }
- 
+
     if (dteFechaInicio != 'undefined') {
-        if(dteFechaFin  != 'undefined'){
-        query.createdAt =  {"$gte": new Date(dteFechaInicio), "$lt": new Date(dteFechaFin).setDate(new Date(dteFechaFin).getDate()+1)};
+        if (dteFechaFin != 'undefined') {
+            query.createdAt = { "$gte": new Date(dteFechaInicio), "$lt": new Date(dteFechaFin).setDate(new Date(dteFechaFin).getDate() + 1) };
         } else {
-        query.createdAt =  {"$gte": new Date(dteFechaInicio)};
- 
+            query.createdAt = { "$gte": new Date(dteFechaInicio) };
+
         }
     }
     if (dteFechaFin != 'undefined') {
-        query.createdAt =  {"$lt": new Date(dteFechaFin)};
+        query.createdAt = { "$lt": new Date(dteFechaFin) };
     }
- 
+
     if (!dteFechaInicio) {
         return res.status(400).json({
             ok: false,
@@ -520,12 +520,27 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
         });
     }
     Alert.find(query)
-        .populate([{ path: 'idCarrera', select: 'strCarrera',
-         populate: { path: 'aJsnEspecialidad', select: 'strEspecialidad' } },
-        { path: 'idAsignatura', select: 'strAsignatura' },
-        { path: 'idUser', select: 'strName strLastName strMotherLastName' },
-        { path: 'idEstatus', select: 'strNombre' }
-    ]).exec((err, alerts) => { //ejecuta la funcion
+        .populate([{
+                path: 'idCarrera',
+                select: 'strCarrera',
+                populate: { path: 'aJsnEspecialidad', select: 'strEspecialidad' }
+            },
+            { path: 'idAsignatura', select: 'strAsignatura' },
+            { path: 'idUser', select: 'strName strLastName strMotherLastName' },
+            { path: 'idEstatus', select: 'strNombre' }
+
+        ]).exec(async(err, alerts) => { //ejecuta la funcion
+
+            let alertas = alerts.map(alert => alert.toObject());
+            const motivos = await Crde.aggregate().unwind('aJsnMotivo').replaceRoot('aJsnMotivo');
+
+            for (const alerta of alertas) {
+                for (const index of alerta.arrCrde.keys()) {
+                    let crde = motivos.find(motivo => motivo._id.toString() === alerta.arrCrde[index].toString());
+                    if (crde) alerta.arrCrde[index] = crde;
+                }
+            }
+
             if (err) {
                 return res.status(400).json({
                     ok: false,
@@ -533,8 +548,7 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
                     msg: 'Error al generar la lista',
                     err
                 });
-            }
-            else if(alerts.length == 0){
+            } else if (alertas.length == 0) {
                 return res.status(400).json({
                     ok: false,
                     status: 400,
@@ -542,18 +556,18 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
                     err
                 });
             }
-            console.log(alerts)
- 
+            console.log(alertas)
+
             return res.status(200).json({
                 ok: true,
                 status: 200,
                 msg: 'Lista de alertas generada exitosamente',
-                cont: alerts.length,
-                cnt: alerts
+                cont: alertas.length,
+                cnt: alertas
             });
         });
 });
 
-        
+
 
 module.exports = app;
