@@ -185,7 +185,7 @@ app.post('/registrar', async(req, res) => {
                                     subject: '¡Se le invito a colaborar en el seguimiento de una alerta!',
                                     strNombreAlumno: alert.strNombreAlumno,
                                     // strDescripcion: alert.strDescripcion,
-                                    strLink: `${strUrl}/${alert._id}`,
+                                    strLink: `${strUrl}/${alert._id}/${person.idRole}`,
                                     html: '<h1>Has sido invitado a participar en el seguimiento de incidencia de un alumno .</h1><br>' +
                                         '<h3>En un maximo de 24hrs. tu solicitud tendrá que estar resuelta.</h3>'
                                 };
