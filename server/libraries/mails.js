@@ -88,6 +88,11 @@ class email {
             compiledTemplate = Hogan.compile(template);
             htmlF = compiledTemplate.render(jsnInfoEmail); //agregar parametros aqui
         }
+        if (jsnInfoEmail.nmbEmail === 11) { //con parametros
+            const template = fs.readFileSync(path.resolve(__dirname, `../assets/templates/correoInvitado.html`), 'utf-8');
+            compiledTemplate = Hogan.compile(template);
+            htmlF = compiledTemplate.render(jsnInfoEmail); //agregar parametros aqui
+        }
 
         const emailBody = {
             from: mainEmail,

@@ -131,10 +131,13 @@ app.post('/registrar', async(req, res) => {
         idModalidad: body.idModalidad,
         strDescripcion: body.strDescripcion,
         arrCrde: body.arrCrde,
+        arrInvitados: body.arrInvitados,
         arrMotivo: body.arrMotivo,
         aJsnEvidencias,
         blnStatus: body.blnStatus
     });
+
+    
 
     // console.log(alert);
     alert.save((err, alert) => {
@@ -148,7 +151,7 @@ app.post('/registrar', async(req, res) => {
         }
 
         User.find({ arrEspecialidadPermiso: { $in: [body.idEspecialidad] } }).then((personas) => {
-
+            
             for (const persona of personas) {
                 emailBody = {
                     nmbEmail: 10,
@@ -169,6 +172,42 @@ app.post('/registrar', async(req, res) => {
                     }
                 });
             }
+            if(body.arrInvitados.length > 0){
+
+                User.find().then((persons) => {
+                    persons.forEach(person => {
+                        for (let idUser of body.arrInvitados) {
+                            if(person._id == idUser){
+                                emailBody = {
+                                    nmbEmail: 11,
+                                    strNombreProf: alert.idUser.strName,
+                                    strEmail: person.strEmail,
+                                    subject: '¡Se le invito a colaborar en el seguimiento de una alerta!',
+                                    strNombreAlumno: alert.strNombreAlumno,
+                                    // strDescripcion: alert.strDescripcion,
+                                    strLink: `${strUrl}/${alert._id}`,
+                                    html: '<h1>Has sido invitado a participar en el seguimiento de incidencia de un alumno .</h1><br>' +
+                                        '<h3>En un maximo de 24hrs. tu solicitud tendrá que estar resuelta.</h3>'
+                                };
+                                email.sendEmail(emailBody, (err) => {
+                                    if (process.log) { console.log('[Enviando Correo]'.yellow); }
+                
+                                    if (err) {
+                                        return console.log(err.message);
+                                    }
+                                });
+                            }
+                        }
+                    })
+                }).catch(err => {
+                    return res.status(400).json({
+                        ok: false,
+                        status: 400,
+                        msg: 'Error a ',
+                        cnt: err
+                    });
+                })
+            }
 
 
             return res.status(200).json({
@@ -188,7 +227,9 @@ app.post('/registrar', async(req, res) => {
             });
         });
     });
+
 });
+
 
 
 //|-----------------          Api PUT de alertas         ----------------|
@@ -554,6 +595,5 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
         });
 });
 
-        
 
 module.exports = app;

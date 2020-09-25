@@ -63,6 +63,10 @@ const alerts = new Schema({
         ref: 'Crde',
         required: [true, 'Porfavor ingresa el motivo crde']
     }],
+    arrInvitados: [{
+        type: Schema.Types.ObjectId, 
+        ref: 'User'
+    }], 
     aJsnEvidencias: [Evidencias.schema],
     aJsnSeguimiento: [Seguimiento.schema],
     blnStatus: {
