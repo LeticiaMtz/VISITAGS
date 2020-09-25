@@ -29,7 +29,9 @@ app.post("/registrar/:idAlert", [], async (req, res) => {
     console.log(" params ", req.params);
     console.log(" body ", req.body);
   }
-  const seguimiento = new Seguimiento(req.body);
+
+  if(req.body.arrInvitados.length <= 0){
+    const seguimiento = new Seguimiento(req.body);
 
   let personas = await Alerts.aggregate()
     .match({ _id: mongoose.Types.ObjectId(req.params.idAlert) })
@@ -70,7 +72,7 @@ app.post("/registrar/:idAlert", [], async (req, res) => {
 
     mailer.sendEmail(mailOptions);
   }
-
+  
   let err = seguimiento.validateSync();
 
   if (err) {
@@ -216,6 +218,73 @@ app.post("/registrar/:idAlert", [], async (req, res) => {
       });
     }
   );
+  }else{
+
+    const seguimiento = new Seguimiento({
+      idUser: req.body.idUser, 
+      idEstatus: req.body.idEstatus, 
+      arrInvitados: req.body.arrInvitados, 
+      strComentario: 'Se a agregado alguien nuevo'
+    })
+    Alerts.findOneAndUpdate(
+      {
+        _id: req.params.idAlert,
+      },
+      {
+        $push: {
+          aJsnSeguimiento: seguimiento,
+        },
+      }
+    ) 
+    .then((seguimiento) => {
+      User.find().then(personas =>{
+      for (const persona of personas) {
+        for (const idUser of req.body.arrInvitados) {
+          if(persona._id == idUser){
+            mailOptions = {
+              nmbEmail: 11,
+              strEmail: persona.strEmail,
+              // strComentario: 'Se le ha invitado a colaborar en el seguimiento de ',
+              strPersona: persona.strName,
+              urlSeg: `${urlSeg}/${persona.idRole}`,
+              subject: '¡Se le ha agregado como colaborador a una alerta!',
+              html:
+                "<h1>¡Por favor, revisa el nuevo seguimiento de alertas!</h1><br>" +
+                `<h2>Esta es la liga del seguimiento: ${urlSeg}</h2>`,
+            };
+        
+            mailer.sendEmail(mailOptions);
+  
+          } 
+        } 
+      }
+    });
+
+      return res.status(200).json({
+        ok: true,
+        resp: 200,
+        msg: "Success: Informacion insertada correctamente.",
+        cont: seguimiento.length,
+        cnt: {
+          seguimiento,
+        },
+      });
+    })
+    .catch((err) => {
+      return res.status(500).json({
+        ok: false,
+        resp: 500,
+        msg: "Error: Error al registrar la evidencia",
+        cont: {
+          err: err.message,
+        },
+      });
+    });
+
+    // console.log(persons);
+
+    
+  }
 });
 
 //|-----------------          Api POST de api            ----------------|

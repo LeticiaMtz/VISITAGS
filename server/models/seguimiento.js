@@ -14,6 +14,11 @@ const seguimiento = new Schema({
        type: Schema.Types.ObjectId, 
        ref: 'Estatus'
    },
+   arrInvitados: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+
+   }],
     strComentario: { 
         type: String,
     }, 
