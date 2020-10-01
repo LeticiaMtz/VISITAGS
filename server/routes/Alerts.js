@@ -528,7 +528,7 @@ app.get('/obtenerAlertas/:idRol/:idUser', async(req, res) => {
         });
     } else if (idRol == idAdministrador) {
 
-        Alert.find().sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }])
+        Alert.find({$or:[{ idUser: idUser},{arrInvitados: {$in: [idUser]} }]}).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }])
             .then(async(resp) => {
 
                 let alertas = resp.map(alert => alert.toObject());
@@ -575,11 +575,14 @@ app.get('/obtenerAlertas/:idRol/:idUser', async(req, res) => {
         let arrAlertas = [];
 
         for (const idEspecialidad of arrEspecialidad) {
-            await Alert.find({ idEspecialidad }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }]).then(async(alertas) => {
+            await Alert.find({$or:[{ idUser: idUser},{idEspecialidad},{arrInvitados: {$in: [idUser]}}]}).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }]).then(async(alertas) => {
                 for (const i of alertas) {
                     if (i.blnStatus != undefined) {
                         console.log(alertas, "Alertas");
                         await arrAlertas.push(i);
+
+                        // {$or:[{ idUser: idUser},{arrInvitados: {$in: [idUser]} }]}
+
                     }
                 }
             })
@@ -605,48 +608,6 @@ app.get('/obtenerAlertas/:idRol/:idUser', async(req, res) => {
     };
 
 });
-
-//OBTENER POR INVITADOS
-app.get('/obtenerInvitados/:idRol/:idUser', async(req, res) => {
-    let idRol = req.params.idRol;
-    let idUser = req.params.idUser;
-    let body = req.body;
-    
-
-    if (idRol == idProfesor ) {
-        Alert.find({ arrInvitados: {$in: [idUser]} }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }]).then(async(resp) => {
-            let alertas = resp.map(alert => alert.toObject());
-            const motivos = await Crde.aggregate().unwind('aJsnMotivo').replaceRoot('aJsnMotivo');
-
-            for (const alerta of alertas) {
-                for (const index of alerta.arrCrde.keys()) {
-                    let crde = motivos.find(motivo => motivo._id.toString() === alerta.arrCrde[index].toString());
-                    if (crde) alerta.arrCrde[index] = crde;
-                }
-            }
-
-            return res.status(200).json({
-                ok: true,
-                status: 200,
-                msg: 'Se han consultado correctamente las alertas',
-                cont: alertas.length,
-                cnt: alertas
-            });
-        }).catch((err) => {
-            console.log(err);
-            return res.status(400).json({
-                ok: false,
-                status: 400,
-                msg: 'Ocurrio un error al consultar las alertas',
-                cnt: err
-            });
-        });
-
-    }
-});
-
-    
-
 
 
 
