@@ -140,7 +140,7 @@ app.post('/', [], async(req, res) => {
                 datos.push({
                     idUser: arrInvitados[i],
                     idEstatus: estatusNuevo,
-                    strComentario: '<b><i><i class="fa fa-user-plus" aria-hidden="true"></i>"Se ha unido a la alerta"</i></b'
+                    strComentario: '<b><i><i class="fa fa-user-plus" aria-hidden="true"></i>"Se ha unido a la alerta"</i></b>'
                 });
             }
             return datos;
@@ -874,7 +874,6 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
     dteFechaInicio = req.params.dteFechaInicio;
     dteFechaFin = req.params.dteFechaFin;
     let query = {};
-
     if (idCarrera != 'undefined') {
         query.idCarrera = idCarrera;
     }
@@ -884,26 +883,22 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
     if (idUser != 'undefined') {
         query.idUser = idUser;
     }
-
     if (idAsignatura != 'undefined') {
         query.idAsignatura = idAsignatura;
     }
     if (idEstatus != 'undefined') {
         query.idEstatus = idEstatus;
     }
-
     if (dteFechaInicio != 'undefined') {
         if (dteFechaFin != 'undefined') {
             query.createdAt = { "$gte": new Date(dteFechaInicio), "$lt": new Date(dteFechaFin).setDate(new Date(dteFechaFin).getDate() + 1) };
         } else {
             query.createdAt = { "$gte": new Date(dteFechaInicio) };
-
         }
     }
     if (dteFechaFin != 'undefined') {
         query.createdAt = { "$lt": new Date(dteFechaFin) };
     }
-
     if (!dteFechaInicio) {
         return res.status(400).json({
             ok: false,
@@ -924,7 +919,15 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
             { path: 'idAsignatura', select: 'strAsignatura' },
             { path: 'idUser', select: 'strName strLastName strMotherLastName' },
             { path: 'idEstatus', select: 'strNombre' }
-        ]).exec((err, alerts) => { //ejecuta la funcion
+        ]).exec(async(err, alerts) => { //ejecuta la funcion
+            let alertas = alerts.map(alert => alert.toObject());
+            const motivos = await Crde.aggregate().unwind('aJsnMotivo').replaceRoot('aJsnMotivo');
+            for (const alerta of alertas) {
+                for (const index of alerta.arrCrde.keys()) {
+                    let crde = motivos.find(motivo => motivo._id.toString() === alerta.arrCrde[index].toString());
+                    if (crde) alerta.arrCrde[index] = crde;
+                }
+            }
             if (err) {
                 return res.status(400).json({
                     ok: false,
@@ -932,7 +935,7 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
                     msg: 'Error al generar la lista',
                     err
                 });
-            } else if (alerts.length == 0) {
+            } else if (alertas.length == 0) {
                 return res.status(400).json({
                     ok: false,
                     status: 400,
@@ -940,8 +943,7 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
                     err
                 });
             }
-            console.log(alerts)
-
+            console.log(alertas)
             return res.status(200).json({
                 ok: true,
                 status: 200,
