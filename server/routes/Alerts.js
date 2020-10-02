@@ -1,4 +1,6 @@
+require('./../config/config');
 const express = require('express');
+const db = require("mongoose");
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
 const { verificaToken } = require('../middlewares/autenticacion');
@@ -7,7 +9,7 @@ const Alert = require('../models/Alerts'); //subir nivel
 const app = express();
 const fileUpload = require('../libraries/subirArchivo(1)');
 const User = require('../models/Users');
-const { select, isArray } = require('underscore');
+const { select, isArray, forEach, each } = require('underscore');
 const cargaImagenes = require('../libraries/cargaImagenes');
 const email = require('../libraries/mails');
 const Seguimiento = require('../models/seguimiento');
@@ -18,6 +20,7 @@ const idProfesor = '5eeee0db16952756482d1868';
 const idDirector = '5eeee0db16952756482d1869';
 const idCoordinador = '5eeee0db16952756482d186a';
 const idAdministrador = "5f1e2419ad1ebd0b08edab74";
+const estatusNuevo = '5f186c5de9475240bc59e4a7';
 
 //|-----------------          Api GET de alertas         ----------------|
 //| Creada por: Leticia Moreno                                           |
@@ -81,6 +84,172 @@ app.get('/obtener/:id', [], (req, res) => {
 });
 
 //|-----------------          Api POST de alertas        ----------------|
+//| Creada por: Miguel Salazar                                           |
+//| Api que registra una alerta                                          |
+//| modificada por:                                                      |
+//| Fecha de modificacion: 01/01/2020                                    |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/alerts                               |
+//|----------------------------------------------------------------------|
+app.post('/', [], async(req, res) => {
+    const session = await db.startSession();
+
+    try {
+        //Se validan los campos minimos para insertar
+        if (!req.body.idUser) throw "Favor de loguearse para poder crear una alerta";
+        if (!req.body.idAsignatura) throw "Favor de proporcionar la asignatura";
+        if (!req.body.idCarrera) throw "Favor de proporcionar la carrera";
+        if (!req.body.idEspecialidad) throw "Favor de proporcionar la especialidad";
+        if (!req.body.idModalidad) throw "Favor de proporcionar la modalidad";
+        if (!req.body.strDescripcion) throw "Favor de proporcionar la descripción";
+        if (!req.body.strGrupo) throw "Favor de proporcionar el grupo";
+        if (!req.body.chrTurno) throw "Favor de proporcionar el turno";
+
+        if (!req.body.arrCrde) throw "Favor de proporcionar motivos(s) de riesgo para generar la alerta";
+        if (!req.body.strMatricula) throw "Favor de proporcionar matriculas(s) para generar la alerta";
+        if (!req.body.strNombreAlumno) throw "Favor de proporcionar alumno(s) para generar la alerta";
+
+        let arrMotivosRiesgo = req.body.arrCrde.split(',');
+        let arrMatriculas = req.body.strMatricula.split(',');
+        let arrNombreAlumnos = req.body.strNombreAlumno.split(',');
+        let arrInvitados = req.body.arrInvitados ? req.body.arrInvitados.split(',') : []; //Generamos array de invitados si es que existen
+        let aJsnEvidencias = []; //Array de nombres de archivos
+
+        if (req.files.strFileEvidencia && isArray(req.files.strFileEvidencia)) { //Se cargan los archivos si existen
+            for (let file of req.files.strFileEvidencia) {
+                let strFileName = await fileUpload.subirArchivo(file, 'evidencias');
+                aJsnEvidencias.push({
+                    strNombre: strFileName,
+                    strFileEvidencia: `/envidencias/${strFileName}`,
+                    blnActivo: true
+                });
+            }
+        } else if (req.files.strFileEvidencia && !isArray(req.files.strFileEvidencia)) {
+            let strFileName = await fileUpload.subirArchivo(req.files.strFileEvidencia, 'evidencias');
+            aJsnEvidencias.push({
+                strNombre: strFileName,
+                strFileEvidencia: `/envidencias/${strFileName}`,
+                blnActivo: true
+            });
+        }
+
+        let alertas = []; //aqui se almacenan todas la alertas
+        let invitados = () => { //Esta es una función que conforma el subdocumento de seguimiento para agregar invitados
+            let datos = [];
+            for (let i = 0; i < arrInvitados.length; i++) {
+                datos.push({
+                    idUser: arrInvitados[i],
+                    idEstatus: estatusNuevo,
+                    strComentario: '<b><i><i class="fa fa-user-plus" aria-hidden="true"></i>"Se ha unido a la alerta"</i></b'
+                });
+            }
+            return datos;
+        };
+
+        let aJsnSeguimiento = invitados();
+
+        for (let i = 0; i < arrMatriculas.length; i++) {
+            alertas.push({
+                idUser: req.body.idUser,
+                idEstatus: estatusNuevo,
+                strMatricula: arrMatriculas[i],
+                strNombreAlumno: arrNombreAlumnos[i],
+                idAsignatura: req.body.idAsignatura,
+                idCarrera: req.body.idCarrera,
+                idEspecialidad: req.body.idEspecialidad,
+                strGrupo: req.body.strGrupo,
+                chrTurno: req.body.chrTurno,
+                idModalidad: req.body.idModalidad,
+                strDescripcion: req.body.strDescripcion,
+                arrCrde: arrMotivosRiesgo,
+                aJsnEvidencias: aJsnEvidencias,
+                aJsnSeguimiento: aJsnSeguimiento
+            });
+        }
+
+        await Alert.insertMany(alertas).then(function() { // Aqui se insertan las alertas en la base de datos
+            console.log("Alerta insertada con exito");
+        }).catch(function(error) {
+            throw `Ocurrio un error al momento de insertar la alerta: ${error}`;
+        });
+
+        let listaDeCorreos = []; //Variable que guarda la lista de correos tanto para invitado como para usuarios con el rol de esa especialidad
+
+        await User.find({ arrEspecialidadPermiso: { $in: [req.body.idEspecialidad] } }).then(async(usuariosPorEspecialidad) => {
+            usuariosPorEspecialidad.forEach(usr => {
+                listaDeCorreos.push({
+                    user: usr.strName,
+                    mail: usr.strEmail
+                });
+            });
+            await User.find().populate(arrInvitados).then((usuariosPorInvitacion) => {
+                usuariosPorInvitacion.forEach(usr => {
+                    listaDeCorreos.push({
+                        user: usr.strName,
+                        mail: usr.strEmail
+                    });
+                });
+            }).catch(function(error) {
+                throw `Ocurrio un error al momento consultar lista correos: ${error}`;
+            });
+        }).catch(function(error) {
+            throw `Ocurrio un error al momento consultar lista correos: ${error}`;
+        });
+
+        listaDeCorreos.forEach(async usr => { //Aqui enviamos los correos
+            let emailBody = {
+                nmbEmail: 11,
+                strNombreProf: usr.user,
+                strEmail: usr.mail,
+                subject: 'Nueva Alerta Academica',
+                strLink: process.env.URL_FRONT,
+                html: '<h1>Hola, se le ha invitado a colaborar en el seguimiento de una alerta academica.</h1><br>'
+            };
+
+            await email.sendEmail(emailBody, (err) => {
+                if (process.log) { console.log('[Enviando Correo]'); }
+                if (err) console.log(err.message);
+            });
+        });
+
+        return res.status(200).json({
+            ok: true,
+            resp: 200,
+            msg: 'La alerta ha sido generada con exito!',
+            cont: {
+
+            },
+        });
+
+    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(500).json({
+                ok: false,
+                resp: 500,
+                msg: "Error al intentar registrar la alerta",
+                cont: {
+                    error: `Se ha encontrado un valor duplicado: (${Object.keys(
+                error.keyValue
+              )}:${Object.values(error.keyValue)})`,
+                },
+            });
+        } else {
+            return res.status(500).json({
+                ok: false,
+                resp: 500,
+                msg: "Error al intentar registrar la alerta.",
+                cont: {
+                    error: Object.keys(error).length === 0 ? error.message : error,
+                },
+            });
+        }
+    } finally {
+        session.endSession();
+    }
+
+});
+
+//|-----------------          Api POST de alertas        ----------------|
 //| Creada por: Leticia Moreno                                           |
 //| Api que registra una alerta                                          |
 //| modificada por:                                                      |
@@ -89,10 +258,10 @@ app.get('/obtener/:id', [], (req, res) => {
 //| Ruta: http://localhost:3000/api/alerts/registrar                     |
 //|----------------------------------------------------------------------|
 app.post('/registrar', async(req, res) => {
- 
+
     let alertas = [];
     let body = req.body;
- 
+
     let strUrl = 'http://localhost:4200/#/dashboard';
     let aJsnEvidencias = [];
     let aJsnMotivo = [];
@@ -100,7 +269,7 @@ app.post('/registrar', async(req, res) => {
         let arrFiles = req.files ?
             req.files.strFileEvidencia :
             req.body.strFileEvidencia;
- 
+
         if (isArray(arrFiles)) {
             for (const archivo of arrFiles) {
                 let strNombreFile = await fileUpload.subirArchivo(archivo, 'evidencias');
@@ -120,60 +289,60 @@ app.post('/registrar', async(req, res) => {
         }
     }
 
-    if(isArray(body.idUser)){
- 
-    for (let i = 0; i < body.idUser.length; i++) {
- 
-        let arrCrde = [];
-        for (let j = 0; j < (body.arrCrde.length / body.idUser.length); j++) arrCrde.push(body.arrCrde[j]);
- 
-        console.log(body.arrInvitados);
-        let arrInvitados = [];
-        for (let k = 0; k < (body.arrInvitados.length /body.idUser.length); k++) arrInvitados.push(body.arrInvitados[k]);
- 
-        alertas.push({
-            idUser: body.idUser[i],
-            idEstatus: body.idEstatus[i],
-            strMatricula: body.strMatricula[i],
-            strNombreAlumno: body.strNombreAlumno[i],
-            idAsignatura: body.idAsignatura[i],
-            idCarrera: body.idCarrera[i],
-            idEspecialidad: body.idEspecialidad[i],
-            chrTurno: body.chrTurno[i],
-            idModalidad: body.idModalidad[i],
-            strDescripcion: body.strDescripcion[i],
-            strGrupo: body.strGrupo[i],
-            arrCrde,
-            aJsnEvidencias,
-            ...invitados
-        });
+    if (isArray(body.idUser)) {
+
+        for (let i = 0; i < body.idUser.length; i++) {
+
+            let arrCrde = [];
+            for (let j = 0; j < (body.arrCrde.length / body.idUser.length); j++) arrCrde.push(body.arrCrde[j]);
+
+            console.log(body.arrInvitados);
+            let arrInvitados = [];
+            for (let k = 0; k < (body.arrInvitados.length / body.idUser.length); k++) arrInvitados.push(body.arrInvitados[k]);
+
+            alertas.push({
+                idUser: body.idUser[i],
+                idEstatus: body.idEstatus[i],
+                strMatricula: body.strMatricula[i],
+                strNombreAlumno: body.strNombreAlumno[i],
+                idAsignatura: body.idAsignatura[i],
+                idCarrera: body.idCarrera[i],
+                idEspecialidad: body.idEspecialidad[i],
+                chrTurno: body.chrTurno[i],
+                idModalidad: body.idModalidad[i],
+                strDescripcion: body.strDescripcion[i],
+                strGrupo: body.strGrupo[i],
+                arrCrde,
+                aJsnEvidencias,
+                ...invitados
+            });
+        }
+
+    } else {
+        if (body.arrInvitados.length <= 0) {
+            delete body.arrInvitados;
+        }
+        alertas.push(body);
     }
 
-} else {
-    if(body.arrInvitados.length <= 0) {
-        delete body.arrInvitados;
-    }
-    alertas.push(body);
-} 
 
- 
     let alertP = [];
     for (const alerta of alertas) {
         alertP.push(new Promise((resolve, rejected) => {
             alert = new Alert(alerta);
 
-            
-            User.find({ arrEspecialidadPermiso: { $in: [ alert.idEspecialidad ]} }).then((personas) => {
 
-                if(personas.length <= 0) {
+            User.find({ arrEspecialidadPermiso: { $in: [alert.idEspecialidad] } }).then((personas) => {
+
+                if (personas.length <= 0) {
                     rejected({
-                            ok: false,
-                            status: 404,
-                            msg: 'No se encontraron personas.',
-                            cnt: personas.length
+                        ok: false,
+                        status: 404,
+                        msg: 'No se encontraron personas.',
+                        cnt: personas.length
                     });
                 }
-                
+
                 for (const persona of personas) {
                     emailBody = {
                         nmbEmail: 10,
@@ -195,22 +364,22 @@ app.post('/registrar', async(req, res) => {
                     });
                 }
 
-                if(body.arrInvitados){
+                if (body.arrInvitados) {
                     let arrInvitados = [];
 
-                    for (let index = 0; index < (body.arrInvitados.length /body.idUser.length); index++) {
+                    for (let index = 0; index < (body.arrInvitados.length / body.idUser.length); index++) {
                         arrInvitados.push(body.arrInvitados[index]);
                     }
-    
+
                     if (arrInvitados.length > 0) {
-    
+
                         User.find().then((persons) => {
-    
+
                             for (const invitado of arrInvitados) {
-                                
+
                                 let persona = persons.find(person => invitado === person._id);
-    
-                                if(persona) {
+
+                                if (persona) {
                                     emailBody = {
                                         nmbEmail: 11,
                                         strNombreProf: per,
@@ -222,17 +391,17 @@ app.post('/registrar', async(req, res) => {
                                         html: '<h1>Has sido invitado a participar en el seguimiento de incidencia de un alumno .</h1><br>' +
                                             '<h3>En un maximo de 24hrs. tu solicitud tendrá que estar resuelta.</h3>'
                                     };
-    
+
                                     email.sendEmail(emailBody, (err) => {
                                         if (process.log) { console.log('[Enviando Correo]'.yellow); }
-    
+
                                         if (err) {
                                             return console.log(err.message);
                                         }
                                     });
                                 }
-                            } 
-    
+                            }
+
                         }).catch(err => rejected({
                             ok: false,
                             status: 400,
@@ -248,10 +417,10 @@ app.post('/registrar', async(req, res) => {
                 msg: 'Se encontró un error al registrar',
                 cnt: Object.keys(err).length === 0 ? err.message : err
             }));
-        
- 
+
+
             alert.save().then((resp) => {
- 
+
                 resolve({
                     ok: true,
                     status: 200,
@@ -259,7 +428,7 @@ app.post('/registrar', async(req, res) => {
                     cont: 0,
                     cnt: resp
                 });
- 
+
             }).catch((err) => {
                 rejected({
                     ok: false,
@@ -271,7 +440,7 @@ app.post('/registrar', async(req, res) => {
         }));
     }
     Promise.allSettled(alertP).then((respuestas) => {
- 
+
         let errores = [];
         let correctas = [];
         for (const respuesta of respuestas) {
@@ -282,7 +451,7 @@ app.post('/registrar', async(req, res) => {
                 errores.push(respuesta);
             }
         }
- 
+
         if (errores.length === respuestas.length) {
             return res.status(400).json({
                 ok: false,
@@ -292,7 +461,7 @@ app.post('/registrar', async(req, res) => {
                 cnt: errores
             });
         }
- 
+
         if (errores.length >= 1) {
             return res.status(400).json({
                 ok: false,
@@ -301,9 +470,9 @@ app.post('/registrar', async(req, res) => {
                 cont: errores.length,
                 cnt: errores
             });
- 
+
         }
- 
+
         return res.status(200).json({
             ok: true,
             status: 200,
@@ -311,7 +480,7 @@ app.post('/registrar', async(req, res) => {
             cont: respuestas.length,
             cnt: respuestas
         });
- 
+
     }).catch((err) => {
         return res.status(400).json({
             ok: false,
@@ -320,7 +489,7 @@ app.post('/registrar', async(req, res) => {
             cnt: Object.keys(err).length === 0 ? err.message : err
         });
     })
- 
+
     // console.log(alert);
     // alert.save((err, alert) => {
     //     if (err) {
@@ -331,7 +500,7 @@ app.post('/registrar', async(req, res) => {
     //             cnt: err
     //         });
     //     }
- 
+
     //     User.find({ arrEspecialidadPermiso: { $in: [body.idEspecialidad] } }).then((personas) => {
     //       for (const persona of personas) {
     //             emailBody = {
@@ -347,14 +516,14 @@ app.post('/registrar', async(req, res) => {
     //             };
     //             email.sendEmail(emailBody, (err) => {
     //                 if (process.log) { console.log('[Enviando Correo]'.yellow); }
- 
+
     //                 if (err) {
     //                     return console.log(err.message);
     //                 }
     //             });
     //         }
     //         if (body.arrInvitados.length > 0) {
- 
+
     //             User.find().then((persons) => {
     //                 persons.forEach(person => {
     //                     for (let idUser of body.arrInvitados) {
@@ -372,7 +541,7 @@ app.post('/registrar', async(req, res) => {
     //                             };
     //                             email.sendEmail(emailBody, (err) => {
     //                                 if (process.log) { console.log('[Enviando Correo]'.yellow); }
- 
+
     //                                 if (err) {
     //                                     return console.log(err.message);
     //                                 }
@@ -389,7 +558,7 @@ app.post('/registrar', async(req, res) => {
     //                 });
     //             })
     //         }
- 
+
     //         return res.status(200).json({
     //             ok: true,
     //             status: 200,
@@ -397,7 +566,7 @@ app.post('/registrar', async(req, res) => {
     //             cont: alert.length,
     //             cnt: alert
     //         });
- 
+
     //     }).catch((err) => {
     //         return res.status(400).json({
     //             ok: false,
@@ -407,7 +576,7 @@ app.post('/registrar', async(req, res) => {
     //         });
     //     });
     // });
- 
+
 });
 
 
@@ -496,10 +665,10 @@ app.get('/obtenerAlertas/:idRol/:idUser', async(req, res) => {
     let idRol = req.params.idRol;
     let idUser = req.params.idUser;
     let body = req.body;
-    
 
-    if (idRol == idProfesor ) {
-        Alert.find({$or:[{ idUser: idUser},{arrInvitados: {$in: [idUser]} }]}).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }]).then(async(resp) => {
+
+    if (idRol == idProfesor) {
+        Alert.find({ $or: [{ idUser: idUser }, { arrInvitados: { $in: [idUser] } }] }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }]).then(async(resp) => {
             let alertas = resp.map(alert => alert.toObject());
             const motivos = await Crde.aggregate().unwind('aJsnMotivo').replaceRoot('aJsnMotivo');
 
@@ -528,7 +697,7 @@ app.get('/obtenerAlertas/:idRol/:idUser', async(req, res) => {
         });
     } else if (idRol == idAdministrador) {
 
-        Alert.find({$or:[{ idUser: idUser},{arrInvitados: {$in: [idUser]} }]}).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }])
+        Alert.find({ $or: [{ idUser: idUser }, { arrInvitados: { $in: [idUser] } }] }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }])
             .then(async(resp) => {
 
                 let alertas = resp.map(alert => alert.toObject());
@@ -575,7 +744,7 @@ app.get('/obtenerAlertas/:idRol/:idUser', async(req, res) => {
         let arrAlertas = [];
 
         for (const idEspecialidad of arrEspecialidad) {
-            await Alert.find({$or:[{ idUser: idUser},{idEspecialidad},{arrInvitados: {$in: [idUser]}}]}).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }]).then(async(alertas) => {
+            await Alert.find({ $or: [{ idUser: idUser }, { idEspecialidad }, { arrInvitados: { $in: [idUser] } }] }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }]).then(async(alertas) => {
                 for (const i of alertas) {
                     if (i.blnStatus != undefined) {
                         console.log(alertas, "Alertas");
@@ -704,7 +873,7 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
     dteFechaInicio = req.params.dteFechaInicio;
     dteFechaFin = req.params.dteFechaFin;
     let query = {};
- 
+
     if (idCarrera != 'undefined') {
         query.idCarrera = idCarrera;
     }
@@ -714,26 +883,26 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
     if (idUser != 'undefined') {
         query.idUser = idUser;
     }
-    
+
     if (idAsignatura != 'undefined') {
         query.idAsignatura = idAsignatura;
     }
     if (idEstatus != 'undefined') {
         query.idEstatus = idEstatus;
     }
- 
+
     if (dteFechaInicio != 'undefined') {
-        if(dteFechaFin  != 'undefined'){
-        query.createdAt =  {"$gte": new Date(dteFechaInicio), "$lt": new Date(dteFechaFin).setDate(new Date(dteFechaFin).getDate()+1)};
+        if (dteFechaFin != 'undefined') {
+            query.createdAt = { "$gte": new Date(dteFechaInicio), "$lt": new Date(dteFechaFin).setDate(new Date(dteFechaFin).getDate() + 1) };
         } else {
-        query.createdAt =  {"$gte": new Date(dteFechaInicio)};
- 
+            query.createdAt = { "$gte": new Date(dteFechaInicio) };
+
         }
     }
     if (dteFechaFin != 'undefined') {
-        query.createdAt =  {"$lt": new Date(dteFechaFin)};
+        query.createdAt = { "$lt": new Date(dteFechaFin) };
     }
- 
+
     if (!dteFechaInicio) {
         return res.status(400).json({
             ok: false,
@@ -746,12 +915,15 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
         });
     }
     Alert.find(query)
-        .populate([{ path: 'idCarrera', select: 'strCarrera',
-         populate: { path: 'aJsnEspecialidad', select: 'strEspecialidad' } },
-        { path: 'idAsignatura', select: 'strAsignatura' },
-        { path: 'idUser', select: 'strName strLastName strMotherLastName' },
-        { path: 'idEstatus', select: 'strNombre' }
-    ]).exec((err, alerts) => { //ejecuta la funcion
+        .populate([{
+                path: 'idCarrera',
+                select: 'strCarrera',
+                populate: { path: 'aJsnEspecialidad', select: 'strEspecialidad' }
+            },
+            { path: 'idAsignatura', select: 'strAsignatura' },
+            { path: 'idUser', select: 'strName strLastName strMotherLastName' },
+            { path: 'idEstatus', select: 'strNombre' }
+        ]).exec((err, alerts) => { //ejecuta la funcion
             if (err) {
                 return res.status(400).json({
                     ok: false,
@@ -759,8 +931,7 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
                     msg: 'Error al generar la lista',
                     err
                 });
-            }
-            else if(alerts.length == 0){
+            } else if (alerts.length == 0) {
                 return res.status(400).json({
                     ok: false,
                     status: 400,
@@ -769,7 +940,7 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
                 });
             }
             console.log(alerts)
- 
+
             return res.status(200).json({
                 ok: true,
                 status: 200,
