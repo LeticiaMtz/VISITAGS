@@ -30,7 +30,7 @@ const subirArchivo = async(file, route) => {
 };
 
 const borraArchivo = async(nombreImagen, ruta) => {
-    let pathImg = path.resolve(__dirname, `uploads/${ruta}/${nombreImagen}`);
+    let pathImg = path.resolve(__dirname, `../../uploads//${ruta}/${nombreImagen}`);
     if (fs.existsSync(pathImg)) {
         await fs.unlinkSync(pathImg);
     }
