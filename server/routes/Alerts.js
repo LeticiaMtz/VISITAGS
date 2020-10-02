@@ -115,7 +115,7 @@ app.post('/', [], async(req, res) => {
         let arrInvitados = req.body.arrInvitados ? req.body.arrInvitados.split(',') : []; //Generamos array de invitados si es que existen
         let aJsnEvidencias = []; //Array de nombres de archivos
 
-        if (req.files.strFileEvidencia && isArray(req.files.strFileEvidencia)) { //Se cargan los archivos si existen
+        if (req.files && isArray(req.files.strFileEvidencia)) { //Se cargan los archivos si existen
             for (let file of req.files.strFileEvidencia) {
                 let strFileName = await fileUpload.subirArchivo(file, 'evidencias');
                 aJsnEvidencias.push({
@@ -124,7 +124,7 @@ app.post('/', [], async(req, res) => {
                     blnActivo: true
                 });
             }
-        } else if (req.files.strFileEvidencia && !isArray(req.files.strFileEvidencia)) {
+        } else if (req.files && !isArray(req.files.strFileEvidencia)) {
             let strFileName = await fileUpload.subirArchivo(req.files.strFileEvidencia, 'evidencias');
             aJsnEvidencias.push({
                 strNombre: strFileName,
@@ -140,7 +140,7 @@ app.post('/', [], async(req, res) => {
                 datos.push({
                     idUser: arrInvitados[i],
                     idEstatus: estatusNuevo,
-                    strComentario: '<b><i><i class="fa fa-user-plus" aria-hidden="true"></i>"Se ha unido a la alerta"</i></b'
+                    strComentario: '<b><i><i class="fa fa-user-plus" aria-hidden="true"></i>"Se ha unido a la alerta"</i></b>'
                 });
             }
             return datos;
