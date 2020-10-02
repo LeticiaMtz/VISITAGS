@@ -162,6 +162,7 @@ app.post('/', [], async(req, res) => {
                 idModalidad: req.body.idModalidad,
                 strDescripcion: req.body.strDescripcion,
                 arrCrde: arrMotivosRiesgo,
+                arrInvitados: arrInvitados,
                 aJsnEvidencias: aJsnEvidencias,
                 aJsnSeguimiento: aJsnSeguimiento
             });
