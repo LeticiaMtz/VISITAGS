@@ -946,8 +946,8 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
                 ok: true,
                 status: 200,
                 msg: 'Lista de alertas generada exitosamente',
-                cont: alerts.length,
-                cnt: alerts
+                cont: alertas.length,
+                cnt: alertas
             });
         });
 });
