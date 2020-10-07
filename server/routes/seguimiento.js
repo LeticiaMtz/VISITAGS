@@ -19,9 +19,9 @@ const estatusNuevo = '5f186c5de9475240bc59e4a7';
 //| Creada por: Miguel Salazar                                           |
 //| Api que registra el segumiento a una alerta                          |
 //| modificada por:                                                      |
-//| Fecha de modificacion: 01/01/2020                                    |
+//| Fecha de modificacion: 02/10/2020                                    |
 //| cambios:                                                             |
-//| Ruta: http://localhost:3000/api/alerts                               |
+//| Ruta: http://localhost:3000/api/segumiento/                          |
 //|----------------------------------------------------------------------|
 app.post('/', [], async(req, res) => {
     const session = await mongoose.startSession();
@@ -71,14 +71,45 @@ app.post('/', [], async(req, res) => {
             });
         }
 
-        let alerta;
+        let alerta; //aqui se almacenan los datos de la alerta de la base de datos
+        let arrIdPersonasCorreos = []; //Aqui guardamos todos los id de persona
+        let listaCorreos = []; //aqui guardamos los nombre y correos de los implicados 
+        let idEspecialidad = null; //aqui guardamos la especialidad con la que se generó la alerta
+
 
         const transactionResults = await session.withTransaction(async() => {
             alerta = await Alerts.findOneAndUpdate({ _id: req.query.idAlerta }, { $set: { aJsnSeguimiento: jsonSeguimiento } }, { upsert: true, new: true, session: session });
-            await alerta.arrInvitados.forEach(usr => {
-                arrInvitados.push(usr.toString());
+            await alerta.arrInvitados.forEach(usr => { //Esta funcion elimina los invitados que ya estaban en la BD
+                arrInvitados = arrInvitados.filter((usr) => !alerta.arrInvitados.includes(usr));
             });
-            alerta = await Alerts.findOneAndUpdate({ _id: req.query.idAlerta }, { $set: { arrInvitados: arrInvitados } }, { upsert: true, new: true, session: session });
+            alerta = await Alerts.findOneAndUpdate({ _id: req.query.idAlerta }, { $push: { arrInvitados: arrInvitados } }, { upsert: true, new: true, session: session });
+            arrIdPersonasCorreos = alerta.arrInvitados;
+            idEspecialidad = alerta.idEspecialidad;
+            await arrIdPersonasCorreos.push(alerta.idUser);
+            let aux = await User.find({ arrEspecialidadPermiso: { $in: idEspecialidad } }).session(session);
+            aux.forEach(usr => {
+                arrIdPersonasCorreos.push(usr._id);
+            });
+            arrIdPersonasCorreos = await arrIdPersonasCorreos.filter(function(item, pos) {
+                return arrIdPersonasCorreos.indexOf(item) == pos;
+            });
+            let aux2 = await User.find({ _id: { $in: arrIdPersonasCorreos } }).session(session);
+            aux2.forEach(usr => {
+                listaCorreos.push(usr.strEmail);
+            });
+        });
+
+        let emailBody = {
+            nmbEmail: 11,
+            strEmail: listaCorreos.join(','),
+            subject: 'Alguien comento una alerta',
+            strLink: process.env.URL_FRONT,
+            html: `<h1>Una alerta ha sido comentada</h1><br><p>Por favor revisa el siguiente link para poder darle atención:</p><br>`
+        };
+
+        await mailer.sendEmail(emailBody, (err) => {
+            if (process.log) { console.log('[Enviando Correo]'); }
+            if (err) console.log(err.message);
         });
 
         if (transactionResults) {
