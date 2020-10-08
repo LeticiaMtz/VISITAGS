@@ -168,60 +168,59 @@ app.post('/', [], async(req, res) => {
             });
         }
 
-        await Alert.insertMany(alertas).then(function() { // Aqui se insertan las alertas en la base de datos
-            console.log("Alerta insertada con exito");
-        }).catch(function(error) {
-            throw `Ocurrio un error al momento de insertar la alerta: ${error}`;
-        });
-
         let listaDeCorreos = []; //Variable que guarda la lista de correos tanto para invitado como para usuarios con el rol de esa especialidad
+        let listaAlertas = null; //Aqui se guardaran las alertas generadas
 
-        await User.find({ arrEspecialidadPermiso: { $in: [req.body.idEspecialidad] } }).then(async(usuariosPorEspecialidad) => {
-            usuariosPorEspecialidad.forEach(usr => {
-                listaDeCorreos.push({
-                    user: usr.strName,
-                    mail: usr.strEmail
-                });
+        const transactionResults = await session.withTransaction(async() => {
+            listaAlertas = await Alert.insertMany(alertas, { session: session });
+
+            let usuarios = await User.find({ arrEspecialidadPermiso: { $in: [req.body.idEspecialidad] } }).session(session);
+            usuarios.forEach(usr => {
+                listaDeCorreos.push(usr.strEmail);
             });
-            await User.find().populate(arrInvitados).then((usuariosPorInvitacion) => {
-                usuariosPorInvitacion.forEach(usr => {
-                    listaDeCorreos.push({
-                        user: usr.strName,
-                        mail: usr.strEmail
-                    });
-                });
-            }).catch(function(error) {
-                throw `Ocurrio un error al momento consultar lista correos: ${error}`;
+
+            let invitados = await User.find({ _id: { $in: arrInvitados } }).session(session);
+            invitados.forEach(usr => {
+                listaDeCorreos.push(usr.strEmail);
             });
-        }).catch(function(error) {
-            throw `Ocurrio un error al momento consultar lista correos: ${error}`;
+
+            listaDeCorreos = await listaDeCorreos.filter(function(item, pos) {
+                return listaDeCorreos.indexOf(item) == pos;
+            });
         });
 
-        listaDeCorreos.forEach(async usr => { //Aqui enviamos los correos
+        if (transactionResults) {
             let emailBody = {
                 nmbEmail: 11,
-                strNombreProf: usr.user,
-                strEmail: usr.mail,
+                strEmail: listaDeCorreos.join(','),
                 subject: 'Nueva Alerta Academica',
                 strLink: process.env.URL_FRONT,
-                html: '<h1>Hola, se le ha invitado a colaborar en el seguimiento de una alerta academica.</h1><br>'
+                html: ''
             };
 
-            await email.sendEmail(emailBody, (err) => {
+            let result = await email.sendEmail(emailBody, (err) => {
                 if (process.log) { console.log('[Enviando Correo]'); }
-                if (err) console.log(err.message);
+                if (err) console.log(err);
             });
-        });
 
-        return res.status(200).json({
-            ok: true,
-            resp: 200,
-            msg: 'La alerta ha sido generada con exito!',
-            cont: {
-
-            },
-        });
-
+            return res.status(200).json({
+                ok: true,
+                resp: 200,
+                msg: "La alerta se ha creado exitosamente.",
+                cont: {
+                    listaAlertas,
+                },
+            });
+        } else {
+            return res.status(500).json({
+                ok: false,
+                resp: 500,
+                msg: "No se ha podido crear la alerta.",
+                cont: {
+                    error: "La transacción no se completó satisfactoriamente",
+                },
+            });
+        }
     } catch (error) {
         if (error.code === 11000) {
             return res.status(500).json({
@@ -247,7 +246,6 @@ app.post('/', [], async(req, res) => {
     } finally {
         session.endSession();
     }
-
 });
 
 //|-----------------          Api POST de alertas        ----------------|

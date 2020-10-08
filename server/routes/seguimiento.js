@@ -99,21 +99,20 @@ app.post('/', [], async(req, res) => {
             });
         });
 
-        let emailBody = {
-            nmbEmail: 11,
-            strEmail: listaCorreos.join(','),
-            subject: 'Alguien comento una alerta',
-            strLink: process.env.URL_FRONT,
-            html: `<h1>Una alerta ha sido comentada</h1><br><p>Por favor revisa el siguiente link para poder darle atención:</p><br>`
-        };
-
-        await mailer.sendEmail(emailBody, (err) => {
-            if (process.log) { console.log('[Enviando Correo]'); }
-            if (err) console.log(err.message);
-        });
-
         if (transactionResults) {
-            console.log("El seguimiento fue creado exitosamente.");
+            let emailBody = {
+                nmbEmail: 11,
+                strEmail: listaCorreos.join(','),
+                subject: 'Alguien comento una alerta',
+                strLink: process.env.URL_FRONT,
+                html: `<h1>Una alerta ha sido comentada</h1><br><p>Por favor revisa el siguiente link para poder darle atención:</p><br>`
+            };
+
+            await mailer.sendEmail(emailBody, (err) => {
+                if (process.log) { console.log('[Enviando Correo]'); }
+                if (err) console.log(err.message);
+            });
+
             return res.status(200).json({
                 ok: true,
                 resp: 200,
