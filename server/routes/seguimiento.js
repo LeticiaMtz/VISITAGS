@@ -12,8 +12,10 @@ const fileUpload = require('../libraries/subirArchivo(1)');
 const { isArray } = require("underscore");
 const rutaImg = "seguimiento";
 const mailer = require("../libraries/mails");
+const seguimiento = require("../models/seguimiento");
 
 const estatusNuevo = '5f186c5de9475240bc59e4a7';
+const estatusEnProgreso = '5f186c7ee9475240bc59e4a9';
 
 //|-----------------          Api POST de alertas        ----------------|
 //| Creada por: Miguel Salazar                                           |
@@ -63,36 +65,64 @@ app.post('/', [], async(req, res) => {
 
         if (arrInvitados.length > 0) {
             arrInvitados.forEach(usr => {
-                jsonSeguimiento.push({
-                    idUser: usr,
-                    idEstatus: estatusNuevo,
-                    strComentario: '<b><i><i class="fa fa-user-plus" aria-hidden="true"></i>"Se ha unido a la alerta"</i></b>',
-                });
+                if (req.body.idUser !== usr) {
+                    jsonSeguimiento.push({
+                        idUser: usr,
+                        idEstatus: req.body.idEstatus,
+                        strComentario: '<b><i><i class="fa fa-user-plus" aria-hidden="true"></i>"Se ha unido a la alerta"</i></b>',
+                    });
+                }
             });
         }
 
         let alerta; //aqui se almacenan los datos de la alerta de la base de datos
         let arrIdPersonasCorreos = []; //Aqui guardamos todos los id de persona
         let listaCorreos = []; //aqui guardamos los nombre y correos de los implicados 
-        let idEspecialidad = null; //aqui guardamos la especialidad con la que se generó la alerta
-
 
         const transactionResults = await session.withTransaction(async() => {
-            alerta = await Alerts.findOneAndUpdate({ _id: req.query.idAlerta }, { $set: { aJsnSeguimiento: jsonSeguimiento } }, { upsert: true, new: true, session: session });
+            let seguimientos = await Alerts.aggregate([{
+                    $unwind: '$aJsnSeguimiento'
+                },
+                {
+                    $match: {
+                        '_id': mongoose.Types.ObjectId(req.query.idAlerta)
+                    }
+                },
+                {
+                    $replaceRoot: {
+                        newRoot: '$aJsnSeguimiento'
+                    }
+                }
+            ]).session(session);
+
+            let indicesRepetidos = [];
+
+            seguimientos.forEach(seg => {
+                jsonSeguimiento.forEach(function(seguimiento, i) {
+                    if (seg.idUser == seguimiento.idUser && seg.strComentario == seguimiento.strComentario) {
+                        indicesRepetidos.push(i);
+                    }
+                });
+            });
+            for (var i = indicesRepetidos.length - 1; i >= 0; i--) jsonSeguimiento.splice(indicesRepetidos[i], 1);
+
+            alerta = await Alerts.findOneAndUpdate({ _id: req.query.idAlerta }, { $push: { aJsnSeguimiento: jsonSeguimiento } }, { upsert: true, new: true, session: session });
             await alerta.arrInvitados.forEach(usr => { //Esta funcion elimina los invitados que ya estaban en la BD
                 arrInvitados = arrInvitados.filter((usr) => !alerta.arrInvitados.includes(usr));
             });
+
             alerta = await Alerts.findOneAndUpdate({ _id: req.query.idAlerta }, { $push: { arrInvitados: arrInvitados } }, { upsert: true, new: true, session: session });
             arrIdPersonasCorreos = alerta.arrInvitados;
-            idEspecialidad = alerta.idEspecialidad;
             await arrIdPersonasCorreos.push(alerta.idUser);
-            let aux = await User.find({ arrEspecialidadPermiso: { $in: idEspecialidad } }).session(session);
+
+            let aux = await User.find({ arrEspecialidadPermiso: { $in: alerta.idEspecialidad } }).session(session);
             aux.forEach(usr => {
                 arrIdPersonasCorreos.push(usr._id);
             });
             arrIdPersonasCorreos = await arrIdPersonasCorreos.filter(function(item, pos) {
                 return arrIdPersonasCorreos.indexOf(item) == pos;
             });
+
             let aux2 = await User.find({ _id: { $in: arrIdPersonasCorreos } }).session(session);
             aux2.forEach(usr => {
                 listaCorreos.push(usr.strEmail);
