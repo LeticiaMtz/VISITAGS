@@ -134,6 +134,11 @@ app.post('/', [], async(req, res) => {
         }
 
         let alertas = []; //aqui se almacenan todas la alertas
+        var idUsuarioCreador = arrInvitados.indexOf(req.body.idUser); //Busca la pocision del id del creador de la alerta
+        arrInvitados.splice(idUsuarioCreador, 1); //elimina al creador del array de invitados
+        arrInvitados = await arrInvitados.filter(function(item, pos) { //Aqui nos aseguramos que no se repitan los invitados en caso de que el front los envie repetidos
+            return arrInvitados.indexOf(item) == pos;
+        });
         let invitados = () => { //Esta es una función que conforma el subdocumento de seguimiento para agregar invitados
             let datos = [];
             for (let i = 0; i < arrInvitados.length; i++) {
@@ -168,66 +173,65 @@ app.post('/', [], async(req, res) => {
             });
         }
 
-        await Alert.insertMany(alertas).then(function() { // Aqui se insertan las alertas en la base de datos
-            console.log("Alerta insertada con exito");
-        }).catch(function(error) {
-            throw `Ocurrio un error al momento de insertar la alerta: ${error}`;
-        });
-
         let listaDeCorreos = []; //Variable que guarda la lista de correos tanto para invitado como para usuarios con el rol de esa especialidad
+        let listaAlertas = null; //Aqui se guardaran las alertas generadas
 
-        await User.find({ arrEspecialidadPermiso: { $in: [req.body.idEspecialidad] } }).then(async(usuariosPorEspecialidad) => {
-            usuariosPorEspecialidad.forEach(usr => {
-                listaDeCorreos.push({
-                    user: usr.strName,
-                    mail: usr.strEmail
-                });
+        const transactionResults = await session.withTransaction(async() => {
+            listaAlertas = await Alert.insertMany(alertas, { session: session });
+
+            let usuarios = await User.find({ arrEspecialidadPermiso: { $in: [req.body.idEspecialidad] } }).session(session);
+            usuarios.forEach(usr => {
+                listaDeCorreos.push(usr.strEmail);
             });
-            await User.find().populate(arrInvitados).then((usuariosPorInvitacion) => {
-                usuariosPorInvitacion.forEach(usr => {
-                    listaDeCorreos.push({
-                        user: usr.strName,
-                        mail: usr.strEmail
-                    });
-                });
-            }).catch(function(error) {
-                throw `Ocurrio un error al momento consultar lista correos: ${error}`;
+
+            let invitados = await User.find({ _id: { $in: arrInvitados } }).session(session);
+            invitados.forEach(usr => {
+                listaDeCorreos.push(usr.strEmail);
             });
-        }).catch(function(error) {
-            throw `Ocurrio un error al momento consultar lista correos: ${error}`;
+
+            listaDeCorreos = await listaDeCorreos.filter(function(item, pos) {
+                return listaDeCorreos.indexOf(item) == pos;
+            });
         });
 
-        listaDeCorreos.forEach(async usr => { //Aqui enviamos los correos
+        if (transactionResults) {
             let emailBody = {
                 nmbEmail: 11,
-                strNombreProf: usr.user,
-                strEmail: usr.mail,
+                strEmail: listaDeCorreos.join(','),
                 subject: 'Nueva Alerta Academica',
                 strLink: process.env.URL_FRONT,
-                html: '<h1>Hola, se le ha invitado a colaborar en el seguimiento de una alerta academica.</h1><br>'
+                html: ''
             };
 
-            await email.sendEmail(emailBody, (err) => {
+            let result = await email.sendEmail(emailBody, (err) => {
                 if (process.log) { console.log('[Enviando Correo]'); }
-                if (err) console.log(err.message);
+                if (err) console.log(err);
             });
-        });
 
-        return res.status(200).json({
-            ok: true,
-            resp: 200,
-            msg: 'La alerta ha sido generada con exito!',
-            cont: {
-
-            },
-        });
-
+            return res.status(200).json({
+                ok: true,
+                resp: 200,
+                msg: "La alerta se ha creado exitosamente.",
+                cont: {
+                    listaAlertas,
+                },
+            });
+        } else {
+            return res.status(500).json({
+                ok: false,
+                resp: 500,
+                msg: "No se ha podido crear la alerta.",
+                cont: {
+                    error: "La transacción no se completó satisfactoriamente",
+                },
+            });
+        }
     } catch (error) {
         if (error.code === 11000) {
             return res.status(500).json({
                 ok: false,
                 resp: 500,
-                msg: "Error al intentar registrar la alerta",
+                msg: "Error al intentar registrar la alerta 1",
                 cont: {
                     error: `Se ha encontrado un valor duplicado: (${Object.keys(
                 error.keyValue
@@ -238,7 +242,7 @@ app.post('/', [], async(req, res) => {
             return res.status(500).json({
                 ok: false,
                 resp: 500,
-                msg: "Error al intentar registrar la alerta.",
+                msg: "Error al intentar registrar la alerta 2",
                 cont: {
                     error: Object.keys(error).length === 0 ? error.message : error,
                 },
@@ -247,7 +251,6 @@ app.post('/', [], async(req, res) => {
     } finally {
         session.endSession();
     }
-
 });
 
 //|-----------------          Api POST de alertas        ----------------|
