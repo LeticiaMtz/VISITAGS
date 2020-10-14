@@ -2,8 +2,6 @@ const express = require('express');
 var mongoose = require('mongoose');
 const _ = require('underscore');
 const Carrera = require('../models/carreras');
-const { rolMenuUsuario } = require('../middlewares/permisosUsuarios');
-const {} = require('../middlewares/autenticacion');
 const app = express();
 
 //|-----------------     Api GET de carreras             ----------------|
@@ -15,8 +13,7 @@ const app = express();
 //| Ruta: http://localhost:3000/api/carreras/obtener                     |
 //|----------------------------------------------------------------------|
 //Obtiene todos las carreras
-app.get('/obtener', (req, res) => {
-
+app.get('/obtener', process.middlewares, (req, res) => {
     Carrera.find() //select * from usuario where estado=true
         //solo aceptan valores numericos
         .exec((err, carrera) => { //ejecuta la funcion
@@ -38,17 +35,15 @@ app.get('/obtener', (req, res) => {
         });
 });
 
-
 //|-----------------     Api GET de carreras             ----------------|
 //| Creada por: Leticia Moreno                                           |
 //| Api que obtiene el listado de carreras  segun id                     |
 //| modificada por:                                                      |
 //| Fecha de modificacion:                                               |
 //| cambios:                                                             |
-//| Ruta: http://localhost:3000/api/carreras/obtener/id                     |
+//| Ruta: http://localhost:3000/api/carreras/obtener/id                  |
 //|----------------------------------------------------------------------|
-//Obtener una carrera por id 
-app.get('/obtener/:id', [], (req, res) => {
+app.get('/obtener/:id', process.middlewares, (req, res) => {
     let id = req.params.id;
     Carrera.find({ _id: id })
         .exec((err, carrera) => {
@@ -70,9 +65,6 @@ app.get('/obtener/:id', [], (req, res) => {
         });
 });
 
-
-
-
 //|------------------------------------     Api POST de carreras            ----------------------------|
 //| Creada por: Leticia Moreno                                                                          |
 //| Api que registra una carrera                                                                        |
@@ -83,49 +75,7 @@ app.get('/obtener/:id', [], (req, res) => {
 //|          2) Se agrego una validación para que la primera letra de la primera palabra sea mayúscula  |
 //| Ruta: http://localhost:3000/api/carreras/registrar                                                  |
 //|-----------------------------------------------------------------------------------------------------|
-
-// app.post('/registrar', [], async(req, res) => {
-//     let body = req.body;
-//     let carrera = new Carrera({
-//         strCarrera: body.strCarrera,
-//         blnStatus: body.blnStatus, 
-//         aJsn
-
-//     });
-
-
-//     Carrera.findOne({ 'strCarrera': body.strCarrera }).then((encontrado) => {
-//         if (encontrado) {
-//             return res.status(400).json({
-//                 ok: false,
-//                 status: 400,
-//                 msg: 'La carrera ya ha sido registrada',
-//                 cnt: encontrado
-
-//             });
-//         }
-//         carrera.save((err, carrera) => {
-//             if (err) {
-//                 return res.status(400).json({
-//                     ok: false,
-//                     status: 400,
-//                     msg: 'Error al registrar la carrera',
-//                     err: err
-//                 });
-//             }
-//             return res.status(200).json({
-//                 ok: true,
-//                 status: 200,
-//                 msg: "Carrera registrada exitosamente",
-//                 cont: carrera.length,
-//                 cnt: carrera
-//             });
-//         });
-//     });
-
-// });
-
-app.post('/registrar', (req, res) => {
+app.post('/registrar', process.middlewares, (req, res) => {
     let body = req.body;
 
     let carrera = new Carrera({
@@ -138,7 +88,6 @@ app.post('/registrar', (req, res) => {
                 status: 400,
                 msg: 'La carrera ya ha sido registrada',
                 cnt: encontrado
-
             });
         }
         new Carrera(carrera).save((err, carDB) => {
@@ -164,7 +113,6 @@ app.post('/registrar', (req, res) => {
     });
 });
 
-
 //|-----------------     Api PUT de carreras             ----------------|
 //| Creada por: Leticia Moreno                                           |
 //| Api que actualiza una carrera                                        |
@@ -173,7 +121,7 @@ app.post('/registrar', (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/carreras/actualizar/idCarrera        |
 //|----------------------------------------------------------------------|
-app.put('/actualizar/:idCarrera', [], (req, res) => {
+app.put('/actualizar/:idCarrera', process.middlewares,  (req, res) => {
     let id = req.params.idCarrera;
     let numParam = Object.keys(req.body).length;
 
@@ -194,8 +142,6 @@ app.put('/actualizar/:idCarrera', [], (req, res) => {
     }
 
     Carrera.findOne({ _id: { $ne: [id] }, strCarrera: { $regex: `^${careerBody.strCarrera}$`, $options: 'i' } }).then((resp) => {
-
-        console.log(resp);
         if (resp) {
             return res.status(400).json({
                 ok: false,
@@ -220,7 +166,6 @@ app.put('/actualizar/:idCarrera', [], (req, res) => {
                 err: err
             });
         });
-        //}
     }).catch((err) => {
         return res.status(400).json({
             ok: false,
@@ -229,49 +174,17 @@ app.put('/actualizar/:idCarrera', [], (req, res) => {
             err: err
         });
     });
-
-
 });
 
-// app.put('/actualizar/:idCarrera', [], (req, res) => {
-//     let id = req.params.idCarrera;
-//     const carreraBody = _.pick(req.body, ['strCarrera', 'blnStatus']);
-//     Carrera.find({ _id: id }).then((resp) => {
-//         if (resp.length > 0) {
-//             Carrera.findByIdAndUpdate(id, carreraBody).then((resp) => {
-//                 return res.status(200).json({
-//                     ok: true,
-//                     status: 200,
-//                     msg: 'Carrera actualizada exitosamente',
-//                     cont: resp.length,
-//                     cnt: resp
-//                 });
-//             }).catch((err) => {
-//                 return res.status(400).json({
-//                     ok: false,
-//                     status: 400,
-//                     msg: 'Error al actualizar la carrera',
-//                     err: err
-//                 });
-//             });
-//         }
-//     }).catch((err) => {
-//         return res.status(400).json({
-//             ok: false,
-//             status: 400,
-//             msg: 'Error al actualizar',
-//             err: err
-//         });
-//     });
-// });
-
-
-
-
-//----------------------------------------  Carreras Obetener ----------------------------------->
-
-app.get('/obtenerCarreras', (req, res) => {
-
+//|-----------------     Api GET de carreras             --------------------|
+//| Creada por:                                                              |
+//| Api que obtiene el listado de carreras relacionado con su especialidad   |
+//| modificada por:                                                          |
+//| Fecha de modificacion:                                                   |
+//| cambios:                                                                 |
+//| Ruta: http://localhost:3000/api/carreras/obtener/id                      |
+//|--------------------------------------------------------------------------|
+app.get('/obtenerCarreras', process.middlewares, (req, res) => {
     Carrera.find().populate([{ path: 'aJsnEspecialidad._id', select: 'strEspecialidad' }]) //select * from usuario where estado=true
         //solo aceptan valores numericos
         .exec((err, carrera) => { //ejecuta la funcion
@@ -293,9 +206,6 @@ app.get('/obtenerCarreras', (req, res) => {
         });
 });
 
-
-
-
 //|-----------------     Api DELETE de carreras          ----------------|
 //| Creada por: Leticia Moreno                                           |
 //| Api que elimina una carrera                                          |
@@ -304,32 +214,10 @@ app.get('/obtenerCarreras', (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/carreras/eliminar/idCarrera          |
 //|----------------------------------------------------------------------|
-// app.delete('/eliminar/:idCarrera', [], (req, res) => {
-//     let id = req.params.id;
-
-//     Carrera.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {
-
-//         if (err) {
-//             return res.status(400).json({
-//                 ok: false,
-//                 status: 400,
-//                 msg: 'Ha ocurrido un error al eliminar la carrera',
-//                 cnt: err
-//             });
-//         }
-//         return res.status(200).json({
-//             ok: true,
-//             status: 200,
-//             msg: 'Se ha eliminado correctamente la carrera',
-//             cnt: resp
-//         });
-//     });
-// });
-app.delete('/eliminar/:idCarrera', (req, res) => {
+app.delete('/eliminar/:idCarrera', process.middlewares, (req, res) => {
     let id = req.params.idCarrera;
 
     Carrera.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {
-
         if (err) {
             return res.status(400).json({
                 ok: false,

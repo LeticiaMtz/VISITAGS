@@ -2,9 +2,6 @@ const express = require('express');
 var mongoose = require('mongoose');
 const _ = require('underscore');
 const Asignatura = require('../models/asignatura');
-const { rolMenuUsuario } = require('../middlewares/permisosUsuarios');
-const { verificaToken } = require('../middlewares/autenticacion');
-const asignatura = require('../models/asignatura');
 const app = express();
 
 //|----------------- Api GET de Asignatura ----------------------|
@@ -15,8 +12,7 @@ const app = express();
 //| cambios:                                                     |
 //| Ruta: http://localhost:3000/api/asignatura/obtener           |
 //|--------------------------------------------------------------|
-app.get('/obtener', [], (req, res) => {
-
+app.get('/obtener', process.middlewares, (req, res) => {
     Asignatura.find()
         //solo aceptan valores numericos
         .exec((err, asignatura) => {
@@ -47,7 +43,7 @@ app.get('/obtener', [], (req, res) => {
 //| cambios:                                                     |
 //| Ruta: http://localhost:3000/api/asignatura/obtener/id        |
 //|--------------------------------------------------------------|
-app.get('/obtener/:id', (req, res) => {
+app.get('/obtener/:id', process.middlewares, (req, res) => {
     let id = req.params.id;
     Asignatura.find({ _id: id })
         .exec((err, asignatura) => {
@@ -78,17 +74,14 @@ app.get('/obtener/:id', (req, res) => {
 //| Ruta: http://localhost:3000/api/asignatura/registrar                                             |
 //|--------------------------------------------------------------------------------------------------|
 
-app.post('/registrar', async(req, res) => {
+app.post('/registrar', process.middlewares, async(req, res) => {
     let body = req.body;
-
     //para poder mandar los datos a la coleccion
     let asignatura = new Asignatura({
         strAsignatura: body.strAsignatura,
         strSiglas: body.strSiglas,
         blnStatus: body.blnStatus
     });
-
-
     Asignatura.findOne({ _id: { $ne: [mongoose.Types.ObjectId(req.params.idAsignatura)] }, strAsignatura: { $regex: `^${asignatura.strAsignatura}$`, $options: 'i' } }).then((encontrado) => {
         if (encontrado) {
             return res.status(400).json({
@@ -128,13 +121,11 @@ app.post('/registrar', async(req, res) => {
 //| cambios:                                                          |
 //| Ruta: http://localhost:3000/api/asignatura/registrar/cargaMasiva  |
 //|-------------------------------------------------------------------|
-app.post('/registrar/cargaMasiva', async(req, res) => {
+app.post('/registrar/cargaMasiva', process.middlewares, async(req, res) => {
     let asignatura = new Asignatura();
     let elem = 0;
     let body = req.body;
-    //console.log(body.cargaMasiva);
-
-
+    
     body.cargaMasiva.forEach(element => {
         asignatura = new Asignatura({
             strAsignatura: element.strAsignatura,
@@ -157,12 +148,11 @@ app.post('/registrar/cargaMasiva', async(req, res) => {
 //| cambios:                                                           |
 //| Ruta: http://localhost:3000/api/asignatura/actualizar/idAsignatura |
 //|--------------------------------------------------------------------|
-app.put('/actualizar/:idAsignatura', (req, res) => {
+app.put('/actualizar/:idAsignatura', process.middlewares, (req, res) => {
     let id = req.params.idAsignatura;
 
     const asignaturaBody = _.pick(req.body, ['strAsignatura', 'strSiglas', 'blnStatus']);
     Asignatura.findOne({ _id: { $ne: [id] }, strAsignatura: { $regex: `^${asignaturaBody.strAsignatura}$`, $options: 'i' } }).then((resp) => {
-
         console.log(resp);
         if (resp) {
             return res.status(400).json({
@@ -172,9 +162,7 @@ app.put('/actualizar/:idAsignatura', (req, res) => {
                 err: resp
             });
         }
-
         Asignatura.findByIdAndUpdate(id, asignaturaBody).then((resp) => {
-
             return res.status(200).json({
                 ok: true,
                 status: 200,
@@ -198,8 +186,6 @@ app.put('/actualizar/:idAsignatura', (req, res) => {
             err: Object.keys(err).length === 0 ? err.message : err
         });
     });
-
-
 });
 
 //|-------------------Api DELETE de Asignatura---------------------------|
@@ -210,11 +196,10 @@ app.put('/actualizar/:idAsignatura', (req, res) => {
 //| cambios:                                                          |
 //| Ruta: http://localhost:3000/api/asignatura/eliminar/idModalidad   |
 //|-------------------------------------------------------------------|
-app.delete('/eliminar/:idAsignatura', (req, res) => {
+app.delete('/eliminar/:idAsignatura', process.middlewares, (req, res) => {
     let id = req.params.idAsignatura;
 
     Asignatura.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {
-
         if (err) {
             return res.status(400).json({
                 ok: false,
@@ -233,9 +218,6 @@ app.delete('/eliminar/:idAsignatura', (req, res) => {
     });
 });
 
-
-
-
 //|-------------------Api ACTivo de Asignatura---------------------------|
 //| Creada por: Martin Palacios                                       |
 //| Api que elimina (desactiva) la asignatura                         |
@@ -245,11 +227,10 @@ app.delete('/eliminar/:idAsignatura', (req, res) => {
 //| Ruta: http://localhost:3000/api/asignatura/activo/idModalidad   |
 //|-------------------------------------------------------------------|
 
-app.delete('/activo/:idAsignatura', (req, res) => {
+app.delete('/activo/:idAsignatura', process.middlewares, (req, res) => {
     let id = req.params.idAsignatura;
 
     Asignatura.findByIdAndUpdate(id, { blnStatus: true }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {
-
         if (err) {
             return res.status(400).json({
                 ok: false,
@@ -267,11 +248,6 @@ app.delete('/activo/:idAsignatura', (req, res) => {
         });
     });
 });
-
-
-
-
-
 
 //|---------------METODO de carga masiva de Asignatura----------------|
 //| Creado por: Martin Palacios                                       |

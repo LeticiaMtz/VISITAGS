@@ -2,8 +2,6 @@ const express = require('express');
 var mongoose = require('mongoose');
 const _ = require('underscore');
 const CategoriaApi = require('../models/CategoriaApi');
-const {rolMenuUsuario} = require('../middlewares/permisosUsuarios');
-const { verificaToken } = require('../middlewares/autenticacion');
 const app = express();
 
 //|-----------------     Api GET de categoriaApi         ----------------|
@@ -14,7 +12,7 @@ const app = express();
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/categoiaApi/obtener                  |
 //|----------------------------------------------------------------------|
-app.get('/obtener', [verificaToken, rolMenuUsuario], (req, res) => {
+app.get('/obtener',  (req, res) => {
     CategoriaApi.find()
         .exec((err, catApis) => {
             if (err) {
@@ -44,7 +42,7 @@ app.get('/obtener', [verificaToken, rolMenuUsuario], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/categoiaApi/obtener/idCategoria      |
 //|----------------------------------------------------------------------|
-app.get('/obtener/:idCategoria', [verificaToken, rolMenuUsuario], (req, res) => {
+app.get('/obtener/:idCategoria', (req, res) => {
     let id = req.params.id;
     CategoriaApi.find({ _id: id })
         .exec((err, catApis) => {
@@ -74,7 +72,7 @@ app.get('/obtener/:idCategoria', [verificaToken, rolMenuUsuario], (req, res) => 
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/categoiaApi/registrar                |
 //|----------------------------------------------------------------------|
-app.post('/registrar', [verificaToken], (req, res) => {
+app.post('/registrar', (req, res) => {
     let body = req.body;
     let categoriaApi = new CategoriaApi({
         strName: body.strName,
@@ -110,9 +108,8 @@ app.post('/registrar', [verificaToken], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/categoiaApi/actualizar/idCategoria   |
 //|----------------------------------------------------------------------|
-app.put('/actualizar/:idCategoriaApi', [verificaToken], (req, res) => {
+app.put('/actualizar/:idCategoriaApi', (req, res) => {
     let id = req.params.idCategoriaApi;
-    console.log(req.params.idCategoriaApi)
     const categoriaApiBody = _.pick(req.body, ['strName', 'strDescripcion', 'blnStatus']);
     CategoriaApi.find({ _id: id }).then((resp) => {
         if (resp.length > 0) {
@@ -150,7 +147,7 @@ app.put('/actualizar/:idCategoriaApi', [verificaToken], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/categoiaApi/eliminar/idCategoria     |
 //|----------------------------------------------------------------------|
-app.delete('/eliminar/:idCategoria', [verificaToken, rolMenuUsuario],  (req, res) => {
+app.delete('/eliminar/:idCategoria', (req, res) => {
     let id = req.params.id;
 
     CategoriaApi.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {

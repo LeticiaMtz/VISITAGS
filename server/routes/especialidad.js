@@ -4,7 +4,6 @@ const app = express();
 const mongoose = require('mongoose');
 const Especialidad = require('../models/especialidad');
 const Carrera = require('../models/carreras');
-const {} = require('../middlewares/autenticacion');
 
 //|--------------------------------     Api POST de Especialidad        -------------------------------|
 //| Creada por: Leticia Moreno                                                                         |
@@ -14,12 +13,7 @@ const {} = require('../middlewares/autenticacion');
 //| cambios:   Se agrego una validación para que la primera letra de la primera palabra sea mayúscula  |
 //| Ruta: http://localhost:3000/api/especialidad/registrar/idCarrera                                   |
 //|----------------------------------------------------------------------------------------------------|
-
-app.post('/registrar/:idCarrera', (req, res) => {
-
-
-    //especialidad.strNombre = strNombre;
-
+app.post('/registrar/:idCarrera', process.middlewares, (req, res) => {
     let strEspecialidad = '';
     let esp = req.body.strEspecialidad.toLowerCase();
     for (let i = 0; i < esp.length; i++) {
@@ -29,12 +23,9 @@ app.post('/registrar/:idCarrera', (req, res) => {
             strEspecialidad += esp[i];
         }
     }
-
     const especialidad = new Especialidad(req.body);
     especialidad.strEspecialidad = strEspecialidad;
     let err = especialidad.validateSync();
-
-
     if (err) {
         return res.status(500).json({
             ok: false,
@@ -45,7 +36,6 @@ app.post('/registrar/:idCarrera', (req, res) => {
             }
         });
     }
-
     Carrera.findOne({
             '_id': req.params.idCarrera,
             'aJsnEspecialidad.strEspecialidad': especialidad.strEspecialidad,
@@ -105,8 +95,6 @@ app.post('/registrar/:idCarrera', (req, res) => {
         });
 });
 
-
-
 //|-----------------     Api GET de Especialidad         ----------------|
 //| Creada por: Leticia Moreno                                           |
 //| Api que obtiene listado de las especialidades                        |
@@ -115,9 +103,8 @@ app.post('/registrar/:idCarrera', (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/especialidad/obtener/idCarrera       |
 //|----------------------------------------------------------------------|
-app.get('/obtener/:idCarrera', [], (req, res) => {
+app.get('/obtener/:idCarrera', process.middlewares, (req, res) => {
     if (process.log) {
-        console.log(' params ', req.params);
     }
     Carrera.aggregate([{
                 $unwind: '$aJsnEspecialidad'
@@ -177,27 +164,6 @@ app.get('/obtener/:idCarrera', [], (req, res) => {
 
 });
 
-// API DE PRUEBA 
-// app.get('/obtener/:idCarrera'), [], (req, res) => {
-
-//     idCarrera = req.params.idCarrera;
-
-//     if (!idCarrera || idCarrera.length != 24){
-//         return res.status(400).json({
-//             ok: false,
-//             resp: 400,
-//             msg: 'La carrera no existe o no cuenta con rutas de especialidad',
-//             cont: {
-//                 idCarrera
-//             }
-//         });
-//     }
-
-
-
-
-// };
-
 //|-----------------     Api PUT de Especialidad         ----------------------------|
 //| Creada por: Leticia Moreno                                                       |
 //| Api que actualiza una especialidad                                               |
@@ -206,10 +172,8 @@ app.get('/obtener/:idCarrera', [], (req, res) => {
 //| cambios:                                                                         |
 //| Ruta: http://localhost:3000/api/especialidad/actualizar/idCarrera/idEspecialidad |
 //|----------------------------------------------------------------------------------|
-app.put('/actualizar/:idCarrera/:idEspecialidad', [], (req, res) => {
+app.put('/actualizar/:idCarrera/:idEspecialidad', process.middlewares, (req, res) => {
     if (process.log) {
-        console.log(' params ', req.params);
-        console.log(' body ', req.body);
     }
     let especialidad = new Especialidad({
         _id: req.params.idEspecialidad,
@@ -319,10 +283,8 @@ app.put('/actualizar/:idCarrera/:idEspecialidad', [], (req, res) => {
 //| cambios:                                                                       |
 //| Ruta: http://localhost:3000/api/especialidad/eliminar/idCarrera/idEspecialidad |
 //|--------------------------------------------------------------------------------|
-app.delete('/eliminar/:idCarrera/:idEspecialidad', [], (req, res) => {
+app.delete('/eliminar/:idCarrera/:idEspecialidad', process.middlewares, (req, res) => {
     if (process.log) {
-        console.log(' params ', req.params);
-        console.log(' body ', req.body);
     }
     Carrera.findOneAndUpdate({
             '_id': req.params.idCarrera,
@@ -332,7 +294,6 @@ app.delete('/eliminar/:idCarrera/:idEspecialidad', [], (req, res) => {
         })
         .populate('aJsnEspecialidad')
         .then((resp) => {
-
             return res.status(200).json({
                 ok: true,
                 resp: 200,
@@ -342,7 +303,6 @@ app.delete('/eliminar/:idCarrera/:idEspecialidad', [], (req, res) => {
                     resp
                 }
             });
-
         })
         .catch((err) => {
 

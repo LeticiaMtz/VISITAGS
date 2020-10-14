@@ -1,3 +1,6 @@
+const { rolMenuUsuario } = require("../middlewares/permisosUsuarios");
+const { verificaToken } = require("../middlewares/autenticacion");
+
 //PUERTO
 process.env.PORT = process.env.PORT || 3000;
 // Declaracion de entorno, funcion que nos dara en que ambiente estamos
@@ -24,3 +27,5 @@ process.env.URLDB = urlDB;
 process.env.SEED = process.env.SEED || 'Frima-super-secreta';
 
 process.env.CADUCIDAD_TOKEN = process.env.CADUCIDAD_TOKEN || '12h';
+
+process.middlewares = [verificaToken, rolMenuUsuario];

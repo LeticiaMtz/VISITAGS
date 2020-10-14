@@ -4,7 +4,6 @@ const app = express();
 const mongoose = require('mongoose');
 const Motivo = require('../models/motivosCrde');
 const Crde = require('../models/crde');
-const {} = require('../middlewares/autenticacion');
 
 //|----------------- Api POST de MotivosCrde --------------------------------------------------------|
 //| Creada por: Leticia Moreno                                                                       |
@@ -14,13 +13,9 @@ const {} = require('../middlewares/autenticacion');
 //| cambios: Se agrego una validación para que la primera letra de la primera palabra sea mayúscula  |
 //| Ruta: http://localhost:3000/api/motivosCrde/registrar/idCrde                                     |
 //|--------------------------------------------------------------------------------------------------|
-
-app.post('/registrar/:idCrde', [], (req, res) => {
+app.post('/registrar/:idCrde', process.middlewares, (req, res) => {
     if (process.log) {
-        console.log(' params ', req.params);
-        console.log(' body ', req.body);
     }
-
     let strNombre = '';
     let motiv = req.body.strNombre.toLowerCase();
     for (let i = 0; i < motiv.length; i++) {
@@ -30,12 +25,9 @@ app.post('/registrar/:idCrde', [], (req, res) => {
             strNombre += motiv[i];
         }
     }
-
     const motivo = new Motivo(req.body);
     motivo.strNombre = strNombre;
-
     let err = motivo.validateSync();
-
     if (err) {
         return res.status(500).json({
             ok: false,
@@ -46,7 +38,6 @@ app.post('/registrar/:idCrde', [], (req, res) => {
             }
         });
     }
-
     Crde.findOne({
             '_id': req.params.idCrde,
             'aJsnMotivo.strNombre': motivo.strNombre,
@@ -132,9 +123,8 @@ app.post('/registrar/:idCrde', [], (req, res) => {
 //| cambios:                                                   |
 //| Ruta: http://localhost:3000/api/motivosCrde/obtener/idCrde |
 //|------------------------------------------------------------|
-app.get('/obtener/:idCrde', [], (req, res) => {
+app.get('/obtener/:idCrde', process.middlewares, (req, res) => {
     if (process.log) {
-        console.log(' params ', req.params);
     }
     Crde.aggregate([{
                 $unwind: '$aJsnMotivo'
@@ -189,10 +179,9 @@ app.get('/obtener/:idCrde', [], (req, res) => {
                     err: err.message
                 }
             });
-
         });
-
 });
+
 //|-----------------  Api PUT de MotivosCrde -----------------------------|
 //| Creada por: Leticia Moreno                                            |
 //| Api que actualiza un motivoCrde                                       |
@@ -201,23 +190,17 @@ app.get('/obtener/:idCrde', [], (req, res) => {
 //| cambios:                                                              |
 //| Ruta: http://localhost:3000/api/motivosCrde/actualizar/idCrde/idMoivo |
 //|-----------------------------------------------------------------------|
-app.put('/actualizar/:idCrde/:idMotivo', [], (req, res) => {
+app.put('/actualizar/:idCrde/:idMotivo', process.middlewares, (req, res) => {
     if (process.log) {
-        console.log(' params ', req.params);
-        console.log(' body ', req.body);
     }
-
     let motivo = new Motivo({
         _id: req.params.idMotivo,
         strNombre: req.body.strNombre,
         strClave: req.body.strClave,
         blnStatus: req.body.blnStatus
     });
-
     let err = motivo.validateSync();
-
     if (err) {
-
         return res.status(500).json({
             ok: false,
             resp: 500,
@@ -226,10 +209,7 @@ app.put('/actualizar/:idCrde/:idMotivo', [], (req, res) => {
                 err
             }
         });
-
     }
-
-
     Crde.aggregate([{
             $unwind: '$aJsnMotivo'
         },
@@ -245,7 +225,6 @@ app.put('/actualizar/:idCrde/:idMotivo', [], (req, res) => {
             }
         }
     ], (err, resp) => {
-
         if (err) {
             return res.status(500).json({
                 ok: false,
@@ -256,7 +235,6 @@ app.put('/actualizar/:idCrde/:idMotivo', [], (req, res) => {
                 }
             });
         }
-
         if (resp.length > 0) {
             return res.status(400).json({
                 ok: false,
@@ -267,8 +245,6 @@ app.put('/actualizar/:idCrde/:idMotivo', [], (req, res) => {
                 }
             });
         }
-
-
         Crde.findOneAndUpdate({
                 '_id': req.params.idCrde,
                 'aJsnMotivo._id': req.params.idMotivo
@@ -302,10 +278,8 @@ app.put('/actualizar/:idCrde/:idMotivo', [], (req, res) => {
                         err
                     }
                 });
-
             });
     });
-
 });
 
 //|----------------- Api DELETE de MotivosCrde ----------------|
@@ -316,10 +290,8 @@ app.put('/actualizar/:idCrde/:idMotivo', [], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/motivosCrde/eliminar/idCrde/idMotivo |
 //|----------------------------------------------------------------------|
-app.delete('/eliminar/:idCrde/:idMotivo', [], (req, res) => {
+app.delete('/eliminar/:idCrde/:idMotivo', process.middlewares, (req, res) => {
     if (process.log) {
-        console.log(' params ', req.params);
-        console.log(' body ', req.body);
     }
     Crde.findOneAndUpdate({
             '_id': req.params.idCrde,
@@ -329,7 +301,6 @@ app.delete('/eliminar/:idCrde/:idMotivo', [], (req, res) => {
         })
         .populate('aJsnMotivo')
         .then((resp) => {
-
             return res.status(200).json({
                 ok: true,
                 resp: 200,
@@ -351,9 +322,7 @@ app.delete('/eliminar/:idCrde/:idMotivo', [], (req, res) => {
                     err: err.message
                 }
             });
-
         });
 });
-
 
 module.exports = app;
