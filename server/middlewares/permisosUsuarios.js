@@ -2,6 +2,7 @@ const Role = require('../models/Roles');
 const CategoriaApi = require('../models/CategoriaApi');
 
 const rolMenuUsuario = async(req, res, next) => {
+    console.log('Estoy entrando al middleware de permisos');
     stUrl = req.originalUrl.split('/');
     let url = String('/' + stUrl[1] + '/' + stUrl[2] + '/' + stUrl[3]);
     let role = req.user.idRole;

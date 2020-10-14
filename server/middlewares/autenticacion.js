@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 
 let verificaToken = (req, res, next) => {
     try {
-        let tokenEncriptado = req.header('token');
+        let tokenEncriptado = req.header('aa_token');
         let tokenDesencriptado = jwt.verify(tokenEncriptado, process.env.SEED);
         req.user = tokenDesencriptado.user;
         // TODO: agregar ip

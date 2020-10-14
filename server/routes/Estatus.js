@@ -1,8 +1,5 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
-const _ = require('underscore');
-const {} = require('../middlewares/autenticacion');
-const { rolMenuUsuario } = require('../middlewares/permisosUsuarios');
+const bcrypt = require('bcrypt');const _ = require('underscore');
 const Estatus = require('../models/Estatus'); //subir nivel
 const app = express();
 const mongoose = require('mongoose');
@@ -18,8 +15,7 @@ const idCoordinador = '5eeee0db16952756482d186a';
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/estatus/obtener          |
 //|----------------------------------------------------------|
-
-app.get('/obtener', [], (req, res) => {
+app.get('/obtener', process.middlewares, (req, res) => {
     Estatus.find().exec((err, estatus) => { //ejecuta la funcion
         if (err) {
             return res.status(400).json({
@@ -29,7 +25,6 @@ app.get('/obtener', [], (req, res) => {
                 cnt: err
             });
         }
-        console.log(req.estatus);
         return res.status(200).json({
             ok: true,
             status: 200,
@@ -40,7 +35,16 @@ app.get('/obtener', [], (req, res) => {
     });
 });
 
-app.get('/obtener/:id', [], (req, res) => {
+//|-----------------Api GET Listado Estatus------------------|
+//| Creada por: Abraham Carranza                             |
+//| Fecha: 7/07/2020                                         |
+//| Api que retorna un estatus segun el ID                   |
+//| modificada por:                                          |
+//| Fecha de modificacion:                                   |
+//| cambios:                                                 |
+//| Ruta: http://localhost:3000/api/estatus/obtener/id       |
+//|----------------------------------------------------------|
+app.get('/obtener/:id', process.middlewares, (req, res) => {
     let id = req.params.id;
 
     Estatus.find({ _id: id }).exec((err, estatus) => {
@@ -71,9 +75,7 @@ app.get('/obtener/:id', [], (req, res) => {
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/estatus/obtenerE          |
 //|----------------------------------------------------------|
-
-app.get('/obtenerEstatus/:idRol', [], (req, res) => {
-
+app.get('/obtenerEstatus/:idRol', process.middlewares, (req, res) => {
     if (idCoordinador == req.params.idRol) {
         Estatus.find({ strNombre: { $nin: 'Nueva' } }).exec((err, estatus) => { //ejecuta la funcion
             if (err) {
@@ -84,7 +86,6 @@ app.get('/obtenerEstatus/:idRol', [], (req, res) => {
                     cnt: err
                 });
             }
-            console.log(req.estatus);
             return res.status(200).json({
                 ok: true,
                 status: 200,
@@ -103,7 +104,6 @@ app.get('/obtenerEstatus/:idRol', [], (req, res) => {
                     cnt: err
                 });
             }
-            console.log(req.estatus);
             return res.status(200).json({
                 ok: true,
                 status: 200,
@@ -124,17 +124,13 @@ app.get('/obtenerEstatus/:idRol', [], (req, res) => {
 //| cambios: Se agrego una validación para que la primera letra de la primera palabra sea mayúscula |
 //| Ruta: http://localhost:3000/api/estatus/registrar                                               |
 //|-------------------------------------------------------------------------------------------------|
-
-
-app.post('/registrar', [], async(req, res) => {
+app.post('/registrar', process.middlewares, async(req, res) => {
     let body = req.body;
-
     let estatus = new Estatus({
         strNombre: body.strNombre,
         strDescripcion: body.strDescripcion,
         blnActivo: body.blnActivo,
     });
-
     Estatus.findOne({ _id: { $ne: [mongoose.Types.ObjectId(req.params.idEstatus)] }, strNombre: { $regex: `^${estatus.strNombre}$`, $options: 'i' } }).then((encontrado) => {
         if (encontrado) {
             return res.status(400).json({
@@ -166,7 +162,6 @@ app.post('/registrar', [], async(req, res) => {
 
 });
 
-
 //|--------------------Api PUT de Estatus--------------------|
 //| Creada por: Abraham Carranza                             |
 //| Fecha: 7/07/2020                                         |
@@ -176,7 +171,7 @@ app.post('/registrar', [], async(req, res) => {
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/estatus/actualizar/:id   |
 //|----------------------------------------------------------|
-app.put('/actualizar/:idEstatus', (req, res) => {
+app.put('/actualizar/:idEstatus', process.middlewares, (req, res) => {
     let id = req.params.idEstatus;
     let numParam = Object.keys(req.body).length;
 
@@ -195,10 +190,7 @@ app.put('/actualizar/:idEstatus', (req, res) => {
             err: 'El número de parametros enviados no concuerdan con los que requiere la API'
         });
     }
-
     Estatus.findOne({ _id: { $ne: [id] }, strNombre: { $regex: `^${estatusBody.strNombre}$`, $options: 'i' } }).then((resp) => {
-
-        console.log(resp);
         if (resp) {
             return res.status(400).json({
                 ok: false,
@@ -245,12 +237,9 @@ app.put('/actualizar/:idEstatus', (req, res) => {
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/estatus/eliminar/:id     |
 //|----------------------------------------------------------|
-
-app.delete('/eliminar/:idEstatus', (req, res) => {
+app.delete('/eliminar/:idEstatus', process.middlewares, (req, res) => {
     let id = req.params.idEstatus;
-
     Estatus.findByIdAndUpdate(id, { blnActivo: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {
-
         if (err) {
             return res.status(400).json({
                 ok: false,

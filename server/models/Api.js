@@ -15,6 +15,7 @@ const apis = new Schema({
         //required: [true, 'Porfavor ingresa el estado de la api']
         default: true
     }
+    
 
 }, {collection: "Api"});
 

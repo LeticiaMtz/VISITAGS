@@ -2,8 +2,6 @@ const express = require('express');
 const _ = require('underscore');
 const Role = require('../models/Roles'); //subir nivel
 const app = express();
-const { verificaToken } = require('../middlewares/autenticacion');
-const { rolMenuUsuario } = require('../middlewares/permisosUsuarios')
 
 //|-----------------  Api GET de Roles       ----------------|
 //| Creada por: Leticia Moreno                               |
@@ -13,7 +11,7 @@ const { rolMenuUsuario } = require('../middlewares/permisosUsuarios')
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/roles/obtener            |
 //|----------------------------------------------------------|
-app.get('/obtener', (req, res) => {
+app.get('/obtener', process.middlewares, (req, res) => {
     Role.find({ blnStatus: true }) //select * from usuario where estado=true
         //solo aceptan valores numericos
         .exec((err, roles) => { //ejecuta la funcion
@@ -25,7 +23,6 @@ app.get('/obtener', (req, res) => {
                     err
                 });
             }
-            console.log(req.role);
             return res.status(200).json({
                 ok: true,
                 status: 200,
@@ -45,7 +42,7 @@ app.get('/obtener', (req, res) => {
 //| Ruta: http://localhost:3000/api/roles/obtener/idRole     |
 //|----------------------------------------------------------|
 //Obtener por id
-app.get('/obtener/:id', (req, res) => {
+app.get('/obtener/:id', process.middlewares, (req, res) => {
     let id = req.params.id;
     Role.find({ _id: id })
         .exec((err, roles) => {
@@ -69,13 +66,13 @@ app.get('/obtener/:id', (req, res) => {
 
 //|-----------------    Api POST de Roles    ----------------|
 //| Creada por: Leticia Moreno                               |
-//| Api que registra un role                                 |
+//| Api que registra un rol                                  |
 //| modificada por:                                          |
 //| Fecha de modificacion:                                   |
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/roles/registrar          |
 //|----------------------------------------------------------|
-app.post('/registrar', [verificaToken], (req, res) => {
+app.post('/registrar', process.middlewares, (req, res) => {
     let body = req.body;
     let role = new Role({
         //para poder mandar los datos a la coleccion
@@ -83,9 +80,7 @@ app.post('/registrar', [verificaToken], (req, res) => {
         strDescripcion: body.strDescripcion,
         blnStatus: body.blnStatus,
         arrApi: body.arrApi,
-
     });
-
     role.save((err, rolDB) => {
         if (err) {
             return res.status(400).json({
@@ -114,9 +109,8 @@ app.post('/registrar', [verificaToken], (req, res) => {
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/roles/actualizar/idRole  |
 //|----------------------------------------------------------|
-app.put('/actualizar/:idRole', [verificaToken], (req, res) => {
+app.put('/actualizar/:idRole', (req, res) => {
     let id = req.params.idRole;
-    console.log(req.params.idRole)
     const roleBody = _.pick(req.body, ['strRole', 'strDescripcion', 'blnStatus', 'arrApi']);
     Role.find({ _id: id }).then((resp) => {
         if (resp.length > 0) {
@@ -155,10 +149,8 @@ app.put('/actualizar/:idRole', [verificaToken], (req, res) => {
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/roles/eliminar/idRole          |
 //|----------------------------------------------------------|
-app.delete('/eliminar/:idRole', [verificaToken], (req, res) => {
+app.delete('/eliminar/:idRole', process.middlewares, (req, res) => {
     let id = req.params.id;
-
-    //update from - set 
     Role.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, resp) => {
         if (err) {
             return res.status(400).json({
