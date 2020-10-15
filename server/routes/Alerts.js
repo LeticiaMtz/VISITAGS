@@ -46,6 +46,36 @@ app.get('/obtener', process.middlewares, (req, res) => {
         });
 });
 
+//|-----------------          Api GET de alertas         ----------------|
+//| Creada por: Leticia Moreno                                           |
+//| Api que obtiene el listado de las alertas registradas por id         |
+//| modificada por:                                                      |
+//| Fecha de modificacion:                                               |
+//| cambios:                                                             |
+//| Ruta: http://localhost:3000/api/alerts/obtener/idAlert               |
+//|----------------------------------------------------------------------|
+app.get('/obtener/:id', process.middlewares, (req, res) => {
+    let id = req.params.id;
+    Alert.find({ _id: id })
+        .exec((err, alerts) => {
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    status: 400,
+                    msg: 'Error al encontrar la alerta ',
+                    cnt: err
+                });
+            }
+            return res.status(200).json({
+                ok: true,
+                status: 200,
+                msg: 'Alerta encontrada',
+                cont: alerts.length,
+                cnt: alerts
+            });
+        });
+});
+
 //|-----------------          Api POST de alertas        ----------------|
 //| Creada por: Miguel Salazar                                           |
 //| Api que registra una alerta                                          |
@@ -96,6 +126,11 @@ app.post('/', process.middlewares, async(req, res) => {
         }
 
         let alertas = []; //aqui se almacenan todas la alertas
+        var idUsuarioCreador = arrInvitados.indexOf(req.body.idUser); //Busca la pocision del id del creador de la alerta
+        arrInvitados.splice(idUsuarioCreador, 1); //elimina al creador del array de invitados
+        arrInvitados = await arrInvitados.filter(function(item, pos) { //Aqui nos aseguramos que no se repitan los invitados en caso de que el front los envie repetidos
+            return arrInvitados.indexOf(item) == pos;
+        });
         let invitados = () => { //Esta es una función que conforma el subdocumento de seguimiento para agregar invitados
             let datos = [];
             for (let i = 0; i < arrInvitados.length; i++) {
@@ -130,65 +165,65 @@ app.post('/', process.middlewares, async(req, res) => {
             });
         }
 
-        await Alert.insertMany(alertas).then(function() { // Aqui se insertan las alertas en la base de datos
-        }).catch(function(error) {
-            throw `Ocurrio un error al momento de insertar la alerta: ${error}`;
-        });
-
         let listaDeCorreos = []; //Variable que guarda la lista de correos tanto para invitado como para usuarios con el rol de esa especialidad
+        let listaAlertas = null; //Aqui se guardaran las alertas generadas
 
-        await User.find({ arrEspecialidadPermiso: { $in: [req.body.idEspecialidad] } }).then(async(usuariosPorEspecialidad) => {
-            usuariosPorEspecialidad.forEach(usr => {
-                listaDeCorreos.push({
-                    user: usr.strName,
-                    mail: usr.strEmail
-                });
+        const transactionResults = await session.withTransaction(async() => {
+            listaAlertas = await Alert.insertMany(alertas, { session: session });
+
+            let usuarios = await User.find({ arrEspecialidadPermiso: { $in: [req.body.idEspecialidad] } }).session(session);
+            usuarios.forEach(usr => {
+                listaDeCorreos.push(usr.strEmail);
             });
-            await User.find().populate(arrInvitados).then((usuariosPorInvitacion) => {
-                usuariosPorInvitacion.forEach(usr => {
-                    listaDeCorreos.push({
-                        user: usr.strName,
-                        mail: usr.strEmail
-                    });
-                });
-            }).catch(function(error) {
-                throw `Ocurrio un error al momento consultar lista correos: ${error}`;
+
+            let invitados = await User.find({ _id: { $in: arrInvitados } }).session(session);
+            invitados.forEach(usr => {
+                listaDeCorreos.push(usr.strEmail);
             });
-        }).catch(function(error) {
-            throw `Ocurrio un error al momento consultar lista correos: ${error}`;
+
+            listaDeCorreos = await listaDeCorreos.filter(function(item, pos) {
+                return listaDeCorreos.indexOf(item) == pos;
+            });
         });
 
-        listaDeCorreos.forEach(async usr => { //Aqui enviamos los correos
+        if (transactionResults) {
             let emailBody = {
-                nmbEmail: 11,
-                strNombreProf: usr.user,
-                strEmail: usr.mail,
+                nnmbEmail: 10,
+                strEmail: listaDeCorreos.join(','),
                 subject: 'Nueva Alerta Academica',
                 strLink: process.env.URL_FRONT,
-                html: '<h1>Hola, se le ha invitado a colaborar en el seguimiento de una alerta academica.</h1><br>'
+                html: ''
             };
 
-            await email.sendEmail(emailBody, (err) => {
+            let result = await email.sendEmail(emailBody, (err) => {
                 if (process.log) { console.log('[Enviando Correo]'); }
-                if (err) console.log(err.message);
+                if (err) console.log(err);
             });
-        });
 
-        return res.status(200).json({
-            ok: true,
-            resp: 200,
-            msg: 'La alerta ha sido generada con exito!',
-            cont: {
-
-            },
-        });
-
+            return res.status(200).json({
+                ok: true,
+                resp: 200,
+                msg: "La alerta se ha creado exitosamente.",
+                cont: {
+                    listaAlertas,
+                },
+            });
+        } else {
+            return res.status(500).json({
+                ok: false,
+                resp: 500,
+                msg: "No se ha podido crear la alerta.",
+                cont: {
+                    error: "La transacción no se completó satisfactoriamente",
+                },
+            });
+        }
     } catch (error) {
         if (error.code === 11000) {
             return res.status(500).json({
                 ok: false,
                 resp: 500,
-                msg: "Error al intentar registrar la alerta",
+                msg: "Error al intentar registrar la alerta 1",
                 cont: {
                     error: `Se ha encontrado un valor duplicado: (${Object.keys(
                 error.keyValue
@@ -199,7 +234,7 @@ app.post('/', process.middlewares, async(req, res) => {
             return res.status(500).json({
                 ok: false,
                 resp: 500,
-                msg: "Error al intentar registrar la alerta.",
+                msg: "Error al intentar registrar la alerta 2",
                 cont: {
                     error: Object.keys(error).length === 0 ? error.message : error,
                 },
@@ -208,7 +243,6 @@ app.post('/', process.middlewares, async(req, res) => {
     } finally {
         session.endSession();
     }
-
 });
 
 //|------------------- Api GET de alertas por usuario -------------------|
@@ -220,11 +254,11 @@ app.post('/', process.middlewares, async(req, res) => {
 //|          crde y no el crde                                           |
 //| Ruta: http://localhost:3000/api/alerts/obtenerAlertas/idRol/idUser   |
 //|----------------------------------------------------------------------|
-
-app.get('/obtenerAlertas/:idRol/:idUser', process.middlewares,async(req, res) => {
+app.get('/obtenerAlertas/:idRol/:idUser', process.middlewares, async(req, res) => {
     let idRol = req.params.idRol;
     let idUser = req.params.idUser;
     let body = req.body;
+
 
     if (idRol == idProfesor) {
         Alert.find({ $or: [{ idUser: idUser }, { arrInvitados: { $in: [idUser] } }] }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }]).then(async(resp) => {
@@ -237,6 +271,7 @@ app.get('/obtenerAlertas/:idRol/:idUser', process.middlewares,async(req, res) =>
                     if (crde) alerta.arrCrde[index] = crde;
                 }
             }
+
             return res.status(200).json({
                 ok: true,
                 status: 200,
@@ -245,6 +280,7 @@ app.get('/obtenerAlertas/:idRol/:idUser', process.middlewares,async(req, res) =>
                 cnt: alertas
             });
         }).catch((err) => {
+            console.log(err);
             return res.status(400).json({
                 ok: false,
                 status: 400,
@@ -276,6 +312,7 @@ app.get('/obtenerAlertas/:idRol/:idUser', process.middlewares,async(req, res) =>
                 });
 
             }).catch((err) => {
+                console.log(err);
                 return res.status(400).json({
                     ok: false,
                     status: 400,
@@ -304,9 +341,6 @@ app.get('/obtenerAlertas/:idRol/:idUser', process.middlewares,async(req, res) =>
                 for (const i of alertas) {
                     if (i.blnStatus != undefined) {
                         await arrAlertas.push(i);
-
-                        // {$or:[{ idUser: idUser},{arrInvitados: {$in: [idUser]} }]}
-
                     }
                 }
             })
@@ -314,12 +348,14 @@ app.get('/obtenerAlertas/:idRol/:idUser', process.middlewares,async(req, res) =>
 
         let alertas = arrAlertas.map(alert => alert.toObject());
         const motivos = await Crde.aggregate().unwind('aJsnMotivo').replaceRoot('aJsnMotivo');
+
         for (const alerta of alertas) {
             for (const index of alerta.arrCrde.keys()) {
                 let crde = motivos.find(motivo => motivo._id.toString() === alerta.arrCrde[index].toString());
                 if (crde) alerta.arrCrde[index] = crde;
             }
         }
+
         return res.status(200).json({
             ok: true,
             status: 200,
@@ -328,7 +364,10 @@ app.get('/obtenerAlertas/:idRol/:idUser', process.middlewares,async(req, res) =>
             cnt: alertas
         });
     };
+
 });
+
+
 
 //|------------------- Api GET de alertas por usuario -------------------|
 //| Creada por: Martin Palacios                                          |
@@ -338,6 +377,7 @@ app.get('/obtenerAlertas/:idRol/:idUser', process.middlewares,async(req, res) =>
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/obtenerAlerta/:idAlerta              |
 //|----------------------------------------------------------------------|
+
 app.get('/obtenerAlerta/:idAlerta', process.middlewares, async(req, res) => {
     let idAlert = req.params.idAlerta;
 
@@ -370,45 +410,6 @@ app.get('/obtenerAlerta/:idAlerta', process.middlewares, async(req, res) => {
     });
 });
 
-//|-----------------          Api PUT de alertas         ----------------|
-//| Creada por: Leticia Moreno                                           |
-//| Api que actualiza el estatus del seguimiento de alerta               |
-//| modificada por:                                                      |
-//| Fecha de modificacion:                                               |
-//| cambios:                                                             |
-//| Ruta: http://localhost:3000/api/alerts/actualizar/idAlert            |
-//|----------------------------------------------------------------------|
-app.put('/actualizarEstatus/:idAlert', process.middlewares, (req, res) => {
-    let id = req.params.idAlert;
-    const alertBody = _.pick(req.body, ['idEstatus']);
-    Alert.find({ _id: id }).then((resp) => {
-        if (resp.length > 0) {
-            Alert.findByIdAndUpdate(id, alertBody).then((resp) => {
-                return res.status(200).json({
-                    ok: true,
-                    status: 200,
-                    msg: 'Estatus actualizado con éxito',
-                    cont: resp.length,
-                    cnt: resp
-                });
-            }).catch((err) => {
-                return res.status(400).json({
-                    ok: false,
-                    status: 400,
-                    msg: 'Error al actualizar el estatus',
-                    cnt: err
-                });
-            });
-        }
-    }).catch((err) => {
-        return res.status(400).json({
-            ok: false,
-            status: 400,
-            msg: 'Error al actualizar el estatus',
-            cnt: err
-        });
-    });
-});
 
 //|-----------------          Api GET de alertas         -----------------------------------------|
 //| Creada por: Leticia Moreno                                                                    |
