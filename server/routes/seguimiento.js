@@ -3,17 +3,18 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const Alerts = require("../models/Alerts");
+const User = require("../models/Users");
 const fileUpload = require('../libraries/subirArchivo(1)');
 const { isArray } = require("underscore");
-const estatusNuevo = '5f186c5de9475240bc59e4a7';
+const mailer = require("../libraries/mails");
 
 //|-----------------          Api POST de alertas        ----------------|
 //| Creada por: Miguel Salazar                                           |
 //| Api que registra el segumiento a una alerta                          |
 //| modificada por:                                                      |
-//| Fecha de modificacion: 01/01/2020                                    |
+//| Fecha de modificacion: 02/10/2020                                    |
 //| cambios:                                                             |
-//| Ruta: http://localhost:3000/api/alerts                               |
+//| Ruta: http://localhost:3000/api/segumiento/                          |
 //|----------------------------------------------------------------------|
 app.post('/', process.middlewares, async(req, res) => {
     const session = await mongoose.startSession();
@@ -55,25 +56,83 @@ app.post('/', process.middlewares, async(req, res) => {
 
         if (arrInvitados.length > 0) {
             arrInvitados.forEach(usr => {
-                jsonSeguimiento.push({
-                    idUser: usr,
-                    idEstatus: estatusNuevo,
-                    strComentario: '<b><i><i class="fa fa-user-plus" aria-hidden="true"></i>"Se ha unido a la alerta"</i></b>',
-                });
+                if (req.body.idUser !== usr) {
+                    jsonSeguimiento.push({
+                        idUser: usr,
+                        idEstatus: req.body.idEstatus,
+                        strComentario: '<b><i><i class="fa fa-user-plus" aria-hidden="true"></i>"Se ha unido a la alerta"</i></b>',
+                    });
+                }
             });
         }
 
-        let alerta;
+        let alerta; //aqui se almacenan los datos de la alerta de la base de datos
+        let arrIdPersonasCorreos = []; //Aqui guardamos todos los id de persona
+        let listaCorreos = []; //aqui guardamos los nombre y correos de los implicados 
 
         const transactionResults = await session.withTransaction(async() => {
-            alerta = await Alerts.findOneAndUpdate({ _id: req.query.idAlerta }, { $set: { aJsnSeguimiento: jsonSeguimiento } }, { upsert: true, new: true, session: session });
-            await alerta.arrInvitados.forEach(usr => {
-                arrInvitados.push(usr.toString());
+            let seguimientos = await Alerts.aggregate([{
+                    $unwind: '$aJsnSeguimiento'
+                },
+                {
+                    $match: {
+                        '_id': mongoose.Types.ObjectId(req.query.idAlerta)
+                    }
+                },
+                {
+                    $replaceRoot: {
+                        newRoot: '$aJsnSeguimiento'
+                    }
+                }
+            ]).session(session);
+
+            let indicesRepetidos = [];
+
+            seguimientos.forEach(seg => {
+                jsonSeguimiento.forEach(function(seguimiento, i) {
+                    if (seg.idUser == seguimiento.idUser && seg.strComentario == seguimiento.strComentario) {
+                        indicesRepetidos.push(i);
+                    }
+                });
             });
-            alerta = await Alerts.findOneAndUpdate({ _id: req.query.idAlerta }, { $set: { arrInvitados: arrInvitados } }, { upsert: true, new: true, session: session });
+            for (var i = indicesRepetidos.length - 1; i >= 0; i--) jsonSeguimiento.splice(indicesRepetidos[i], 1);
+
+            alerta = await Alerts.findOneAndUpdate({ _id: req.query.idAlerta }, { $set: {idEstatus: req.body.idEstatus }, $push: { aJsnSeguimiento: jsonSeguimiento } }, { upsert: true, new: true, session: session });
+            await alerta.arrInvitados.forEach(usr => { //Esta funcion elimina los invitados que ya estaban en la BD
+                arrInvitados = arrInvitados.filter((usr) => !alerta.arrInvitados.includes(usr));
+            });
+
+            alerta = await Alerts.findOneAndUpdate({ _id: req.query.idAlerta }, { $push: { arrInvitados: arrInvitados } }, { upsert: true, new: true, session: session });
+            arrIdPersonasCorreos = alerta.arrInvitados;
+            await arrIdPersonasCorreos.push(alerta.idUser);
+
+            let aux = await User.find({ arrEspecialidadPermiso: { $in: alerta.idEspecialidad } }).session(session);
+            aux.forEach(usr => {
+                arrIdPersonasCorreos.push(usr._id);
+            });
+            arrIdPersonasCorreos = await arrIdPersonasCorreos.filter(function(item, pos) {
+                return arrIdPersonasCorreos.indexOf(item) == pos;
+            });
+
+            let aux2 = await User.find({ _id: { $in: arrIdPersonasCorreos } }).session(session);
+            aux2.forEach(usr => {
+                listaCorreos.push(usr.strEmail);
+            });
         });
 
         if (transactionResults) {
+            let emailBody = {
+                nmbEmail: 9,
+                strEmail: listaCorreos.join(','),
+                subject: 'Alguien comento una alerta',
+                // strLink: `${process.env.URL_FRONT}/seguimiento/${idAlert}`,
+                html: `<h1>Una alerta ha sido comentada</h1><br><p>Por favor revisa el siguiente link para poder darle atención:</p><br>`
+            };
+
+            await mailer.sendEmail(emailBody, (err) => {
+                if (err) console.log(err.message);
+            });
+
             return res.status(200).json({
                 ok: true,
                 resp: 200,
@@ -128,11 +187,8 @@ app.post('/', process.middlewares, async(req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/seguimiento/obtener/:idAlert         |
 //|----------------------------------------------------------------------|
-app.get("/obtener/:idAlert", process.middlewares,  (req, res) => {
+app.get("/obtener/:idAlert", process.middlewares, (req, res) => {
     let idAlert = req.params.idAlert;
-    if (process.log) {
-        console.log(" params ", req.params);
-    }
     Alerts.findById(idAlert, { aJsnSeguimiento: 1 })
         .populate([{
             path: "aJsnSeguimiento.idUser",
@@ -158,5 +214,8 @@ app.get("/obtener/:idAlert", process.middlewares,  (req, res) => {
             });
         });
 });
+
+
+
 
 module.exports = app;

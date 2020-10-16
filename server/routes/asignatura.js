@@ -153,7 +153,6 @@ app.put('/actualizar/:idAsignatura', process.middlewares, (req, res) => {
 
     const asignaturaBody = _.pick(req.body, ['strAsignatura', 'strSiglas', 'blnStatus']);
     Asignatura.findOne({ _id: { $ne: [id] }, strAsignatura: { $regex: `^${asignaturaBody.strAsignatura}$`, $options: 'i' } }).then((resp) => {
-        console.log(resp);
         if (resp) {
             return res.status(400).json({
                 ok: false,

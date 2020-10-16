@@ -14,6 +14,11 @@ const seguimiento = new Schema({
        type: Schema.Types.ObjectId, 
        ref: 'Estatus'
    },
+   arrInvitados: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+
+   }],
     strComentario: { 
         type: String,
     }, 
@@ -23,8 +28,10 @@ const seguimiento = new Schema({
         default: true
 
     }
-},{
+}, {
     timestamps: true
 });
 
+
 module.exports = mongoose.model('Seguimiento', seguimiento);
+

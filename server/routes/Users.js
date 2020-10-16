@@ -16,9 +16,8 @@ const jwt = require('jsonwebtoken');
 //| Ruta: http://localhost:3000/api/users/obtener            |
 //|----------------------------------------------------------|
 app.get('/obtener', process.middlewares, (req, res) => {
-    User.find() //select * from usuario where estado=true
-        //solo aceptan valores numericos
-        .exec((err, users) => { //ejecuta la funcion
+    User.find()
+        .exec((err, users) => { 
             if (err) {
                 return res.status(400).json({
                     ok: false,
@@ -38,7 +37,14 @@ app.get('/obtener', process.middlewares, (req, res) => {
 });
 
 
-//si me di a
+//|-----------------Api GET Listado Usuarios ---------------------|
+//| Creada por: Ernesto Gaytan                                    |
+//| Api que retorna un listado de usuarios por especialidad       |
+//| modificada por:                                               |
+//| Fecha de modificacion:                                        |
+//| cambios:                                                      |
+//| Ruta: http://localhost:3000/api/users/obtenerEspecialidad/:id |
+//|---------------------------------------------------------------|
 app.get('/obtenerEspecialidad/:id', process.middlewares, (req, res) => {
     let id = req.params.id;
     User.find({ _id: id })
@@ -105,7 +111,6 @@ app.get('/obtener/:id', process.middlewares, (req, res) => {
 app.post('/registrar', process.middlewares, async(req, res) => {
     let body = req.body;
     let pass = req.body.strPassword;
-    //para poder mandar los datos a la coleccion
     let user = new User({
         strName: req.body.strName,
         strLastName: req.body.strLastName,
@@ -117,7 +122,6 @@ app.post('/registrar', process.middlewares, async(req, res) => {
         blnStatus: req.body.blnStatus
 
     });
-
     // validar el correo que ya existe
     await User.findOne({ 'strEmail': req.body.strEmail }).then(async(encontrado) => {
         if (encontrado) {
@@ -132,6 +136,7 @@ app.post('/registrar', process.middlewares, async(req, res) => {
         }
         await user.save();
         mailOptions = {
+            strFullName: `${user.strName} ${user.strLastName} ${user.strMotherLastName}`,
             nmbEmail: 7,
             strEmail: user.strEmail,
             subject: '¡Bienvenido al sistema de Alertas Academicas!',
@@ -142,8 +147,6 @@ app.post('/registrar', process.middlewares, async(req, res) => {
         await mailer.sendEmail(mailOptions);
         User.find({ idRole: '5f1e2419ad1ebd0b08edab74' }).then((data) => {
             for (const admin of data) {
-                console.log(admin, 'For of');
-
                 mailOptions = {
                     nmbEmail: 8,
                     strEmail: admin.strEmail,
@@ -154,7 +157,6 @@ app.post('/registrar', process.middlewares, async(req, res) => {
             }
 
         }).catch((err) => {
-            console.log('Error');
             console.log(err);
         });
         return res.status(200).json({
@@ -193,7 +195,6 @@ app.post('/registrar', process.middlewares, async(req, res) => {
 app.post('/registro', process.middlewares, async(req, res) => {
     let body = req.body;
     let pass = req.body.strPassword;
-    //para poder mandar los datos a la coleccion
     let user = new User({
         strName: req.body.strName,
         strLastName: req.body.strLastName,
@@ -218,7 +219,7 @@ app.post('/registro', process.middlewares, async(req, res) => {
             });
         }
         jsnCorreo = {
-            strName: user.strName + ' ' + user.strLastName,
+            strFullName: `${user.strName} ${user.strLastName} ${user.strMotherLastName}`,
             strEmail: user.strEmail,
             strPassword: pass,
             subject: 'Usuario registrado',
@@ -259,7 +260,6 @@ app.post('/registro', process.middlewares, async(req, res) => {
 //|-----------------------------------------------------------
 app.put('/actualizar/:idUser', process.middlewares, (req, res) => {
     let id = req.params.idUser;
-    console.log(req.params.idUser)
     const userBody = _.pick(req.body, ['srtName', 'strLastName', 'strMotherLastName', 'strEmail', 'strPassword', 'idRole', 'arrEspecialidadPermiso', 'blnStatus']);
     User.find({ _id: id }).then((resp) => {
         if (resp.length > 0) {
@@ -372,8 +372,6 @@ app.post('/login', (req, res) => {
         }
     });
 });
-
-
 
 //|-------------------------     Api GET de envio de correo              -----------------------|
 //| Creada por: Isabel Castillo                                                                 |
