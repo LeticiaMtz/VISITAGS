@@ -4,7 +4,6 @@ const app = express();
 const mongoose = require('mongoose');
 const Api = require('../models/Api');
 const CategoriaApi = require('../models/CategoriaApi');
-const { verificaToken } = require('../middlewares/autenticacion');
 
 
 //|-----------------          Api POST de api            ----------------|
@@ -15,7 +14,7 @@ const { verificaToken } = require('../middlewares/autenticacion');
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/api/registrar                        |
 //|----------------------------------------------------------------------|
-app.post('/registrar/:idCategoria', [verificaToken], (req, res) => {
+app.post('/registrar/:idCategoria', (req, res) => {
 
     const api = new Api(req.body);
 
@@ -99,9 +98,8 @@ app.post('/registrar/:idCategoria', [verificaToken], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/api/obtener                          |
 //|----------------------------------------------------------------------|
-app.get('/obtener/:idCategoria', [verificaToken], (req, res) => {
+app.get('/obtener/:idCategoria', (req, res) => {
     if (process.log) {
-        console.log(' params ', req.params);
     }
     CategoriaApi.aggregate([{
                 $unwind: '$aJsnRutas'
@@ -169,10 +167,8 @@ app.get('/obtener/:idCategoria', [verificaToken], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/api/actualizar/idCategoria/idApi     |
 //|----------------------------------------------------------------------|
-app.put('/actualizar/:idCategoria/:idApi', [verificaToken], (req, res) => {
+app.put('/actualizar/:idCategoria/:idApi', (req, res) => {
     if (process.log) {
-        console.log(' params ', req.params);
-        console.log(' body ', req.body);
     }
     let api = new Api({
         _id: req.params.idApi,
@@ -284,10 +280,8 @@ app.put('/actualizar/:idCategoria/:idApi', [verificaToken], (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/api/eliminar/idCategoria/idApi       |
 //|----------------------------------------------------------------------|
-app.delete('/eliminar/:idCategoria/:idApi', [verificaToken], (req, res) => {
+app.delete('/eliminar/:idCategoria/:idApi', (req, res) => {
     if (process.log) {
-        console.log(' params ', req.params);
-        console.log(' body ', req.body);
     }
     CategoriaApi.findOneAndUpdate({
             '_id': req.params.idCategoria,

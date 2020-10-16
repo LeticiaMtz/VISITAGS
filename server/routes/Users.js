@@ -3,12 +3,9 @@ const bcrypt = require('bcrypt');
 const _ = require('underscore');
 const {} = require('../middlewares/autenticacion');
 const User = require('../models/Users'); //subir nivel
-const { rolMenuUsuario } = require('../middlewares/permisosUsuarios')
 const app = express();
 const mailer = require('../libraries/mails');
 const jwt = require('jsonwebtoken');
-const async = require('async'); //23
-const crypto = require('crypto'); //23
 
 //|-----------------Api GET Listado Usuarios ----------------|
 //| Creada por: Leticia Moreno                               |
@@ -18,13 +15,9 @@ const crypto = require('crypto'); //23
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/users/obtener            |
 //|----------------------------------------------------------|
-//Obtiene todos los susuarios 
-
-app.get('/obtener', [], (req, res) => {
-
-    User.find() //select * from usuario where estado=true
-        //solo aceptan valores numericos
-        .exec((err, users) => { //ejecuta la funcion
+app.get('/obtener', process.middlewares, (req, res) => {
+    User.find()
+        .exec((err, users) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
@@ -44,8 +37,15 @@ app.get('/obtener', [], (req, res) => {
 });
 
 
-//si me di a
-app.get('/obtenerEspecialidad/:id', [], (req, res) => {
+//|-----------------Api GET Listado Usuarios ---------------------|
+//| Creada por: Ernesto Gaytan                                    |
+//| Api que retorna un listado de usuarios por especialidad       |
+//| modificada por:                                               |
+//| Fecha de modificacion:                                        |
+//| cambios:                                                      |
+//| Ruta: http://localhost:3000/api/users/obtenerEspecialidad/:id |
+//|---------------------------------------------------------------|
+app.get('/obtenerEspecialidad/:id', process.middlewares, (req, res) => {
     let id = req.params.id;
     User.find({ _id: id })
         .populate('arrEspecialidadPermiso._id', 'strNombre')
@@ -69,11 +69,6 @@ app.get('/obtenerEspecialidad/:id', [], (req, res) => {
         });
 });
 
-
-
-
-
-
 //|-----------------Api GET Listado Usuario Id --------------|
 //| Creada por: Leticia Moreno                               |
 //| Api que retorna un listado de usuario por id             |
@@ -82,9 +77,7 @@ app.get('/obtenerEspecialidad/:id', [], (req, res) => {
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/users/obtener/idUser     |
 //|----------------------------------------------------------|
-//Obtener un usuario por id 
-
-app.get('/obtener/:id', [], (req, res) => {
+app.get('/obtener/:id', process.middlewares, (req, res) => {
     let id = req.params.id;
     User.find({ _id: id })
         .populate('idRole', 'strRole')
@@ -109,20 +102,15 @@ app.get('/obtener/:id', [], (req, res) => {
 
 //|-----------------Api POST de Usuarios     ----------------|
 //| Creada por: Leticia Moreno                               |
-//| Api que registra un usuario                              |
+//| Api que registra un usuario con token                    |
 //| modificada por:                                          |
 //| Fecha de modificacion:                                   |
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/users/registrar          |
 //|----------------------------------------------------------|
-//Crear un nuevo usuario con token y checando si tiene permiso 
-
-app.post('/registrar', [], async(req, res) => {
-
+app.post('/registrar', async(req, res) => {
     let body = req.body;
     let pass = req.body.strPassword;
-
-    //para poder mandar los datos a la coleccion
     let user = new User({
         strName: req.body.strName,
         strLastName: req.body.strLastName,
@@ -134,7 +122,6 @@ app.post('/registrar', [], async(req, res) => {
         blnStatus: req.body.blnStatus
 
     });
-
     // validar el correo que ya existe
     await User.findOne({ 'strEmail': req.body.strEmail }).then(async(encontrado) => {
         if (encontrado) {
@@ -145,13 +132,9 @@ app.post('/registrar', [], async(req, res) => {
                 cont: {
                     encontrado
                 }
-
             });
         }
-
         await user.save();
-
-        //Create access token
         mailOptions = {
             nmbEmail: 7,
             strEmail: user.strEmail,
@@ -161,31 +144,21 @@ app.post('/registrar', [], async(req, res) => {
         };
 
         await mailer.sendEmail(mailOptions);
-
         User.find({ idRole: '5f1e2419ad1ebd0b08edab74' }).then((data) => {
-
-
-            // console.log('Usuarios con rol de admin');
-            // console.log(data, 'dataa');
-
             for (const admin of data) {
-                console.log(admin, 'For of');
-
                 mailOptions = {
                     nmbEmail: 8,
+                    strFullName: `${user.strName} ${user.strLastName} ${user.strMotherLastName}`,
                     strEmail: admin.strEmail,
                     subject: '¡Nuevo Registro!',
                     html: '<h1>¡Por favor, revisa las solicitudes de registro!</h1><br>'
                 };
-
                 mailer.sendEmail(mailOptions);
             }
 
         }).catch((err) => {
-            console.log('Error');
             console.log(err);
         });
-
         return res.status(200).json({
             ok: true,
             status: 200,
@@ -195,7 +168,6 @@ app.post('/registrar', [], async(req, res) => {
                 user
             }
         });
-
     }).catch((err) => {
         console.log(err);
         return res.status(500).json({
@@ -207,7 +179,6 @@ app.post('/registrar', [], async(req, res) => {
             }
         });
     });
-
 });
 
 //|-----------------      Api POST de Usuarios  ---------------------------------|
@@ -216,19 +187,14 @@ app.post('/registrar', [], async(req, res) => {
 //| modificada por:  Isabel Castillo                                             |
 //| Fecha de modificacion: 11-08-20                                              |
 //| cambios: Se cambió el envió de datos por un json que ha su ves indica        |
-//|          el template a usar de la libreria de mails.                                               |
+//|          el template a usar de la libreria de mails.                         |
 //|          Se creó un template de bienvenida, el cual esta implementado        |
 //|          en el correo que se envia al registrar un usuario                   |
 //| Ruta: http://localhost:3000/api/users/registrar                              |
 //|------------------------------------------------------------------------------|
-//Registrar sin token 
-
-app.post('/registro', async(req, res) => {
-
+app.post('/registro', process.middlewares, async(req, res) => {
     let body = req.body;
     let pass = req.body.strPassword;
-
-    //para poder mandar los datos a la coleccion
     let user = new User({
         strName: req.body.strName,
         strLastName: req.body.strLastName,
@@ -240,8 +206,6 @@ app.post('/registro', async(req, res) => {
         blnStatus: req.body.blnStatus
 
     });
-
-
     // valida que el correo exista
     await User.findOne({ 'strEmail': req.body.strEmail }).then(async(encontrado) => {
         if (encontrado) {
@@ -254,18 +218,14 @@ app.post('/registro', async(req, res) => {
                 }
             });
         }
-
-
         jsnCorreo = {
-            strName: user.strName + ' ' + user.strLastName,
+            strFullName: `${user.strName} ${user.strLastName} ${user.strMotherLastName}`,
             strEmail: user.strEmail,
             strPassword: pass,
             subject: 'Usuario registrado',
             nmbEmail: 7
         };
-
         await mailer.sendEmail(jsnCorreo);
-
         await new User(user).save();
         return res.status(200).json({
             ok: true,
@@ -277,7 +237,6 @@ app.post('/registro', async(req, res) => {
                 }
             }
         });
-
     }).catch((err) => {
         console.log(err);
         return res.status(500).json({
@@ -289,7 +248,6 @@ app.post('/registro', async(req, res) => {
             }
         });
     });
-
 });
 
 //|-----------------Api PUT de Usuarios      ----------------|
@@ -300,10 +258,8 @@ app.post('/registro', async(req, res) => {
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/users/actualizar/idUser  |
 //|-----------------------------------------------------------
-
-app.put('/actualizar/:idUser', [], (req, res) => {
+app.put('/actualizar/:idUser', process.middlewares, (req, res) => {
     let id = req.params.idUser;
-    console.log(req.params.idUser)
     const userBody = _.pick(req.body, ['srtName', 'strLastName', 'strMotherLastName', 'strEmail', 'strPassword', 'idRole', 'arrEspecialidadPermiso', 'blnStatus']);
     User.find({ _id: id }).then((resp) => {
         if (resp.length > 0) {
@@ -333,6 +289,7 @@ app.put('/actualizar/:idUser', [], (req, res) => {
         });
     });
 });
+
 //|-----------------Api DELETE de Usuarios   ----------------|
 //| Creada por: Leticia Moreno                               |
 //| Api que elimina un usuario                               |
@@ -341,9 +298,8 @@ app.put('/actualizar/:idUser', [], (req, res) => {
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/users/eliminar/idUser    |
 //|----------------------------------------------------------|
-app.delete('/eliminar/:idUser', [], (req, res) => {
+app.delete('/eliminar/:idUser', process.middlewares, (req, res) => {
     let id = req.params.id;
-
     User.findByIdAndUpdate(id, { blnStatus: false }, { new: true, runValidators: true, context: 'query' }, (err, user) => {
         if (err) {
             return res.status(400).json({
@@ -373,9 +329,7 @@ app.delete('/eliminar/:idUser', [], (req, res) => {
 //|----------------------------------------------------------|
 app.post('/login', (req, res) => {
     let body = req.body;
-
     User.findOne({ strEmail: body.strEmail }, (err, usrDB) => {
-
         if (err) {
             return res.status(400).json({
                 ok: false,
@@ -384,41 +338,30 @@ app.post('/login', (req, res) => {
                 err
             });
         }
-
         if (!usrDB) {
-
             return res.status(400).json({
                 ok: false,
                 status: 400,
                 msg: 'Usuario y/o contraseña incorrecta',
             });
-
         }
-
         if (!bcrypt.compareSync(body.strPassword, usrDB.strPassword)) {
-
             return res.status(400).json({
                 ok: false,
                 status: 400,
                 msg: 'Usuario y/o *contraseña incorrecta',
             });
-
         }
         if (usrDB.blnStatus == false) {
-
             return res.status(400).json({
                 ok: false,
                 status: 400,
                 msg: 'Usuario inactivo, comunícate con la orientadora educativa de tu dirección.',
             });
-
         } else {
-
-
             let token = jwt.sign({
                 user: usrDB
             }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN });
-
             return res.status(200).json({
                 ok: true,
                 status: 200,
@@ -430,8 +373,6 @@ app.post('/login', (req, res) => {
     });
 });
 
-
-
 //|-------------------------     Api GET de envio de correo              -----------------------|
 //| Creada por: Isabel Castillo                                                                 |
 //| Api que envia un correo con una URL para cambiar la contraseña del usuario                  |
@@ -440,13 +381,10 @@ app.post('/login', (req, res) => {
 //| cambios:                                                                                    |
 //| Ruta: http://localhost:3000/api/users/forgot/:strEmail                                      |
 //|---------------------------------------------------------------------------------------------|
-
 app.get('/forgot/:strEmail', (req, res) => {
-
     const strEmail = req.params.strEmail;
     caducidadToken = '1hr';
     strUrl = 'http://localhost:4200/#/reset-password';
-
     if (!strEmail) {
         return res.status(400).json({
             ok: false,
@@ -457,10 +395,7 @@ app.get('/forgot/:strEmail', (req, res) => {
             }
         });
     }
-
     User.findOne({ strEmail }, { _id: 1, strName: 1, strLastName: 1 }).then(async(user) => {
-
-
         if (!user) {
             return res.status(404).json({
                 ok: false,
@@ -471,7 +406,6 @@ app.get('/forgot/:strEmail', (req, res) => {
                 }
             });
         }
-
         token = await jwt.sign({
             function(error, token) {
                 if (error) {
@@ -487,7 +421,6 @@ app.get('/forgot/:strEmail', (req, res) => {
         }, process.env.SEED, {
             expiresIn: caducidadToken
         });
-
         //Es un Json
         jsnEmail = {
             strName: user.strName + ' ' + user.strLastName,
@@ -497,18 +430,12 @@ app.get('/forgot/:strEmail', (req, res) => {
             nmbEmail: 4
         };
         await mailer.sendEmail(jsnEmail);
-
         return res.status(200).json({
             ok: true,
             status: 200,
             resp: 'Verifica tu correo electrónico.',
-            cont: {
-
-            }
-        });
-
+        })
     }).catch((err) => {
-
         return res.status(404).json({
             ok: false,
             resp: 404,
@@ -520,7 +447,6 @@ app.get('/forgot/:strEmail', (req, res) => {
     })
 });
 
-
 //|-------------------------     Api PUT de recuperar contraseña         -----------------------|
 //| Creada por: Isabel Castillo                                                                 |
 //| Api que permite cambiar la contraseña del usuario                                           |
@@ -529,16 +455,13 @@ app.get('/forgot/:strEmail', (req, res) => {
 //| cambios:                                                                                    |
 //| Ruta: http://localhost:3000/api/users/reset-password/:token                                 |
 //|---------------------------------------------------------------------------------------------|
-
 app.put('/reset-password/:token', async(req, res) => {
     const token = req.params.token;
     let idUser = '';
-
     passwords = {
         first: req.body.strFPass,
         second: req.body.strSPass,
     };
-
     if (!passwords.first || !passwords.second) {
         return res.status(400).json({
             ok: false,
@@ -549,7 +472,6 @@ app.put('/reset-password/:token', async(req, res) => {
             }
         });
     }
-
     if ((passwords.first.length != passwords.second.length) ||
         passwords.first != passwords.second) {
         return res.status(400).json({
@@ -561,9 +483,7 @@ app.put('/reset-password/:token', async(req, res) => {
             }
         });
     }
-
     await jwt.verify(token, process.env.SEED, (err, dec) => { // Decodifica el token
-
         if (err) {
             return res.status(500).json({
                 ok: false,
@@ -574,15 +494,11 @@ app.put('/reset-password/:token', async(req, res) => {
                 }
             });
         }
-
         if (dec) {
             idUser = dec.idUser ? dec.idUser : '';
         }
     });
-
     User.findByIdAndUpdate(idUser, { strPassword: bcrypt.hashSync(passwords.first, 10) }).then(async(user) => { //Aqui
-
-
         if (!user) {
             return res.status(404).json({
                 ok: false,
@@ -593,7 +509,6 @@ app.put('/reset-password/:token', async(req, res) => {
                 }
             });
         }
-
         jsnEmail = {
             strName: user.strName + ' ' + user.strLastName,
             strEmail: user.strEmail,
@@ -602,7 +517,6 @@ app.put('/reset-password/:token', async(req, res) => {
             nmbEmail: 5
         }
         await mailer.sendEmail(jsnEmail);
-
         return res.status(200).json({
             ok: true,
             resp: 200,
@@ -616,9 +530,7 @@ app.put('/reset-password/:token', async(req, res) => {
                 }
             }
         });
-
     }).catch((err) => {
-
         return res.status(500).json({
             ok: false,
             resp: 500,
@@ -639,17 +551,13 @@ app.put('/reset-password/:token', async(req, res) => {
 //| cambios:                                                                                    |
 //| Ruta: http://localhost:3000/api/users/asignar-especialidad/idUsuario                        |
 //|---------------------------------------------------------------------------------------------|
-
-app.put('/asignar-especialidad/:idUsuario', (req, res) => {
-
+app.put('/asignar-especialidad/:idUsuario', process.middlewares, (req, res) => {
     idUsuario = req.params.idUsuario;
     user = new User(req.params);
-
     // BUSCAR Y ACTUALIZAR EL USUARIO AL MISMO TIEMPO 
     User.findOneAndUpdate({ '_id': idUsuario }, { '$set': { 'arrEspecialidadPermiso': req.body.aJsnEspecialidad } })
         .then((usuario) => {
             if (usuario !== undefined || usuario !== null) {
-
                 return res.status(200).json({
                     ok: true,
                     resp: 200,
@@ -658,9 +566,7 @@ app.put('/asignar-especialidad/:idUsuario', (req, res) => {
                         usuario
                     }
                 });
-
             } else {
-
                 return res.status(400).json({
                     ok: false,
                     resp: 400,
@@ -669,7 +575,6 @@ app.put('/asignar-especialidad/:idUsuario', (req, res) => {
                         err
                     }
                 });
-
             }
         }).catch((err) => {
             console.log(err);
@@ -682,9 +587,6 @@ app.put('/asignar-especialidad/:idUsuario', (req, res) => {
                 }
             })
         })
-
 });
-
-
 
 module.exports = app;

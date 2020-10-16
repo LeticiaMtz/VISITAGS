@@ -4,11 +4,13 @@ const CategoriaApi = require('../models/CategoriaApi');
 const rolMenuUsuario = async(req, res, next) => {
     stUrl = req.originalUrl.split('/');
     let url = String('/' + stUrl[1] + '/' + stUrl[2] + '/' + stUrl[3]);
+    if(url.indexOf('?') > 0){
+        url = url.substring(0, url.indexOf('?')); 
+    }
     let role = req.user.idRole;
     let posiciones = stUrl.length - 1;
     let blnNext = false;
     req.user.stUrl = url;
-
     if (posiciones > 3) {
         for (let i = 0; i < (posiciones - 3); i++) {
             url = url + '/param';

@@ -28,8 +28,10 @@ const seguimiento = new Schema({
         default: true
 
     }
-},{
+}, {
     timestamps: true
 });
 
+
 module.exports = mongoose.model('Seguimiento', seguimiento);
+

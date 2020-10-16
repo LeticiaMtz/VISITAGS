@@ -10,11 +10,10 @@ const path = require('path');
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/descargaSeguimiento/:fileName'       |
 //|----------------------------------------------------------------------|
-app.get('/descargaSeguimiento/:fileName', (req, res) => {
+app.get('/descargaSeguimiento/:fileName', process.middlewares, (req, res) => {
     let name = req.params.fileName;
 
     let filePath = path.resolve(`${__dirname}../../../uploads/seguimiento/${name}`);
-    console.log(filePath);
 
     res.download(filePath, name);
 });
@@ -27,11 +26,9 @@ app.get('/descargaSeguimiento/:fileName', (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/descargaEvidencia/:fileName'         |
 //|----------------------------------------------------------------------|
-app.get('/descargaEvidencia/:fileName', (req, res) => {
+app.get('/descargaEvidencia/:fileName', process.middlewares, (req, res) => {
     let name = req.params.fileName;
-
     let filePath = path.resolve(`${__dirname}../../../uploads/evidencias/${name}`);
-    console.log(filePath);
 
     res.download(filePath, name);
 });
