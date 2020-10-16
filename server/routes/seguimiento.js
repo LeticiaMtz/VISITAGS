@@ -13,6 +13,8 @@ const { isArray } = require("underscore");
 const rutaImg = "seguimiento";
 const mailer = require("../libraries/mails");
 const seguimiento = require("../models/seguimiento");
+const jwt = require('jsonwebtoken');
+
 
 const estatusNuevo = '5f186c5de9475240bc59e4a7';
 const estatusEnProgreso = '5f186c7ee9475240bc59e4a9';
@@ -129,12 +131,20 @@ app.post('/', [], async(req, res) => {
             });
         });
 
+        let url = `${process.env.URL_FRONT}/obtener-url`;
+        let ruta = `/Tracking-alerts/${req.query.idAlerta}`;
+
+        let token = jwt.sign({
+            url: ruta
+        }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN });
+
+
         if (transactionResults) {
             let emailBody = {
-                nmbEmail: 11,
+                nmbEmail: 9,
                 strEmail: listaCorreos.join(','),
                 subject: 'Alguien comento una alerta',
-                strLink: process.env.URL_FRONT,
+                strLink: `${url}/${token}`,
                 html: `<h1>Una alerta ha sido comentada</h1><br><p>Por favor revisa el siguiente link para poder darle atención:</p><br>`
             };
 
