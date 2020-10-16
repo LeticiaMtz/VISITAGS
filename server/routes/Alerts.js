@@ -127,10 +127,10 @@ app.post('/', process.middlewares, async(req, res) => {
 
         let alertas = []; //aqui se almacenan todas la alertas
         var idUsuarioCreador = arrInvitados.indexOf(req.body.idUser); //Busca la pocision del id del creador de la alerta
-        arrInvitados.splice(idUsuarioCreador, 1); //elimina al creador del array de invitados
-        arrInvitados = await arrInvitados.filter(function(item, pos) { //Aqui nos aseguramos que no se repitan los invitados en caso de que el front los envie repetidos
-            return arrInvitados.indexOf(item) == pos;
-        });
+        idUsuarioCreador !== -1 ? arrInvitados.splice(idUsuarioCreador, 1) : //elimina al creador del array de invitados //elimina al creador del array de invitados
+            arrInvitados = await arrInvitados.filter(function(item, pos) { //Aqui nos aseguramos que no se repitan los invitados en caso de que el front los envie repetidos
+                return arrInvitados.indexOf(item) == pos;
+            });
         let invitados = () => { //Esta es una función que conforma el subdocumento de seguimiento para agregar invitados
             let datos = [];
             for (let i = 0; i < arrInvitados.length; i++) {
