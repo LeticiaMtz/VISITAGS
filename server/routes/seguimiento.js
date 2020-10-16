@@ -7,6 +7,8 @@ const User = require("../models/Users");
 const fileUpload = require('../libraries/subirArchivo(1)');
 const { isArray } = require("underscore");
 const mailer = require("../libraries/mails");
+const seguimiento = require("../models/seguimiento");
+const jwt = require('jsonwebtoken');
 
 //|-----------------          Api POST de alertas        ----------------|
 //| Creada por: Miguel Salazar                                           |
@@ -97,7 +99,7 @@ app.post('/', process.middlewares, async(req, res) => {
             });
             for (var i = indicesRepetidos.length - 1; i >= 0; i--) jsonSeguimiento.splice(indicesRepetidos[i], 1);
 
-            alerta = await Alerts.findOneAndUpdate({ _id: req.query.idAlerta }, { $set: {idEstatus: req.body.idEstatus }, $push: { aJsnSeguimiento: jsonSeguimiento } }, { upsert: true, new: true, session: session });
+            alerta = await Alerts.findOneAndUpdate({ _id: req.query.idAlerta }, { $set: { idEstatus: req.body.idEstatus }, $push: { aJsnSeguimiento: jsonSeguimiento } }, { upsert: true, new: true, session: session });
             await alerta.arrInvitados.forEach(usr => { //Esta funcion elimina los invitados que ya estaban en la BD
                 arrInvitados = arrInvitados.filter((usr) => !alerta.arrInvitados.includes(usr));
             });
@@ -120,12 +122,20 @@ app.post('/', process.middlewares, async(req, res) => {
             });
         });
 
+        let url = `${process.env.URL_FRONT}/obtener-url`;
+        let ruta = `/Tracking-alerts/${req.query.idAlerta}`;
+
+        let token = jwt.sign({
+            url: ruta
+        }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN });
+
+
         if (transactionResults) {
             let emailBody = {
                 nmbEmail: 9,
                 strEmail: listaCorreos.join(','),
                 subject: 'Alguien comento una alerta',
-                // strLink: `${process.env.URL_FRONT}/seguimiento/${idAlert}`,
+                strLink: `${url}/${token}`,
                 html: `<h1>Una alerta ha sido comentada</h1><br><p>Por favor revisa el siguiente link para poder darle atención:</p><br>`
             };
 

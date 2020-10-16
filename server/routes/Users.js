@@ -17,7 +17,7 @@ const jwt = require('jsonwebtoken');
 //|----------------------------------------------------------|
 app.get('/obtener', process.middlewares, (req, res) => {
     User.find()
-        .exec((err, users) => { 
+        .exec((err, users) => {
             if (err) {
                 return res.status(400).json({
                     ok: false,
@@ -108,7 +108,7 @@ app.get('/obtener/:id', process.middlewares, (req, res) => {
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/users/registrar          |
 //|----------------------------------------------------------|
-app.post('/registrar', process.middlewares, async(req, res) => {
+app.post('/registrar', async(req, res) => {
     let body = req.body;
     let pass = req.body.strPassword;
     let user = new User({
@@ -136,7 +136,6 @@ app.post('/registrar', process.middlewares, async(req, res) => {
         }
         await user.save();
         mailOptions = {
-            strFullName: `${user.strName} ${user.strLastName} ${user.strMotherLastName}`,
             nmbEmail: 7,
             strEmail: user.strEmail,
             subject: '¡Bienvenido al sistema de Alertas Academicas!',
@@ -149,6 +148,7 @@ app.post('/registrar', process.middlewares, async(req, res) => {
             for (const admin of data) {
                 mailOptions = {
                     nmbEmail: 8,
+                    strFullName: `${user.strName} ${user.strLastName} ${user.strMotherLastName}`,
                     strEmail: admin.strEmail,
                     subject: '¡Nuevo Registro!',
                     html: '<h1>¡Por favor, revisa las solicitudes de registro!</h1><br>'
