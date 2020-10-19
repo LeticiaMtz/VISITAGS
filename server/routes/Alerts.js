@@ -104,7 +104,7 @@ app.post('/', process.middlewares, async(req, res) => {
         let arrMotivosRiesgo = req.body.arrCrde.split(',');
         let arrMatriculas = req.body.strMatricula.split(',');
         let arrNombreAlumnos = req.body.strNombreAlumno.split(',');
-        let arrInvitados = req.body.arrInvitados ? req.body.arrInvitados.split(',') : []; //Generamos array de invitados si es que existen
+        let arrInvitados = req.body.arrInvitados && typeof req.body.arrInvitados !== 'undefined' && req.body.arrInvitados !== '' ? req.body.arrInvitados.split(',') : []; //Generamos array de invitados si es que existen
         let aJsnEvidencias = []; //Array de nombres de archivos
 
         if (req.files && isArray(req.files.strFileEvidencia)) { //Se cargan los archivos si existen
@@ -126,24 +126,28 @@ app.post('/', process.middlewares, async(req, res) => {
         }
 
         let alertas = []; //aqui se almacenan todas la alertas
-        var idUsuarioCreador = arrInvitados.indexOf(req.body.idUser); //Busca la pocision del id del creador de la alerta
-        idUsuarioCreador !== -1 ? arrInvitados.splice(idUsuarioCreador, 1) : //elimina al creador del array de invitados //elimina al creador del array de invitados
-            arrInvitados = await arrInvitados.filter(function(item, pos) { //Aqui nos aseguramos que no se repitan los invitados en caso de que el front los envie repetidos
-                return arrInvitados.indexOf(item) == pos;
-            });
-        let invitados = () => { //Esta es una función que conforma el subdocumento de seguimiento para agregar invitados
-            let datos = [];
-            for (let i = 0; i < arrInvitados.length; i++) {
-                datos.push({
-                    idUser: arrInvitados[i],
-                    idEstatus: estatusNuevo,
-                    strComentario: '<b><i><i class="fa fa-user-plus" aria-hidden="true"></i>"Se ha unido a la alerta"</i></b>'
-                });
-            }
-            return datos;
-        };
+        let aJsnSeguimiento = null; //Aqui se almacenan los invitados como comentarios de seguimiento
 
-        let aJsnSeguimiento = invitados();
+        if (arrInvitados.length > 0) { //Verificamos que realmente existen invitados
+            var idUsuarioCreador = arrInvitados.indexOf(req.body.idUser); //Busca la pocision del id del creador de la alerta
+            idUsuarioCreador !== -1 ? arrInvitados.splice(idUsuarioCreador, 1) : //elimina al creador del array de invitados
+                arrInvitados = await arrInvitados.filter(function(item, pos) { //Aqui nos aseguramos que no se repitan los invitados en caso de que el front los envie repetidos
+                    return arrInvitados.indexOf(item) == pos;
+                });
+            let invitados = () => { //Esta es una función que conforma el subdocumento de seguimiento para agregar invitados
+                let datos = [];
+                for (let i = 0; i < arrInvitados.length; i++) {
+                    datos.push({
+                        idUser: arrInvitados[i],
+                        idEstatus: estatusNuevo,
+                        strComentario: '<b><i><i class="fa fa-user-plus" aria-hidden="true"></i>"Se ha unido para colaborar en esta alerta"</i></b>'
+                    });
+                }
+                return datos;
+            };
+
+            aJsnSeguimiento = invitados();
+        }
 
         for (let i = 0; i < arrMatriculas.length; i++) {
             alertas.push({
@@ -160,9 +164,9 @@ app.post('/', process.middlewares, async(req, res) => {
                 strDescripcion: req.body.strDescripcion,
                 arrCrde: arrMotivosRiesgo,
                 arrInvitados: arrInvitados,
-                aJsnEvidencias: aJsnEvidencias,
-                aJsnSeguimiento: aJsnSeguimiento
+                aJsnEvidencias: aJsnEvidencias
             });
+            if (aJsnSeguimiento !== null) alertas[i].aJsnSeguimiento = aJsnSeguimiento;
         }
 
         let listaDeCorreos = []; //Variable que guarda la lista de correos tanto para invitado como para usuarios con el rol de esa especialidad
@@ -223,7 +227,7 @@ app.post('/', process.middlewares, async(req, res) => {
             return res.status(500).json({
                 ok: false,
                 resp: 500,
-                msg: "Error al intentar registrar la alerta 1",
+                msg: "Error al intentar registrar la alerta.",
                 cont: {
                     error: `Se ha encontrado un valor duplicado: (${Object.keys(
                 error.keyValue
@@ -234,7 +238,7 @@ app.post('/', process.middlewares, async(req, res) => {
             return res.status(500).json({
                 ok: false,
                 resp: 500,
-                msg: "Error al intentar registrar la alerta 2",
+                msg: "Error al intentar registrar la alerta..",
                 cont: {
                     error: Object.keys(error).length === 0 ? error.message : error,
                 },
@@ -508,5 +512,66 @@ app.get('/obtenerAlertasMonitor/:idCarrera/:idEspecialidad/:idUser/:idAsignatura
         });
 });
 
+app.get('/reporteMonitor', process.middlewares, async(req, res) => {
+    const session = await db.startSession();
+
+    try {
+        let filtros = {};
+
+        if (req.query.idCarrera && typeof req.query.idCarrera !== 'undefined' && req.query.idCarrera !== '') filtros.idCarrera = req.query.idCarrera;
+        if (req.query.idEspecialidad && typeof req.query.idEspecialidad !== 'undefined' && req.query.idEspecialidad !== '') filtros.idEspecialidad = req.query.idEspecialidad;
+        if (req.query.idCarrera && typeof req.query.idCarrera !== 'undefined' && req.query.idCarrera !== '') filtros.idCarrera = req.query.idCarrera;
+        if (req.query.idCarrera && typeof req.query.idCarrera !== 'undefined' && req.query.idCarrera !== '') filtros.idCarrera = req.query.idCarrera;
+
+        const transactionResults = await session.withTransaction(async() => {
+
+        });
+
+        if (transactionResults) {
+            return res.status(200).json({
+                ok: true,
+                resp: 200,
+                msg: "El reporte se ha consultado con exito.",
+                cont: {
+                    listaAlertas,
+                },
+            });
+        } else {
+            return res.status(500).json({
+                ok: false,
+                resp: 500,
+                msg: "No se ha podido crear la alerta.",
+                cont: {
+                    error: "La transacción no se completó satisfactoriamente",
+                },
+            });
+        }
+
+    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(500).json({
+                ok: false,
+                resp: 500,
+                msg: "Error al intentar registrar la alerta 1",
+                cont: {
+                    error: `Se ha encontrado un valor duplicado: (${Object.keys(
+                error.keyValue
+              )}:${Object.values(error.keyValue)})`,
+                },
+            });
+        } else {
+            return res.status(500).json({
+                ok: false,
+                resp: 500,
+                msg: "Error al intentar registrar la alerta 2",
+                cont: {
+                    error: Object.keys(error).length === 0 ? error.message : error,
+                },
+            });
+        }
+    } finally {
+        session.endSession();
+    }
+});
 
 module.exports = app;

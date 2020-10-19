@@ -48,25 +48,28 @@ app.post('/', process.middlewares, async(req, res) => {
             });
         }
 
-        let jsonSeguimiento = []; //array del seguimiento del que comenta y de sus invitados
-        jsonSeguimiento.push({
-            idUser: req.body.idUser,
-            idEstatus: req.body.idEstatus,
-            strComentario: req.body.strComentario,
-            aJsnEvidencias
-        });
+        let jsonSeguimiento = []; //array del seguimiento del que comenta y de sus invitados        
 
         if (arrInvitados.length > 0) {
             arrInvitados.forEach(usr => {
                 if (req.body.idUser !== usr) {
                     jsonSeguimiento.push({
+                        createdAt: new Date(),
                         idUser: usr,
                         idEstatus: req.body.idEstatus,
-                        strComentario: '<b><i><i class="fa fa-user-plus" aria-hidden="true"></i>"Se ha unido a la alerta"</i></b>',
+                        strComentario: '<b><i><i class="fa fa-user-plus" aria-hidden="true"></i>"Se ha unido para colaborar en esta alerta"</i></b>',
                     });
                 }
             });
         }
+
+        jsonSeguimiento.push({
+            createdAt: new Date(),
+            idUser: req.body.idUser,
+            idEstatus: req.body.idEstatus,
+            strComentario: req.body.strComentario,
+            aJsnEvidencias
+        });
 
         let alerta; //aqui se almacenan los datos de la alerta de la base de datos
         let arrIdPersonasCorreos = []; //Aqui guardamos todos los id de persona
@@ -90,14 +93,16 @@ app.post('/', process.middlewares, async(req, res) => {
 
             let indicesRepetidos = [];
 
-            seguimientos.forEach(seg => {
-                jsonSeguimiento.forEach(function(seguimiento, i) {
-                    if (seg.idUser == seguimiento.idUser && seg.strComentario == seguimiento.strComentario) {
-                        indicesRepetidos.push(i);
-                    }
+            if (seguimientos.length > 0) {
+                seguimientos.forEach(seg => {
+                    jsonSeguimiento.forEach(function(seguimiento, i) {
+                        if (seg.idUser == seguimiento.idUser && seg.strComentario == seguimiento.strComentario) {
+                            indicesRepetidos.push(i);
+                        }
+                    });
                 });
-            });
-            for (var i = indicesRepetidos.length - 1; i >= 0; i--) jsonSeguimiento.splice(indicesRepetidos[i], 1);
+                for (var i = indicesRepetidos.length - 1; i >= 0; i--) jsonSeguimiento.splice(indicesRepetidos[i], 1);
+            }
 
             alerta = await Alerts.findOneAndUpdate({ _id: req.query.idAlerta }, { $set: { idEstatus: req.body.idEstatus }, $push: { aJsnSeguimiento: jsonSeguimiento } }, { upsert: true, new: true, session: session });
             await alerta.arrInvitados.forEach(usr => { //Esta funcion elimina los invitados que ya estaban en la BD
@@ -166,7 +171,7 @@ app.post('/', process.middlewares, async(req, res) => {
             return res.status(500).json({
                 ok: false,
                 resp: 500,
-                msg: "Error al intentar registrar la alerta",
+                msg: "Error al intentar registrar el comentario.",
                 cont: {
                     error: `Se ha encontrado un valor duplicado: (${Object.keys(
             error.keyValue
@@ -177,9 +182,9 @@ app.post('/', process.middlewares, async(req, res) => {
             return res.status(500).json({
                 ok: false,
                 resp: 500,
-                msg: "Error al intentar registrar la alerta.",
+                msg: "Error al intentar registrar el comentario..",
                 cont: {
-                    error: Object.keys(error).length === 0 ? error.message : error,
+                    error: Object.keys(error).length === 0 ? error.message : error
                 },
             });
         }
