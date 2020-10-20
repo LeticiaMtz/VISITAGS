@@ -17,6 +17,7 @@ app.post('/registrar/:idCarrera', process.middlewares, (req, res) => {
     let strEspecialidad = '';
     let esp = req.body.strEspecialidad.toLowerCase();
     for (let i = 0; i < esp.length; i++) {
+        esp[i] = esp[i].charAt(0).toUpperCase() + esp[i].substring(1);
         if (i == 0) {
             strEspecialidad += esp[i].charAt(0).toUpperCase();
         } else {
