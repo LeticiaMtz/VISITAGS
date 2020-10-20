@@ -144,7 +144,7 @@ app.post('/registrar', async(req, res) => {
         };
 
         await mailer.sendEmail(mailOptions);
-        User.find({ idRole: '5f1e2419ad1ebd0b08edab74' }).then((data) => {
+        User.find({ idRole: { $in: ['5f1e2419ad1ebd0b08edab74', '5eeee0db16952756482d186a'] } }).then((data) => {
             for (const admin of data) {
                 mailOptions = {
                     nmbEmail: 8,
