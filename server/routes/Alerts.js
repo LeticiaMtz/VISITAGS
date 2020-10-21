@@ -1,8 +1,10 @@
 require('./../config/config');
 const express = require('express');
 const db = require("mongoose");
+const moment = require("moment");
 const _ = require('underscore');
 const Alert = require('../models/Alerts'); //subir nivel
+const Carrera = require('../models/carreras');
 const app = express();
 const fileUpload = require('../libraries/subirArchivo(1)');
 const User = require('../models/Users');
@@ -265,7 +267,7 @@ app.get('/obtenerAlertas/:idRol/:idUser', process.middlewares, async(req, res) =
 
 
     if (idRol == idProfesor) {
-        Alert.find({ $or: [{ idUser: idUser }, { arrInvitados: { $in: [idUser] } }] }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }]).then(async(resp) => {
+        Alert.find({ $or: [{ idUser: idUser }, { arrInvitados: { $in: [idUser] } }] }).sort({ updatedAt: 'desc' }).limit(8).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }]).then(async(resp) => {
             let alertas = resp.map(alert => alert.toObject());
             const motivos = await Crde.aggregate().unwind('aJsnMotivo').replaceRoot('aJsnMotivo');
 
@@ -294,7 +296,7 @@ app.get('/obtenerAlertas/:idRol/:idUser', process.middlewares, async(req, res) =
         });
     } else if (idRol == idAdministrador) {
 
-        Alert.find({ $or: [{ idUser: idUser }, { arrInvitados: { $in: [idUser] } }] }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }])
+        Alert.find({ $or: [{ idUser: idUser }, { arrInvitados: { $in: [idUser] } }] }).sort({ updatedAt: 'desc' }).limit(8).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }])
             .then(async(resp) => {
 
                 let alertas = resp.map(alert => alert.toObject());
@@ -341,7 +343,7 @@ app.get('/obtenerAlertas/:idRol/:idUser', process.middlewares, async(req, res) =
         let arrAlertas = [];
 
         for (const idEspecialidad of arrEspecialidad) {
-            await Alert.find({ $or: [{ idUser: idUser }, { idEspecialidad }, { arrInvitados: { $in: [idUser] } }] }).sort({ updatedAt: 'desc' }).limit(5).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }]).then(async(alertas) => {
+            await Alert.find({ $or: [{ idUser: idUser }, { idEspecialidad }, { arrInvitados: { $in: [idUser] } }] }).sort({ updatedAt: 'desc' }).limit(8).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }]).then(async(alertas) => {
                 for (const i of alertas) {
                     if (i.blnStatus != undefined) {
                         await arrAlertas.push(i);
@@ -518,13 +520,55 @@ app.get('/reporteMonitor', process.middlewares, async(req, res) => {
     try {
         let filtros = {};
 
-        if (req.query.idCarrera && typeof req.query.idCarrera !== 'undefined' && req.query.idCarrera !== '') filtros.idCarrera = req.query.idCarrera;
+        if (!req.query.idCarrera || typeof req.query.idCarrera === 'undefined' || req.query.idCarrera === '') throw "Por favor seleccione una carrera";
+        filtros.idCarrera = req.query.idCarrera;
         if (req.query.idEspecialidad && typeof req.query.idEspecialidad !== 'undefined' && req.query.idEspecialidad !== '') filtros.idEspecialidad = req.query.idEspecialidad;
-        if (req.query.idCarrera && typeof req.query.idCarrera !== 'undefined' && req.query.idCarrera !== '') filtros.idCarrera = req.query.idCarrera;
-        if (req.query.idCarrera && typeof req.query.idCarrera !== 'undefined' && req.query.idCarrera !== '') filtros.idCarrera = req.query.idCarrera;
+        if (req.query.idAsignatura && typeof req.query.idAsignatura !== 'undefined' && req.query.idAsignatura !== '') filtros.idAsignatura = req.query.idAsignatura;
+        // if (req.query.idProfesor && typeof req.query.idProfesor !== 'undefined' && req.query.idProfesor !== '') filtros.idProfesor = req.query.idProfesor;
+        if (req.query.idEstatus && typeof req.query.idEstatus !== 'undefined' && req.query.idEstatus !== '') filtros.idEstatus = req.query.idEstatus;
+        if (req.query.dteFechaInicio && typeof req.query.dteFechaInicio !== 'undefined' && req.query.dteFechaInicio !== '') {
+            if (req.query.dteFechaFin && typeof req.query.dteFechaFin !== 'undefined' && req.query.dteFechaFin !== '') {
+                filtros.createdAt = { "$gte": moment(req.query.dteFechaInicio).utcOffset(0).set({ hour: 0, minute: 0 }).toISOString(), "$lt": moment(req.query.dteFechaFin).utcOffset(0).set({ hour: 23, minute: 59 }).toISOString() };
+            } else {
+                filtros.createdAt = { "$gte": moment(req.query.dteFechaInicio).utcOffset(0).set({ hour: 0, minute: 0 }).toISOString() };
+            }
+        }
+        let alertas = null;
 
         const transactionResults = await session.withTransaction(async() => {
+            // let arrEspecialidadesUsuario = req.user.arrEspecialidadPermiso;
 
+            // let carrerasUsuario = null;
+            // if (filtros.idCarrera) {
+            //     carrerasUsuario = await Carrera.findOne({
+            //         _id: filtros.idCarrera,
+            //         "aJsnEspecialidad._id": {
+            //             $in: arrEspecialidadesUsuario
+            //         }
+            //     }).session(session);
+            // }
+
+            // if (carrerasUsuario === null) throw "Lo sentimos, no existe ninguna alerta creada por ti con esa carrera";
+            // if (filtros.idEspecialidad && !arrEspecialidadesUsuario.includes(filtros.idEspecialidad)) throw "Lo sentimos, no existe ninguna alerta creada por ti con esa especialidad";
+
+            console.log(filtros);
+            alertas = await Alert.find({
+                "$and": [{
+                        "$or": [{
+                                idUser: {
+                                    "$in": [req.user._id]
+                                }
+                            },
+                            {
+                                arrInvitados: {
+                                    "$in": [req.user._id]
+                                }
+                            }
+                        ]
+                    },
+                    filtros
+                ]
+            }).session(session);
         });
 
         if (transactionResults) {
@@ -533,17 +577,18 @@ app.get('/reporteMonitor', process.middlewares, async(req, res) => {
                 resp: 200,
                 msg: "El reporte se ha consultado con exito.",
                 cont: {
-                    listaAlertas,
-                },
+                    count: alertas.length,
+                    alertas
+                }
             });
         } else {
             return res.status(500).json({
                 ok: false,
                 resp: 500,
-                msg: "No se ha podido crear la alerta.",
+                msg: "Error al intentar obtener el reporte",
                 cont: {
                     error: "La transacción no se completó satisfactoriamente",
-                },
+                }
             });
         }
 
@@ -552,21 +597,21 @@ app.get('/reporteMonitor', process.middlewares, async(req, res) => {
             return res.status(500).json({
                 ok: false,
                 resp: 500,
-                msg: "Error al intentar registrar la alerta 1",
+                msg: "Error al intentar obtener el reporte.",
                 cont: {
                     error: `Se ha encontrado un valor duplicado: (${Object.keys(
                 error.keyValue
               )}:${Object.values(error.keyValue)})`,
-                },
+                }
             });
         } else {
             return res.status(500).json({
                 ok: false,
                 resp: 500,
-                msg: "Error al intentar registrar la alerta 2",
+                msg: "Error al intentar obtener el reporte..",
                 cont: {
                     error: Object.keys(error).length === 0 ? error.message : error,
-                },
+                }
             });
         }
     } finally {
