@@ -16,6 +16,9 @@ const app = express();
 app.get('/obtener', process.middlewares, (req, res) => {
     Carrera.find() //select * from usuario where estado=true
         //solo aceptan valores numericos
+        .sort({
+            strCarrera: -1
+        })
         .exec((err, carrera) => { //ejecuta la funcion
             if (err) {
                 return res.status(400).json({
@@ -121,7 +124,7 @@ app.post('/registrar', process.middlewares, (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/carreras/actualizar/idCarrera        |
 //|----------------------------------------------------------------------|
-app.put('/actualizar/:idCarrera', process.middlewares,  (req, res) => {
+app.put('/actualizar/:idCarrera', process.middlewares, (req, res) => {
     let id = req.params.idCarrera;
     let numParam = Object.keys(req.body).length;
 

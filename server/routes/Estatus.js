@@ -1,5 +1,6 @@
 const express = require('express');
-const bcrypt = require('bcrypt');const _ = require('underscore');
+const bcrypt = require('bcrypt');
+const _ = require('underscore');
 const Estatus = require('../models/Estatus'); //subir nivel
 const app = express();
 const mongoose = require('mongoose');
@@ -16,7 +17,7 @@ const idCoordinador = '5eeee0db16952756482d186a';
 //| Ruta: http://localhost:3000/api/estatus/obtener          |
 //|----------------------------------------------------------|
 app.get('/obtener', process.middlewares, (req, res) => {
-    Estatus.find().exec((err, estatus) => { //ejecuta la funcion
+    Estatus.find({ blnActivo: true }).exec((err, estatus) => { //ejecuta la funcion
         if (err) {
             return res.status(400).json({
                 ok: false,
@@ -199,7 +200,7 @@ app.put('/actualizar/:idEstatus', process.middlewares, (req, res) => {
                 err: resp
             });
         }
-        
+
         Estatus.findByIdAndUpdate(id, estatusBody).then((resp) => {
             return res.status(200).json({
                 ok: true,

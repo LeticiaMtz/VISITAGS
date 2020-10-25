@@ -1,6 +1,7 @@
 require('./../config/config');
 const express = require('express');
 const db = require("mongoose");
+// db.set('debug', true);
 const moment = require("moment");
 const _ = require('underscore');
 const Alert = require('../models/Alerts'); //subir nivel
@@ -524,7 +525,6 @@ app.get('/reporteMonitor', process.middlewares, async(req, res) => {
         filtros.idCarrera = req.query.idCarrera;
         if (req.query.idEspecialidad && typeof req.query.idEspecialidad !== 'undefined' && req.query.idEspecialidad !== '') filtros.idEspecialidad = req.query.idEspecialidad;
         if (req.query.idAsignatura && typeof req.query.idAsignatura !== 'undefined' && req.query.idAsignatura !== '') filtros.idAsignatura = req.query.idAsignatura;
-        // if (req.query.idProfesor && typeof req.query.idProfesor !== 'undefined' && req.query.idProfesor !== '') filtros.idProfesor = req.query.idProfesor;
         if (req.query.idEstatus && typeof req.query.idEstatus !== 'undefined' && req.query.idEstatus !== '') filtros.idEstatus = req.query.idEstatus;
         if (req.query.dteFechaInicio && typeof req.query.dteFechaInicio !== 'undefined' && req.query.dteFechaInicio !== '') {
             if (req.query.dteFechaFin && typeof req.query.dteFechaFin !== 'undefined' && req.query.dteFechaFin !== '') {
@@ -534,41 +534,71 @@ app.get('/reporteMonitor', process.middlewares, async(req, res) => {
             }
         }
         let alertas = null;
+        let resultados = null;
 
         const transactionResults = await session.withTransaction(async() => {
-            // let arrEspecialidadesUsuario = req.user.arrEspecialidadPermiso;
+            let arrEspecialidadesUsuario = req.user.arrEspecialidadPermiso;
 
-            // let carrerasUsuario = null;
-            // if (filtros.idCarrera) {
-            //     carrerasUsuario = await Carrera.findOne({
-            //         _id: filtros.idCarrera,
-            //         "aJsnEspecialidad._id": {
-            //             $in: arrEspecialidadesUsuario
-            //         }
-            //     }).session(session);
-            // }
-
-            // if (carrerasUsuario === null) throw "Lo sentimos, no existe ninguna alerta creada por ti con esa carrera";
-            // if (filtros.idEspecialidad && !arrEspecialidadesUsuario.includes(filtros.idEspecialidad)) throw "Lo sentimos, no existe ninguna alerta creada por ti con esa especialidad";
-
-            console.log(filtros);
-            alertas = await Alert.find({
-                "$and": [{
-                        "$or": [{
-                                idUser: {
-                                    "$in": [req.user._id]
+            if (arrEspecialidadesUsuario.length == 0) {
+                filtros.idUser = req.user._id;
+                if (req.query.idProfesor && typeof req.query.idProfesor !== 'undefined' && req.query.idProfesor !== '' && req.query.idProfesor != req.user._id) throw "Lo sentimos, no tienes permisos para ver alertas de otros usuarios";
+                alertas = await Alert.find({
+                    "$and": [{
+                            "$or": [{
+                                    idUser: {
+                                        "$in": [filtros.idUser]
+                                    }
+                                },
+                                {
+                                    arrInvitados: {
+                                        "$in": [filtros.idUser]
+                                    }
                                 }
-                            },
-                            {
-                                arrInvitados: {
-                                    "$in": [req.user._id]
-                                }
-                            }
-                        ]
+                            ]
+                        },
+                        filtros
+                    ]
+                }).populate([{
+                        path: 'idCarrera',
+                        select: 'strCarrera',
+                        populate: { path: 'aJsnEspecialidad', select: 'strEspecialidad' }
                     },
-                    filtros
-                ]
-            }).session(session);
+                    { path: 'idAsignatura', select: 'strAsignatura' },
+                    { path: 'idUser', select: 'strName strLastName strMotherLastName' },
+                    { path: 'idEstatus', select: 'strNombre' }
+                ]).session(session);
+            } else {
+                let carrerasUsuario = null;
+                carrerasUsuario = await Carrera.findOne({
+                    _id: filtros.idCarrera,
+                    "aJsnEspecialidad._id": {
+                        $in: arrEspecialidadesUsuario
+                    }
+                }).session(session);
+
+                if (carrerasUsuario === null) throw "Lo sentimos, no obtuvimos resultados para esa carrera";
+                if (filtros.idEspecialidad && !arrEspecialidadesUsuario.includes(filtros.idEspecialidad)) throw "Lo sentimos, no obtuvimos resultados para esa especialidad";
+                if (req.query.idProfesor && typeof req.query.idProfesor !== 'undefined' && req.query.idProfesor !== '') filtros.idUser = req.query.idProfesor;
+
+                alertas = await Alert.find(filtros).populate([{
+                        path: 'idCarrera',
+                        select: 'strCarrera',
+                        populate: { path: 'aJsnEspecialidad', select: 'strEspecialidad' }
+                    },
+                    { path: 'idAsignatura', select: 'strAsignatura' },
+                    { path: 'idUser', select: 'strName strLastName strMotherLastName' },
+                    { path: 'idEstatus', select: 'strNombre' }
+                ]).session(session);
+            }
+
+            resultados = alertas.map(alert => alert.toObject());
+            const motivos = await Crde.aggregate().unwind('aJsnMotivo').replaceRoot('aJsnMotivo');
+            for (const alerta of resultados) {
+                for (const index of alerta.arrCrde.keys()) {
+                    let crde = motivos.find(motivo => motivo._id.toString() === alerta.arrCrde[index].toString());
+                    if (crde) alerta.arrCrde[index] = crde;
+                }
+            }
         });
 
         if (transactionResults) {
@@ -577,8 +607,8 @@ app.get('/reporteMonitor', process.middlewares, async(req, res) => {
                 resp: 200,
                 msg: "El reporte se ha consultado con exito.",
                 cont: {
-                    count: alertas.length,
-                    alertas
+                    count: resultados.length,
+                    resultados
                 }
             });
         } else {
