@@ -10,7 +10,7 @@ app.use('/carreras', require('./carreras'));
 app.use('/especialidad', require('./especialidad'));
 app.use('/crde', require('./crde'));
 app.use('/motivosCrde', require('./motivosCrde'));
-app.use('/estatus', require('./estatus'));
+app.use('/estatus', require('./Estatus'));
 app.use('/asignatura', require('./asignatura'));
 app.use('/modalidad', require('./modalidad'));
 app.use('/seguimiento', require('./seguimiento'));
