@@ -1,7 +1,7 @@
 require('./../config/config');
 const express = require('express');
 const db = require("mongoose");
-// db.set('debug', true);
+db.set('debug', true);
 const moment = require("moment");
 const _ = require('underscore');
 const Alert = require('../models/Alerts'); //subir nivel
