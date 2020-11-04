@@ -14,8 +14,7 @@ const Crde = require('../models/crde');
 //| Ruta: http://localhost:3000/api/motivosCrde/registrar/idCrde                                     |
 //|--------------------------------------------------------------------------------------------------|
 app.post('/registrar/:idCrde', process.middlewares, (req, res) => {
-    if (process.log) {
-    }
+    if (process.log) {}
     let strNombre = '';
     let motiv = req.body.strNombre.toLowerCase();
     for (let i = 0; i < motiv.length; i++) {
@@ -124,8 +123,7 @@ app.post('/registrar/:idCrde', process.middlewares, (req, res) => {
 //| Ruta: http://localhost:3000/api/motivosCrde/obtener/idCrde |
 //|------------------------------------------------------------|
 app.get('/obtener/:idCrde', process.middlewares, (req, res) => {
-    if (process.log) {
-    }
+    if (process.log) {}
     Crde.aggregate([{
                 $unwind: '$aJsnMotivo'
             },
@@ -191,8 +189,7 @@ app.get('/obtener/:idCrde', process.middlewares, (req, res) => {
 //| Ruta: http://localhost:3000/api/motivosCrde/actualizar/idCrde/idMoivo |
 //|-----------------------------------------------------------------------|
 app.put('/actualizar/:idCrde/:idMotivo', process.middlewares, (req, res) => {
-    if (process.log) {
-    }
+    if (process.log) {}
     let motivo = new Motivo({
         _id: req.params.idMotivo,
         strNombre: req.body.strNombre,
@@ -215,8 +212,9 @@ app.put('/actualizar/:idCrde/:idMotivo', process.middlewares, (req, res) => {
         },
         {
             $match: {
-                _id: { $ne: [mongoose.Types.ObjectId(req.params.idMotivo)] },
-                'aJsnMotivo.strNombre': { $regex: `^${req.body.strNombre}$`, $options: 'i' }
+                _id: mongoose.Types.ObjectId(req.params.idCrde),
+                'aJsnMotivo.strNombre': { $regex: `^${req.body.strNombre}$`, $options: 'i' },
+                'aJsnMotivo._id': { $nin: [mongoose.Types.ObjectId(req.params.idMotivo)] }
             }
         },
         {
@@ -236,6 +234,8 @@ app.put('/actualizar/:idCrde/:idMotivo', process.middlewares, (req, res) => {
             });
         }
         if (resp.length > 0) {
+
+            console.log(resp);
             return res.status(400).json({
                 ok: false,
                 resp: 400,
@@ -291,8 +291,7 @@ app.put('/actualizar/:idCrde/:idMotivo', process.middlewares, (req, res) => {
 //| Ruta: http://localhost:3000/api/motivosCrde/eliminar/idCrde/idMotivo |
 //|----------------------------------------------------------------------|
 app.delete('/eliminar/:idCrde/:idMotivo', process.middlewares, (req, res) => {
-    if (process.log) {
-    }
+    if (process.log) {}
     Crde.findOneAndUpdate({
             '_id': req.params.idCrde,
             'aJsnMotivo._id': req.params.idMotivo
