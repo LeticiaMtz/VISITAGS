@@ -9,7 +9,7 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'dev';
 let urlDB;
 
 //URL DEL FRONT-END
-process.env.URL_FRONT = process.env.URL_FRONT || 'http://172.16.50.41:4200/#/';
+process.env.URL_FRONT = process.env.URL_FRONT || 'http://172.16.50.41/alertasAcademicas/#/';
 
 if (process.env.NODE_ENV === 'dev') { //Son todas las funciones y procesos que tienen el amibiente del desarrollo que es local 
     urlDB = 'mongodb+srv://AdminAA:AlertasAcademicas@cluster0-mquqh.mongodb.net/AlertasAcademicas?authSource=admin&replicaSet=Cluster0-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass&retryWrites=true&ssl=true';
