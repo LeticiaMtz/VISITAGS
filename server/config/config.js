@@ -5,6 +5,9 @@ const { verificaToken } = require("../middlewares/autenticacion");
 process.env.PORT = process.env.PORT || 3000;
 // Declaracion de entorno, funcion que nos dara en que ambiente estamos
 process.env.NODE_ENV = process.env.NODE_ENV || 'dev';
+//Declaracion de credenciales de correo.
+process.env.DIRECCION_CORREO = process.env.DIRECCION_CORREO || 'notificaciones.desarrollo@utags.edu.mx';
+process.env.CONTRASENIA_CORREO =  process.env.CONTRASENIA_CORREO  || '!9,G\\qEqU8p==>jE'; 
 //Conexion a la base de datios 
 let urlDB;
 
