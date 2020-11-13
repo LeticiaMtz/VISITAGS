@@ -384,7 +384,7 @@ app.post('/login', (req, res) => {
 app.get('/forgot/:strEmail', (req, res) => {
     const strEmail = req.params.strEmail;
     caducidadToken = '1hr';
-    strUrl = 'http://localhost:4200/#/reset-password';
+    strUrl = `${process.env.URL_FRONT}/reset-password`
     if (!strEmail) {
         return res.status(400).json({
             ok: false,

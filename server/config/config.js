@@ -11,8 +11,8 @@ process.env.CONTRASENIA_CORREO =  process.env.CONTRASENIA_CORREO  || '!9,G\\qEqU
 //Conexion a la base de datios 
 let urlDB;
 
-//URL DEL FRONT-END
-process.env.URL_FRONT = process.env.URL_FRONT || 'http://172.16.50.41/alertasAcademicas/#/';
+//URL DEL FRONT-END PRODUCCIÓN
+process.env.URL_FRONT = process.env.URL_FRONT || 'https://seguimiento-tutoral.fs.utags.edu.mx/#/';
 
 if (process.env.NODE_ENV === 'dev') { //Son todas las funciones y procesos que tienen el amibiente del desarrollo que es local 
     urlDB = 'mongodb+srv://AdminAA:AlertasAcademicas@cluster0-mquqh.mongodb.net/AlertasAcademicas?authSource=admin&replicaSet=Cluster0-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass&retryWrites=true&ssl=true';
