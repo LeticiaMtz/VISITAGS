@@ -216,7 +216,7 @@ app.get("/obtener/:idAlert", process.middlewares, (req, res) => {
                 return res.status(400).json({
                     ok: false,
                     status: 400,
-                    msg: "Error al encontrar el seguimeinto de la alerta ",
+                    msg: "Error al encontrar el seguimiento de la alerta ",
                     cnt: err,
                 });
             }
