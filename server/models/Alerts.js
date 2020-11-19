@@ -19,14 +19,14 @@ const alerts = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Estatus'
     },
-    strMatricula: {
+    strMatricula: [{
         type: String,
         required: [true, 'Porfavor ingresa la matricula']
-    },
-    strNombreAlumno: {
+    }],
+    strNombreAlumno: [{
         type: String,
         required: [true, 'Porfavor ingresa el nombre completo del estudiante']
-    },
+    }],
     idAsignatura: {
         type: Schema.Types.ObjectId,
         ref: 'Asignatura',
