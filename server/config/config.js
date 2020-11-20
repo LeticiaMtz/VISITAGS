@@ -7,12 +7,12 @@ process.env.PORT = process.env.PORT || 3000;
 process.env.NODE_ENV = process.env.NODE_ENV || 'dev';
 //Declaracion de credenciales de correo.
 process.env.DIRECCION_CORREO = process.env.DIRECCION_CORREO || 'notificaciones.desarrollo@utags.edu.mx';
-process.env.CONTRASENIA_CORREO =  process.env.CONTRASENIA_CORREO  || '!9,G\\qEqU8p==>jE'; 
+process.env.CONTRASENIA_CORREO = process.env.CONTRASENIA_CORREO || '!9,G\\qEqU8p==>jE';
 //Conexion a la base de datios 
 let urlDB;
 
 //URL DEL FRONT-END PRODUCCIÓN
-process.env.URL_FRONT = process.env.URL_FRONT || 'https://seguimiento-tutoral.fs.utags.edu.mx/#/';
+process.env.URL_FRONT = process.env.URL_FRONT || 'http://localhost:4200/#/';
 
 if (process.env.NODE_ENV === 'dev') { //Son todas las funciones y procesos que tienen el amibiente del desarrollo que es local 
     urlDB = 'mongodb+srv://AdminAA:AlertasAcademicas@cluster0-mquqh.mongodb.net/AlertasAcademicas?authSource=admin&replicaSet=Cluster0-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass&retryWrites=true&ssl=true';

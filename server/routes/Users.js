@@ -15,8 +15,8 @@ const jwt = require('jsonwebtoken');
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/users/obtener            |
 //|----------------------------------------------------------|
-app.get('/obtener', process.middlewares, (req, res) => {
-    User.find()
+app.get('/obtener', (req, res) => {
+    User.find().populate({ path: 'idRole', select: 'strRole' })
         .exec((err, users) => {
             if (err) {
                 return res.status(400).json({
@@ -258,16 +258,16 @@ app.post('/registro', process.middlewares, async(req, res) => {
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/users/actualizar/idUser  |
 //|-----------------------------------------------------------
-app.put('/actualizar/:idUser', process.middlewares, (req, res) => {
+app.put('/actualizar/:idUser', [], (req, res) => {
     let id = req.params.idUser;
-    const userBody = _.pick(req.body, ['srtName', 'strLastName', 'strMotherLastName', 'strEmail', 'strPassword', 'idRole', 'arrEspecialidadPermiso', 'blnStatus']);
+    const userBody = _.pick(req.body, ['strName', 'strLastName', 'strMotherLastName', 'idRole', 'blnStatus']);
     User.find({ _id: id }).then((resp) => {
         if (resp.length > 0) {
             User.findByIdAndUpdate(id, userBody).then((resp) => {
                 return res.status(200).json({
                     ok: true,
-                    status: 200,
-                    msg: 'Usuario actualizado con éxito',
+                    status: 400,
+                    msg: 'Actualizada con éxito',
                     cont: resp.length,
                     cnt: resp
                 });
@@ -276,7 +276,7 @@ app.put('/actualizar/:idUser', process.middlewares, (req, res) => {
                     ok: false,
                     status: 400,
                     msg: 'Error al actualizar',
-                    err: err
+                    cnt: err
                 });
             });
         }
@@ -285,11 +285,10 @@ app.put('/actualizar/:idUser', process.middlewares, (req, res) => {
             ok: false,
             status: 400,
             msg: 'Error al actualizar',
-            err: err
+            cnt: err
         });
     });
 });
-
 //|-----------------Api DELETE de Usuarios   ----------------|
 //| Creada por: Leticia Moreno                               |
 //| Api que elimina un usuario                               |
