@@ -152,25 +152,24 @@ app.post('/', process.middlewares, async(req, res) => {
             aJsnSeguimiento = invitados();
         }
 
-        for (let i = 0; i < arrMatriculas.length; i++) {
-            alertas.push({
-                idUser: req.body.idUser,
-                idEstatus: estatusNuevo,
-                strMatricula: arrMatriculas[i],
-                strNombreAlumno: arrNombreAlumnos[i],
-                idAsignatura: req.body.idAsignatura,
-                idCarrera: req.body.idCarrera,
-                idEspecialidad: req.body.idEspecialidad,
-                strGrupo: req.body.strGrupo,
-                chrTurno: req.body.chrTurno,
-                idModalidad: req.body.idModalidad,
-                strDescripcion: req.body.strDescripcion,
-                arrCrde: arrMotivosRiesgo,
-                arrInvitados: arrInvitados,
-                aJsnEvidencias: aJsnEvidencias
-            });
-            if (aJsnSeguimiento !== null) alertas[i].aJsnSeguimiento = aJsnSeguimiento;
-        }
+        alertas.push({
+            idUser: req.body.idUser,
+            idEstatus: estatusNuevo,
+            strMatricula: arrMatriculas,
+            strNombreAlumno: arrNombreAlumnos,
+            idAsignatura: req.body.idAsignatura,
+            idCarrera: req.body.idCarrera,
+            idEspecialidad: req.body.idEspecialidad,
+            strGrupo: req.body.strGrupo,
+            chrTurno: req.body.chrTurno,
+            idModalidad: req.body.idModalidad,
+            strDescripcion: req.body.strDescripcion,
+            arrCrde: arrMotivosRiesgo,
+            arrInvitados: arrInvitados,
+            aJsnEvidencias: aJsnEvidencias
+        });
+
+        if (aJsnSeguimiento !== null) alertas[0].aJsnSeguimiento = aJsnSeguimiento;
 
         let listaDeCorreos = []; //Variable que guarda la lista de correos tanto para invitado como para usuarios con el rol de esa especialidad
         let listaAlertas = null; //Aqui se guardaran las alertas generadas
