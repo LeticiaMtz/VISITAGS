@@ -87,7 +87,7 @@ app.get('/obtener/:id', process.middlewares, (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/alerts                               |
 //|----------------------------------------------------------------------|
-app.post('/', process.middlewares, async(req, res) => {
+app.post('/', async(req, res) => {
     const session = await db.startSession();
     try {
         //Se validan los campos minimos para insertar
@@ -166,7 +166,8 @@ app.post('/', process.middlewares, async(req, res) => {
             strDescripcion: req.body.strDescripcion,
             arrCrde: arrMotivosRiesgo,
             arrInvitados: arrInvitados,
-            aJsnEvidencias: aJsnEvidencias
+            aJsnEvidencias: aJsnEvidencias, 
+            nmbSemana:  req.body.nmbSemana
         });
 
         if (aJsnSeguimiento !== null) alertas[0].aJsnSeguimiento = aJsnSeguimiento;
@@ -379,7 +380,7 @@ app.get('/obtenerAlertas/:idRol/:idUser', process.middlewares, async(req, res) =
 //| Ruta: http://localhost:3000/api/obtenerAlerta/:idAlerta              |
 //|----------------------------------------------------------------------|
 
-app.get('/obtenerAlerta/:idAlerta', process.middlewares, async(req, res) => {
+app.get('/obtenerAlerta/:idAlerta', async(req, res) => {
     let idAlert = req.params.idAlerta;
 
     Alert.find({ _id: idAlert }).populate([{ path: 'idUser' }, { path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }, { path: 'idAsignatura', select: 'strAsignatura' }]).then(async(resp) => {

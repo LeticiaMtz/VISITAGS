@@ -73,7 +73,10 @@ const alerts = new Schema({
         type: Boolean,
         default: true
 
-    }
+    },
+    nmbSemana: {
+        type: Number
+    },
 }, {
     timestamps: true
 });
