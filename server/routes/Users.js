@@ -258,7 +258,7 @@ app.post('/registro', process.middlewares, async(req, res) => {
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/users/actualizar/idUser  |
 //|-----------------------------------------------------------
-app.put('/actualizar/:idUser', [], (req, res) => {
+app.put('/actualizar/:idUser', process.middlewares, (req, res) => {
     let id = req.params.idUser;
     const userBody = _.pick(req.body, ['strName', 'strLastName', 'strMotherLastName', 'idRole', 'blnStatus']);
     User.find({ _id: id }).then((resp) => {
@@ -266,7 +266,7 @@ app.put('/actualizar/:idUser', [], (req, res) => {
             User.findByIdAndUpdate(id, userBody).then((resp) => {
                 return res.status(200).json({
                     ok: true,
-                    status: 400,
+                    status: 200,
                     msg: 'Actualizada con éxito',
                     cont: resp.length,
                     cnt: resp
@@ -586,6 +586,46 @@ app.put('/asignar-especialidad/:idUsuario', process.middlewares, (req, res) => {
                 }
             })
         })
+});
+
+//|------------ Api PUT de campo blnNotificaciones del usuario -------------|
+//| Creada por: Leticia Moreno                                              |
+//| Api que actualiza el campo de blnNotificaciones de usuario              |
+//| modificada por:                                                         |
+//| Fecha de modificacion:                                                  |
+//| cambios:                                                                |
+//| Ruta: http://localhost:3000/api/users/actualizarNotificaciones/idUser   |
+//|-------------------------------------------------------------------------
+app.put('/actualizarNotificaciones/:idUser', process.middlewares, (req, res) => {
+    let id = req.params.idUser;
+    const userBody = _.pick(req.body, ['blnNotificaciones']);
+    User.find({ _id: id }).then((resp) => {
+        if (resp.length > 0) {
+            User.findByIdAndUpdate(id, userBody).then((resp) => {
+                return res.status(200).json({
+                    ok: true,
+                    status: 200,
+                    msg: 'Actualizada con éxito',
+                    cont: resp.length,
+                    cnt: resp
+                });
+            }).catch((err) => {
+                return res.status(400).json({
+                    ok: false,
+                    status: 400,
+                    msg: 'Error al actualizar',
+                    cnt: err
+                });
+            });
+        }
+    }).catch((err) => {
+        return res.status(400).json({
+            ok: false,
+            status: 400,
+            msg: 'Error al actualizar',
+            cnt: err
+        });
+    });
 });
 
 module.exports = app;

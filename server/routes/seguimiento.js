@@ -18,7 +18,7 @@ const jwt = require('jsonwebtoken');
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/segumiento/                          |
 //|----------------------------------------------------------------------|
-app.post('/', process.middlewares, async(req, res) => {
+app.post('/', async(req, res) => {
     const session = await mongoose.startSession();
 
     try {
@@ -113,7 +113,7 @@ app.post('/', process.middlewares, async(req, res) => {
             arrIdPersonasCorreos = alerta.arrInvitados;
             await arrIdPersonasCorreos.push(alerta.idUser);
 
-            let aux = await User.find({ arrEspecialidadPermiso: { $in: alerta.idEspecialidad } }).session(session);
+            let aux = await User.find({ arrEspecialidadPermiso: { $in: alerta.idEspecialidad }, blnNotificaciones: "true" }).session(session);
             aux.forEach(usr => {
                 arrIdPersonasCorreos.push(usr._id);
             });
@@ -121,7 +121,7 @@ app.post('/', process.middlewares, async(req, res) => {
                 return arrIdPersonasCorreos.indexOf(item) == pos;
             });
 
-            let aux2 = await User.find({ _id: { $in: arrIdPersonasCorreos } }).session(session);
+            let aux2 = await User.find({ _id: { $in: arrIdPersonasCorreos },  blnNotificaciones: "true" }).session(session);
             aux2.forEach(usr => {
                 listaCorreos.push(usr.strEmail);
             });
