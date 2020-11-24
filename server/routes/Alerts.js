@@ -87,7 +87,7 @@ app.get('/obtener/:id', process.middlewares, (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/alerts                               |
 //|----------------------------------------------------------------------|
-app.post('/', async(req, res) => {
+app.post('/', process.middlewares, async(req, res) => {
     const session = await db.startSession();
     try {
         //Se validan los campos minimos para insertar
@@ -380,7 +380,7 @@ app.get('/obtenerAlertas/:idRol/:idUser', process.middlewares, async(req, res) =
 //| Ruta: http://localhost:3000/api/obtenerAlerta/:idAlerta              |
 //|----------------------------------------------------------------------|
 
-app.get('/obtenerAlerta/:idAlerta', async(req, res) => {
+app.get('/obtenerAlerta/:idAlerta', process.middlewares, async(req, res) => {
     let idAlert = req.params.idAlerta;
 
     Alert.find({ _id: idAlert }).populate([{ path: 'idUser' }, { path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }, { path: 'idAsignatura', select: 'strAsignatura' }]).then(async(resp) => {
