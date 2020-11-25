@@ -87,7 +87,7 @@ app.get('/obtener/:id', process.middlewares, (req, res) => {
 //| cambios:                                                             |
 //| Ruta: http://localhost:3000/api/alerts                               |
 //|----------------------------------------------------------------------|
-app.post('/', async(req, res) => {
+app.post('/', process.middlewares, async(req, res) => {
     const session = await db.startSession();
     try {
         //Se validan los campos minimos para insertar
@@ -181,11 +181,6 @@ app.post('/', async(req, res) => {
             usuarios.forEach(usr => {
                 listaDeCorreos.push(usr.strEmail);
             });
-
-            // let usuario = await User.find({blnNotificaciones: "true", arrEspecialidadPermiso: { $in: [req.body.idEspecialidad] }}).session(session);
-            // usuario.forEach(usr => {
-            //     listaDeCorreos.push(usr.strEmail);
-            // });
 
             let invitados = await User.find({ _id: { $in: arrInvitados }, blnNotificaciones: "true" }).session(session);
             invitados.forEach(usr => {

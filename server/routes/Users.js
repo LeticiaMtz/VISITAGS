@@ -15,7 +15,7 @@ const jwt = require('jsonwebtoken');
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/users/obtener            |
 //|----------------------------------------------------------|
-app.get('/obtener', (req, res) => {
+app.get('/obtener', process.middlewares, (req, res) => {
     User.find().populate({ path: 'idRole', select: 'strRole' })
         .exec((err, users) => {
             if (err) {
@@ -108,7 +108,7 @@ app.get('/obtener/:id', process.middlewares, (req, res) => {
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/users/registrar          |
 //|----------------------------------------------------------|
-app.post('/registrar', async(req, res) => {
+app.post('/registrar', process.middlewares, async(req, res) => {
     let body = req.body;
     let pass = req.body.strPassword;
     let user = new User({
@@ -596,7 +596,7 @@ app.put('/asignar-especialidad/:idUsuario', process.middlewares, (req, res) => {
 //| cambios:                                                                |
 //| Ruta: http://localhost:3000/api/users/actualizarNotificaciones/idUser   |
 //|-------------------------------------------------------------------------
-app.put('/actualizarNotificaciones/:idUser', process.middlewares, (req, res) => {
+app.put('/actualizarNotificaciones/:idUser', (req, res) => {
     let id = req.params.idUser;
     const userBody = _.pick(req.body, ['blnNotificaciones']);
     User.find({ _id: id }).then((resp) => {
