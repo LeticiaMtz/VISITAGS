@@ -177,12 +177,12 @@ app.post('/', process.middlewares, async(req, res) => {
         const transactionResults = await session.withTransaction(async() => {
             listaAlertas = await Alert.insertMany(alertas, { session: session });
 
-            let usuarios = await User.find({ arrEspecialidadPermiso: { $in: [req.body.idEspecialidad] } }).session(session);
+            let usuarios = await User.find({blnNotificaciones: "true", arrEspecialidadPermiso: { $in: [req.body.idEspecialidad] } }).session(session);
             usuarios.forEach(usr => {
                 listaDeCorreos.push(usr.strEmail);
             });
 
-            let invitados = await User.find({ _id: { $in: arrInvitados } }).session(session);
+            let invitados = await User.find({ _id: { $in: arrInvitados }, blnNotificaciones: "true" }).session(session);
             invitados.forEach(usr => {
                 listaDeCorreos.push(usr.strEmail);
             });
@@ -192,7 +192,7 @@ app.post('/', process.middlewares, async(req, res) => {
             });
         });
 
-        if (transactionResults) {
+        if (transactionResults ) {
             let emailBody = {
                 nmbEmail: 10,
                 strEmail: listaDeCorreos.join(','),
