@@ -38,7 +38,11 @@ const users = new Schema({
     blnStatus: {
         type: Boolean,
         default: false
-    }
+    }, 
+    blnNotificaciones: {
+        type: Boolean, 
+        default: true
+    },
 }, {
     timestamps: true
 });
