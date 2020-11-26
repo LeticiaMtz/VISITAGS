@@ -166,7 +166,8 @@ app.post('/', process.middlewares, async(req, res) => {
             strDescripcion: req.body.strDescripcion,
             arrCrde: arrMotivosRiesgo,
             arrInvitados: arrInvitados,
-            aJsnEvidencias: aJsnEvidencias
+            aJsnEvidencias: aJsnEvidencias, 
+            nmbSemana:  req.body.nmbSemana
         });
 
         if (aJsnSeguimiento !== null) alertas[0].aJsnSeguimiento = aJsnSeguimiento;
