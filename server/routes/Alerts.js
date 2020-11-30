@@ -577,6 +577,8 @@ app.get('/reporteMonitor', process.middlewares, async(req, res) => {
                 
                 if(idProfesor == req.user.idRole || idDirector == req.user.idRole){
 
+                    if(filtros.idUser && filtros.idUser !== req.user._id) throw "Lo sentimos, no tiene permisos para consultar la información de este usuario";
+
                     alertas = await Alert.find({idUser: req.user._id,...filtros}).populate([{
                             path: 'idCarrera',
                             select: 'strCarrera',
@@ -598,7 +600,7 @@ app.get('/reporteMonitor', process.middlewares, async(req, res) => {
                         { path: 'idUser', select: 'strName strLastName strMotherLastName' },
                         { path: 'idEstatus', select: 'strNombre' }
                     ]).session(session);
-                    
+
                 } 
             }
 
