@@ -348,7 +348,7 @@ app.post('/login', (req, res) => {
             return res.status(400).json({
                 ok: false,
                 status: 400,
-                msg: 'Usuario y/o *contraseña incorrecta',
+                msg: 'Usuario o contraseña incorrecta',
             });
         }
         if (usrDB.blnStatus == false) {
