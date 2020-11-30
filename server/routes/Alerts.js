@@ -574,16 +574,32 @@ app.get('/reporteMonitor', process.middlewares, async(req, res) => {
                 if (carrerasUsuario === null) throw "Lo sentimos, no obtuvimos resultados para esa carrera";
                 if (filtros.idEspecialidad && !arrEspecialidadesUsuario.includes(filtros.idEspecialidad)) throw "Lo sentimos, no obtuvimos resultados para esa especialidad";
                 if (req.query.idProfesor && typeof req.query.idProfesor !== 'undefined' && req.query.idProfesor !== '') filtros.idUser = req.query.idProfesor;
+                
+                if(idProfesor == req.user.idRole || idDirector == req.user.idRole){
 
-                alertas = await Alert.find(filtros).populate([{
-                        path: 'idCarrera',
-                        select: 'strCarrera',
-                        populate: { path: 'aJsnEspecialidad', select: 'strEspecialidad' }
-                    },
-                    { path: 'idAsignatura', select: 'strAsignatura' },
-                    { path: 'idUser', select: 'strName strLastName strMotherLastName' },
-                    { path: 'idEstatus', select: 'strNombre' }
-                ]).session(session);
+                    alertas = await Alert.find({idUser: req.user._id,...filtros}).populate([{
+                            path: 'idCarrera',
+                            select: 'strCarrera',
+                            populate: { path: 'aJsnEspecialidad', select: 'strEspecialidad' }
+                        },
+                        { path: 'idAsignatura', select: 'strAsignatura' },
+                        { path: 'idUser', select: 'strName strLastName strMotherLastName' },
+                        { path: 'idEstatus', select: 'strNombre' }
+                    ]).session(session);
+
+                }else{
+
+                    alertas = await Alert.find(filtros).populate([{
+                            path: 'idCarrera',
+                            select: 'strCarrera',
+                            populate: { path: 'aJsnEspecialidad', select: 'strEspecialidad' }
+                        },
+                        { path: 'idAsignatura', select: 'strAsignatura' },
+                        { path: 'idUser', select: 'strName strLastName strMotherLastName' },
+                        { path: 'idEstatus', select: 'strNombre' }
+                    ]).session(session);
+                    
+                } 
             }
 
             resultados = alertas.map(alert => alert.toObject());
