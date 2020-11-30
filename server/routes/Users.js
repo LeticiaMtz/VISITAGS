@@ -108,7 +108,7 @@ app.get('/obtener/:id', process.middlewares, (req, res) => {
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/users/registrar          |
 //|----------------------------------------------------------|
-app.post('/registrar', process.middlewares, async(req, res) => {
+app.post('/registrar', async(req, res) => {
     let body = req.body;
     let pass = req.body.strPassword;
     let user = new User({
@@ -144,17 +144,19 @@ app.post('/registrar', process.middlewares, async(req, res) => {
         };
 
         await mailer.sendEmail(mailOptions);
-        User.find({ idRole: { $in: ['5f1e2419ad1ebd0b08edab74', '5eeee0db16952756482d186a'] } }).then((data) => {
+        let listaDeCorreos = [];
+        await User.find({ idRole: { $in: ['5f1e2419ad1ebd0b08edab74', '5eeee0db16952756482d186a'] } }).then(async(data) => {
             for (const admin of data) {
-                mailOptions = {
-                    nmbEmail: 8,
-                    strFullName: `${user.strName} ${user.strLastName} ${user.strMotherLastName}`,
-                    strEmail: admin.strEmail,
-                    subject: '¡Nuevo Registro!',
-                    html: '<h1>¡Por favor, revisa las solicitudes de registro!</h1><br>'
-                };
-                mailer.sendEmail(mailOptions);
+                listaDeCorreos.push(admin.strEmail);
             }
+            mailOptions = {
+                nmbEmail: 8,
+                strFullName: `${user.strName} ${user.strLastName} ${user.strMotherLastName}`,
+                strEmail: listaDeCorreos.join(','),
+                subject: '¡Nuevo Registro!',
+                html: '<h1>¡Por favor, revisa las solicitudes de registro!</h1><br>'
+            };
+            await mailer.sendEmail(mailOptions);
 
         }).catch((err) => {
             console.log(err);
@@ -173,75 +175,6 @@ app.post('/registrar', process.middlewares, async(req, res) => {
         return res.status(500).json({
             ok: false,
             status: 500,
-            msg: 'Algo salio mal',
-            cnt: {
-                err: err.message
-            }
-        });
-    });
-});
-
-//|-----------------      Api POST de Usuarios  ---------------------------------|
-//| Creada por: Leticia Moreno                                                   |
-//| Api que registra un usuario sin token                                        |
-//| modificada por:  Isabel Castillo                                             |
-//| Fecha de modificacion: 11-08-20                                              |
-//| cambios: Se cambió el envió de datos por un json que ha su ves indica        |
-//|          el template a usar de la libreria de mails.                         |
-//|          Se creó un template de bienvenida, el cual esta implementado        |
-//|          en el correo que se envia al registrar un usuario                   |
-//| Ruta: http://localhost:3000/api/users/registrar                              |
-//|------------------------------------------------------------------------------|
-app.post('/registro', process.middlewares, async(req, res) => {
-    let body = req.body;
-    let pass = req.body.strPassword;
-    let user = new User({
-        strName: req.body.strName,
-        strLastName: req.body.strLastName,
-        strMotherLastName: req.body.strMotherLastName,
-        strEmail: req.body.strEmail,
-        strPassword: bcrypt.hashSync(body.strPassword, 10),
-        idRole: req.body.idRole,
-        arrEspecialidadPermiso: req.body.arrEspecialidadPermiso,
-        blnStatus: req.body.blnStatus
-
-    });
-    // valida que el correo exista
-    await User.findOne({ 'strEmail': req.body.strEmail }).then(async(encontrado) => {
-        if (encontrado) {
-            return res.status(400).json({
-                ok: false,
-                resp: 400,
-                msg: 'El correo ya ha sido registrado',
-                cont: {
-                    user
-                }
-            });
-        }
-        jsnCorreo = {
-            strFullName: `${user.strName} ${user.strLastName} ${user.strMotherLastName}`,
-            strEmail: user.strEmail,
-            strPassword: pass,
-            subject: 'Usuario registrado',
-            nmbEmail: 7
-        };
-        await mailer.sendEmail(jsnCorreo);
-        await new User(user).save();
-        return res.status(200).json({
-            ok: true,
-            resp: 200,
-            msg: 'Correo enviado exitosamente',
-            cont: {
-                encontrado: {
-
-                }
-            }
-        });
-    }).catch((err) => {
-        console.log(err);
-        return res.status(500).json({
-            ok: false,
-            resp: 500,
             msg: 'Algo salio mal',
             cnt: {
                 err: err.message
