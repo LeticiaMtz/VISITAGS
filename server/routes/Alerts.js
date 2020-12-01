@@ -12,6 +12,7 @@ const User = require('../models/Users');
 const { select, isArray, forEach, each } = require('underscore');
 const email = require('../libraries/mails');
 const Crde = require('../models/crde');
+const jwt = require('jsonwebtoken');
 //ID de los usaurios con los diferentes roles existentes 
 const idProfesor = '5eeee0db16952756482d1868';
 const idDirector = '5eeee0db16952756482d1869';
@@ -194,12 +195,20 @@ app.post('/', process.middlewares, async(req, res) => {
         });
 
         if (transactionResults ) {
+
+            let url = `${process.env.URL_FRONT}/obtener-url`;
+            let ruta = `/Tracking-alerts/${listaAlertas[0]._id}`;
+    
+            let token = jwt.sign({
+                url: ruta
+            }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN });
+
             let emailBody = {
                 nmbEmail: 10,
                 strEmail: listaDeCorreos.join(','),
                 subject: 'Nueva Alerta Academica',
-                strLink: process.env.URL_FRONT,
-                html: ''
+                strLink: `${url}/${token}`,
+                html: `<h1>Una alerta ha sido creada</h1><br><p>Por favor revisa el siguiente link para poder darle atención:</p><br>`
             };
 
             let result = await email.sendEmail(emailBody, (err) => {

@@ -224,7 +224,7 @@ app.get("/obtener/:idAlert", process.middlewares, (req, res) => {
                 ok: true,
                 status: 200,
                 msg: "Success: Informacion obtenida correctamente.",
-                cont: seguimiento.length,
+                cont: seguimiento,
                 cnt: seguimiento,
             });
         });
