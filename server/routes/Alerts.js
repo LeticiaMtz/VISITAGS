@@ -584,7 +584,7 @@ app.get('/reporteMonitor', process.middlewares, async(req, res) => {
                 if (filtros.idEspecialidad && !arrEspecialidadesUsuario.includes(filtros.idEspecialidad)) throw "Lo sentimos, no obtuvimos resultados para esa especialidad";
                 if (req.query.idProfesor && typeof req.query.idProfesor !== 'undefined' && req.query.idProfesor !== '') filtros.idUser = req.query.idProfesor;
                 
-                if(idProfesor == req.user.idRole || idDirector == req.user.idRole){
+                if(idProfesor == req.user.idRole){
 
                     if(filtros.idUser && filtros.idUser !== req.user._id) throw "Lo sentimos, no tiene permisos para consultar la información de este usuario";
 
