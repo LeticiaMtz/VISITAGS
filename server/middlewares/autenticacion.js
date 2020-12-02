@@ -11,7 +11,7 @@ let verificaToken = (req, res, next) => {
         return res.status(401).json({
             ok: false,
             status: 401,
-            msg: 'Token inválido, inicia sesión nuevamente',
+            msg: 'Sesión expirada, porfavor inicia sesión nuevamente',
             cont: { err: err.message }
         });
     }
