@@ -167,8 +167,8 @@ app.post('/', process.middlewares, async(req, res) => {
             strDescripcion: req.body.strDescripcion,
             arrCrde: arrMotivosRiesgo,
             arrInvitados: arrInvitados,
-            aJsnEvidencias: aJsnEvidencias, 
-            nmbSemana:  req.body.nmbSemana
+            aJsnEvidencias: aJsnEvidencias,
+            nmbSemana: req.body.nmbSemana
         });
 
         if (aJsnSeguimiento !== null) alertas[0].aJsnSeguimiento = aJsnSeguimiento;
@@ -179,7 +179,7 @@ app.post('/', process.middlewares, async(req, res) => {
         const transactionResults = await session.withTransaction(async() => {
             listaAlertas = await Alert.insertMany(alertas, { session: session });
 
-            let usuarios = await User.find({blnNotificaciones: "true", arrEspecialidadPermiso: { $in: [req.body.idEspecialidad] } }).session(session);
+            let usuarios = await User.find({ blnNotificaciones: "true", arrEspecialidadPermiso: { $in: [req.body.idEspecialidad] } }).session(session);
             usuarios.forEach(usr => {
                 listaDeCorreos.push(usr.strEmail);
             });
@@ -194,11 +194,11 @@ app.post('/', process.middlewares, async(req, res) => {
             });
         });
 
-        if (transactionResults ) {
+        if (transactionResults) {
 
             let url = `${process.env.URL_FRONT}/obtener-url`;
             let ruta = `/Tracking-alerts/${listaAlertas[0]._id}`;
-    
+
             let token = jwt.sign({
                 url: ruta
             }, process.env.SEED, { expiresIn: process.env.CADUCIDAD_TOKEN });
@@ -352,7 +352,7 @@ app.get('/obtenerAlertas/:idRol/:idUser', process.middlewares, async(req, res) =
         let arrEspecialidad = usuario.arrEspecialidadPermiso;
         let arrAlertas = [];
 
-        await Alert.find({ $or: [{ idUser: idUser }, { arrInvitados: { $in: [idUser] } }, { idEspecialidad: {$in: arrEspecialidad} }] }).sort({ updatedAt: 'desc' }).limit(8).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }]).then(async(alertas) => {
+        await Alert.find({ $or: [{ idUser: idUser }, { arrInvitados: { $in: [idUser] } }, { idEspecialidad: { $in: arrEspecialidad } }] }).sort({ updatedAt: 'desc' }).limit(8).populate([{ path: 'idEstatus', select: 'strNombre' }, { path: 'idCarrera', select: 'strCarrera' }, { path: 'idEspecialidad', select: 'strEspecialidad' }, { path: 'idModalidad', select: 'strModalidad' }]).then(async(alertas) => {
             for (const i of alertas) {
                 if (i.blnStatus != undefined) {
                     await arrAlertas.push(i);
@@ -570,7 +570,7 @@ app.get('/reporteMonitor', process.middlewares, async(req, res) => {
                     { path: 'idAsignatura', select: 'strAsignatura' },
                     { path: 'idUser', select: 'strName strLastName strMotherLastName' },
                     { path: 'idEstatus', select: 'strNombre' }
-                ]).session(session);
+                ]).session(session).sort({ '_id': -1 });
             } else {
                 let carrerasUsuario = null;
                 carrerasUsuario = await Carrera.findOne({
@@ -578,17 +578,17 @@ app.get('/reporteMonitor', process.middlewares, async(req, res) => {
                     "aJsnEspecialidad._id": {
                         $in: arrEspecialidadesUsuario
                     }
-                }).session(session);
+                }).session(session).sort({ '_id': -1 });
 
                 if (carrerasUsuario === null) throw "Lo sentimos, no obtuvimos resultados para esa carrera";
                 if (filtros.idEspecialidad && !arrEspecialidadesUsuario.includes(filtros.idEspecialidad)) throw "Lo sentimos, no obtuvimos resultados para esa especialidad";
                 if (req.query.idProfesor && typeof req.query.idProfesor !== 'undefined' && req.query.idProfesor !== '') filtros.idUser = req.query.idProfesor;
-                
-                if(idProfesor == req.user.idRole){
 
-                    if(filtros.idUser && filtros.idUser !== req.user._id) throw "Lo sentimos, no tiene permisos para consultar la información de este usuario";
+                if (idProfesor == req.user.idRole) {
 
-                    alertas = await Alert.find({idUser: req.user._id,...filtros}).populate([{
+                    if (filtros.idUser && filtros.idUser !== req.user._id) throw "Lo sentimos, no tiene permisos para consultar la información de este usuario";
+
+                    alertas = await Alert.find({ idUser: req.user._id, ...filtros }).populate([{
                             path: 'idCarrera',
                             select: 'strCarrera',
                             populate: { path: 'aJsnEspecialidad', select: 'strEspecialidad' }
@@ -596,9 +596,9 @@ app.get('/reporteMonitor', process.middlewares, async(req, res) => {
                         { path: 'idAsignatura', select: 'strAsignatura' },
                         { path: 'idUser', select: 'strName strLastName strMotherLastName' },
                         { path: 'idEstatus', select: 'strNombre' }
-                    ]).session(session);
+                    ]).session(session).sort({ '_id': -1 });
 
-                }else{
+                } else {
 
                     alertas = await Alert.find(filtros).populate([{
                             path: 'idCarrera',
@@ -608,9 +608,9 @@ app.get('/reporteMonitor', process.middlewares, async(req, res) => {
                         { path: 'idAsignatura', select: 'strAsignatura' },
                         { path: 'idUser', select: 'strName strLastName strMotherLastName' },
                         { path: 'idEstatus', select: 'strNombre' }
-                    ]).session(session);
+                    ]).session(session).sort({ '_id': -1 });
 
-                } 
+                }
             }
 
             resultados = alertas.map(alert => alert.toObject());

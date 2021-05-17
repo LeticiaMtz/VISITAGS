@@ -16,11 +16,18 @@ process.env.URL_FRONT = process.env.URL_FRONT || 'https://seguimiento-tutoral.fs
 // process.env.URL_FRONT = process.env.URL_FRONT || 'https://localhost:4200/#/';
 
 if (process.env.NODE_ENV === 'dev') { //Son todas las funciones y procesos que tienen el amibiente del desarrollo que es local 
-    urlDB = 'mongodb+srv://AdminAA:AlertasAcademicas@cluster0-mquqh.mongodb.net/AlertasAcademicas?authSource=admin&replicaSet=Cluster0-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass&retryWrites=true&ssl=true';
+    urlDB = 'mongodb://dbadmin:2020%23Malcom@172.17.1.9:27017/AlertasAcademicas?authSource=admin';
     process.log = true;
 } else { //Ambiente de produccion nube = Heroku
-    urlDB = 'mongodb+srv://AdminAA:AlertasAcademicas@cluster0-mquqh.mongodb.net/AlertasAcademicas?authSource=admin&replicaSet=Cluster0-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass&retryWrites=true&ssl=true';
+    urlDB = 'mongodb://dbadmin:2020%23Malcom@172.17.1.9:27017/AlertasAcademicas?authSource=admin';
 }
+
+// if (process.env.NODE_ENV === 'dev') { //Son todas las funciones y procesos que tienen el amibiente del desarrollo que es local 
+//     urlDB = 'mongodb+srv://AdminAA:AlertasAcademicas@cluster0-mquqh.mongodb.net/AlertasAcademicas?authSource=admin&replicaSet=Cluster0-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass&retryWrites=true&ssl=true';
+//     process.log = true;
+// } else { //Ambiente de produccion nube = Heroku
+//     urlDB = 'mongodb+srv://AdminAA:AlertasAcademicas@cluster0-mquqh.mongodb.net/AlertasAcademicas?authSource=admin&replicaSet=Cluster0-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass&retryWrites=true&ssl=true';
+// }
 
 // if (process.env.NODE_ENV === 'dev') { //Son todas las funciones y procesos que tienen el amibiente del desarrollo que es local 
 //     urlDB = 'mongodb+srv://AdminAA:AlertasAcademicas@cluster0-mquqh.mongodb.net/AlertasAcademicas_test?authSource=admin&replicaSet=Cluster0-shard-0&w=majority&readPreference=primary&appname=MongoDB%20Compass&retryWrites=true&ssl=true';
