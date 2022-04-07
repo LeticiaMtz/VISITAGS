@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 let htmlF = '';
 
-const mainEmail =  `"Alertas Academicas" <${process.env.DIRECCION_CORREO }>`;
+const mainEmail = `"Alertas Academicas" <${process.env.DIRECCION_CORREO}>`;
 
 class email {
     constructor() {
@@ -15,13 +15,13 @@ class email {
             service: 'outlook',
             port: 587,
             secure: false,
-            auth: { user: process.env.DIRECCION_CORREO , pass: process.env.CONTRASENIA_CORREO  },
+            auth: { user: process.env.DIRECCION_CORREO, pass: process.env.CONTRASENIA_CORREO },
             tls: {
                 rejectUnauthorized: false
             }
         });
         this.mailOptions = {
-            from: `"Alertas Academicas" <${process.env.DIRECCION_CORREO }>`
+            from: `"Alertas Academicas" <${process.env.DIRECCION_CORREO}>`
         };
     }
 

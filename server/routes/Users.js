@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
-const {} = require('../middlewares/autenticacion');
+const { } = require('../middlewares/autenticacion');
 const User = require('../models/Users'); //subir nivel
 const app = express();
 const mailer = require('../libraries/mails');
@@ -15,7 +15,7 @@ const jwt = require('jsonwebtoken');
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/users/obtener            |
 //|----------------------------------------------------------|
-app.get('/obtener', process.middlewares, (req, res) => {
+app.get('/obtener', (req, res) => {
     User.find().populate({ path: 'idRole', select: 'strRole' })
         .exec((err, users) => {
             if (err) {
@@ -37,38 +37,6 @@ app.get('/obtener', process.middlewares, (req, res) => {
 });
 
 
-//|-----------------Api GET Listado Usuarios ---------------------|
-//| Creada por: Ernesto Gaytan                                    |
-//| Api que retorna un listado de usuarios por especialidad       |
-//| modificada por:                                               |
-//| Fecha de modificacion:                                        |
-//| cambios:                                                      |
-//| Ruta: http://localhost:3000/api/users/obtenerEspecialidad/:id |
-//|---------------------------------------------------------------|
-app.get('/obtenerEspecialidad/:id', process.middlewares, (req, res) => {
-    let id = req.params.id;
-    User.find({ _id: id })
-        .populate('arrEspecialidadPermiso._id', 'strNombre')
-        .populate('arrEspecialidadPermiso.strEspecialidad')
-        .exec((err, users) => {
-            if (err) {
-                return res.status(400).json({
-                    ok: false,
-                    status: 400,
-                    msg: 'Ocurrio un error al consultar el usuario',
-                    cnt: err
-                });
-            }
-            return res.status(200).json({
-                ok: true,
-                status: 200,
-                msg: 'Se han consultado correctamente el usuario',
-                cont: users.length,
-                cnt: users
-            });
-        });
-});
-
 //|-----------------Api GET Listado Usuario Id --------------|
 //| Creada por: Leticia Moreno                               |
 //| Api que retorna un listado de usuario por id             |
@@ -77,7 +45,7 @@ app.get('/obtenerEspecialidad/:id', process.middlewares, (req, res) => {
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/users/obtener/idUser     |
 //|----------------------------------------------------------|
-app.get('/obtener/:id', process.middlewares, (req, res) => {
+app.get('/obtener/:id', (req, res) => {
     let id = req.params.id;
     User.find({ _id: id })
         .populate('idRole', 'strRole')
@@ -108,7 +76,7 @@ app.get('/obtener/:id', process.middlewares, (req, res) => {
 //| cambios:                                                 |
 //| Ruta: http://localhost:3000/api/users/registrar          |
 //|----------------------------------------------------------|
-app.post('/registrar', async(req, res) => {
+app.post('/registrar', async (req, res) => {
     let body = req.body;
     let pass = req.body.strPassword;
     let user = new User({
@@ -116,14 +84,11 @@ app.post('/registrar', async(req, res) => {
         strLastName: req.body.strLastName,
         strMotherLastName: req.body.strMotherLastName,
         strEmail: req.body.strEmail,
-        strPassword: bcrypt.hashSync(body.strPassword, 10),
-        idRole: req.body.idRole,
-        arrEspecialidadPermiso: req.body.arrEspecialidadPermiso,
-        blnStatus: req.body.blnStatus
+        strPassword: bcrypt.hashSync(body.strPassword, 10)
 
     });
     // validar el correo que ya existe
-    await User.findOne({ 'strEmail': req.body.strEmail }).then(async(encontrado) => {
+    await User.findOne({ 'strEmail': req.body.strEmail }).then(async (encontrado) => {
         if (encontrado) {
             return res.status(400).json({
                 ok: false,
@@ -135,32 +100,6 @@ app.post('/registrar', async(req, res) => {
             });
         }
         await user.save();
-        mailOptions = {
-            nmbEmail: 7,
-            strEmail: user.strEmail,
-            subject: '¡Bienvenido al sistema de Alertas Academicas!',
-            html: '<h1>Tu solicitud de registro esta siendo revisada.</h1><br>' +
-                '<h3>En un maximo de 24hrs. tu solicitud tendrá que estar resuelta.</h3>'
-        };
-
-        await mailer.sendEmail(mailOptions);
-        let listaDeCorreos = [];
-        await User.find({ idRole: { $in: ['5f1e2419ad1ebd0b08edab74', '5eeee0db16952756482d186a'] } }).then(async(data) => {
-            for (const admin of data) {
-                listaDeCorreos.push(admin.strEmail);
-            }
-            mailOptions = {
-                nmbEmail: 8,
-                strFullName: `${user.strName} ${user.strLastName} ${user.strMotherLastName}`,
-                strEmail: listaDeCorreos.join(','),
-                subject: '¡Nuevo Registro!',
-                html: '<h1>¡Por favor, revisa las solicitudes de registro!</h1><br>'
-            };
-            await mailer.sendEmail(mailOptions);
-
-        }).catch((err) => {
-            console.log(err);
-        });
         return res.status(200).json({
             ok: true,
             status: 200,
@@ -193,7 +132,7 @@ app.post('/registrar', async(req, res) => {
 //|-----------------------------------------------------------
 app.put('/actualizar/:idUser', process.middlewares, (req, res) => {
     let id = req.params.idUser;
-    const userBody = _.pick(req.body, ['strName', 'strLastName', 'strMotherLastName', 'idRole', 'blnStatus']);
+    const userBody = _.pick(req.body, ['strName', 'strLastName', 'strMotherLastName', 'blnStatus']);
     User.find({ _id: id }).then((resp) => {
         if (resp.length > 0) {
             User.findByIdAndUpdate(id, userBody).then((resp) => {
@@ -274,7 +213,7 @@ app.post('/login', (req, res) => {
             return res.status(400).json({
                 ok: false,
                 status: 400,
-                msg: 'Usuario y/o contraseña incorrecta',
+                msg: 'El usuario no esta registrado.',
             });
         }
         if (!bcrypt.compareSync(body.strPassword, usrDB.strPassword)) {
@@ -288,7 +227,7 @@ app.post('/login', (req, res) => {
             return res.status(400).json({
                 ok: false,
                 status: 400,
-                msg: 'Usuario inactivo, comunícate con la orientadora educativa de tu dirección.',
+                msg: 'Usuario inactivo, comunícate con el administrador.',
             });
         } else {
             let token = jwt.sign({
@@ -327,7 +266,7 @@ app.get('/forgot/:strEmail', (req, res) => {
             }
         });
     }
-    User.findOne({ strEmail }, { _id: 1, strName: 1, strLastName: 1 }).then(async(user) => {
+    User.findOne({ strEmail }, { _id: 1, strName: 1, strLastName: 1 }).then(async (user) => {
         if (!user) {
             return res.status(404).json({
                 ok: false,
@@ -380,14 +319,14 @@ app.get('/forgot/:strEmail', (req, res) => {
 });
 
 //|-------------------------     Api PUT de recuperar contraseña         -----------------------|
-//| Creada por: Isabel Castillo                                                                 |
+//| Creada por: Leticia Moreno                                                                |
 //| Api que permite cambiar la contraseña del usuario                                           |
 //| modificada por:                                                                             |
 //| Fecha de modificacion:                                                                      |
 //| cambios:                                                                                    |
 //| Ruta: http://localhost:3000/api/users/reset-password/:token                                 |
 //|---------------------------------------------------------------------------------------------|
-app.put('/reset-password/:token', async(req, res) => {
+app.put('/reset-password/:token', async (req, res) => {
     const token = req.params.token;
     let idUser = '';
     passwords = {
@@ -430,7 +369,7 @@ app.put('/reset-password/:token', async(req, res) => {
             idUser = dec.idUser ? dec.idUser : '';
         }
     });
-    User.findByIdAndUpdate(idUser, { strPassword: bcrypt.hashSync(passwords.first, 10) }).then(async(user) => { //Aqui
+    User.findByIdAndUpdate(idUser, { strPassword: bcrypt.hashSync(passwords.first, 10) }).then(async (user) => { //Aqui
         if (!user) {
             return res.status(404).json({
                 ok: false,
@@ -475,90 +414,6 @@ app.put('/reset-password/:token', async(req, res) => {
     });
 })
 
-//|-------------------------     Api PUT de especialidad usuario         -----------------------|
-//| Creada por: Isabel Castillo                                                                 |
-//| Api que asigna especialidades a los usuarios                                                |
-//| modificada por:                                                                             |
-//| Fecha de modificacion:                                                                      |
-//| cambios:                                                                                    |
-//| Ruta: http://localhost:3000/api/users/asignar-especialidad/idUsuario                        |
-//|---------------------------------------------------------------------------------------------|
-app.put('/asignar-especialidad/:idUsuario', process.middlewares, (req, res) => {
-    idUsuario = req.params.idUsuario;
-    user = new User(req.params);
-    // BUSCAR Y ACTUALIZAR EL USUARIO AL MISMO TIEMPO 
-    User.findOneAndUpdate({ '_id': idUsuario }, { '$set': { 'arrEspecialidadPermiso': req.body.aJsnEspecialidad } })
-        .then((usuario) => {
-            if (usuario !== undefined || usuario !== null) {
-                return res.status(200).json({
-                    ok: true,
-                    resp: 200,
-                    msg: 'Se ha asignado la especialidad correctamente',
-                    cont: {
-                        usuario
-                    }
-                });
-            } else {
-                return res.status(400).json({
-                    ok: false,
-                    resp: 400,
-                    msg: 'Error: No se actualizó la especialidad correctamente',
-                    cont: {
-                        err
-                    }
-                });
-            }
-        }).catch((err) => {
-            console.log(err);
-            return res.status(500).json({
-                ok: false,
-                resp: 500,
-                msg: 'Error al asignar la especialidad',
-                cont: {
-                    err
-                }
-            })
-        })
-});
 
-//|------------ Api PUT de campo blnNotificaciones del usuario -------------|
-//| Creada por: Leticia Moreno                                              |
-//| Api que actualiza el campo de blnNotificaciones de usuario              |
-//| modificada por:                                                         |
-//| Fecha de modificacion:                                                  |
-//| cambios:                                                                |
-//| Ruta: http://localhost:3000/api/users/actualizarNotificaciones/idUser   |
-//|-------------------------------------------------------------------------
-app.put('/actualizarNotificaciones/:idUser', (req, res) => {
-    let id = req.params.idUser;
-    const userBody = _.pick(req.body, ['blnNotificaciones']);
-    User.find({ _id: id }).then((resp) => {
-        if (resp.length > 0) {
-            User.findByIdAndUpdate(id, userBody).then((resp) => {
-                return res.status(200).json({
-                    ok: true,
-                    status: 200,
-                    msg: 'Actualizada con éxito',
-                    cont: resp.length,
-                    cnt: resp
-                });
-            }).catch((err) => {
-                return res.status(400).json({
-                    ok: false,
-                    status: 400,
-                    msg: 'Error al actualizar',
-                    cnt: err
-                });
-            });
-        }
-    }).catch((err) => {
-        return res.status(400).json({
-            ok: false,
-            status: 400,
-            msg: 'Error al actualizar',
-            cnt: err
-        });
-    });
-});
 
 module.exports = app;
